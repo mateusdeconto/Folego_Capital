@@ -19,7 +19,7 @@
   4. Cards sem glass excessivo, bordas sutis coerentes
 
 Plans:
-- [ ] 01-01-PLAN.md — Add gold color scale (50–900) and shadow-gold to tailwind.config.js; verify Inter (DS-01, DS-02)
+- [x] 01-01-PLAN.md — Add gold color scale (50–900) and shadow-gold to tailwind.config.js; verify Inter (DS-01, DS-02)
 - [ ] 01-02-PLAN.md — Add .btn-gold, .btn-navy-outline, .card-navy, .badge-gold to index.css (DS-03, DS-04, DS-05)
 
 ### Phase 2: Landing Page
@@ -62,7 +62,7 @@ Plans:
 
 | Phase | Plans Complete | Status |
 |-------|----------------|--------|
-| 1. Design System | 0/2 | Not started |
+| 1. Design System | 1/2 | In Progress |
 | 2. Landing Page | 0/TBD | Not started |
 | 3. Questionário | 0/TBD | Not started |
 | 4. Diagnóstico | 0/TBD | Not started |
