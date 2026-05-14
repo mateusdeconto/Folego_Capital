@@ -495,7 +495,155 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
         </div>
       </section>
 
-      {/* TODO Plan 03: Pain, Como Funciona, Features, FAQ, CTA Final, Footer */}
+      {/* ── PAIN POINTS (LP-05) ──────────────────────────── */}
+      <section className="landing-container py-24 sm:py-32">
+        <div className="max-w-3xl mx-auto">
+          <InView className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-8 h-px bg-gold-500/60" />
+              <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">
+                POR QUE DONO DE NEGÓCIO NÃO DORME
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-[2.6rem] font-bold text-white tracking-tighter leading-tight">
+              Tocar um negócio sem ler<br className="hidden sm:block" /> os números é dirigir de olhos fechados.
+            </h2>
+          </InView>
+
+          <motion.div
+            className="space-y-2"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={staggerContainer(0.055)}
+          >
+            {PAIN_POINTS.map(p => (
+              <motion.div
+                key={p}
+                variants={fadeUp}
+                className="group flex items-start gap-4 p-4 glass-card rounded-2xl transition-colors duration-200"
+                whileHover={{ borderColor: 'rgba(251,191,36,0.20)' }}
+              >
+                <div className="w-6 h-6 rounded-full bg-gold-500/10 border border-gold-500/20
+                                flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-gold-400" />
+                </div>
+                <p className="text-[15px] text-white/75 leading-relaxed">{p}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <InView delay={100}>
+            <div className="mt-10 p-5 bg-gold-500/10 border border-gold-500/20 rounded-2xl flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-gold-500 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-white/80">
+                Se marcou pelo menos um, é exatamente pra isso que o FinCheck existe.
+              </p>
+            </div>
+          </InView>
+        </div>
+      </section>
+
+      {/* ── COMO FUNCIONA (LP-06) ────────────────────────── */}
+      <section id="como-funciona" className="bg-navy-900 py-24 sm:py-32">
+        <div className="landing-container">
+          <InView className="mb-14">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-8 h-px bg-gold-500/60" />
+              <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">
+                COMO FUNCIONA
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tighter mb-3">
+              Três passos. Três minutos.
+            </h2>
+            <p className="text-white/55 text-base leading-relaxed max-w-lg">
+              Sem planilha pra preencher. Sem consultor pra contratar. Sem precisar saber contabilidade.
+            </p>
+          </InView>
+
+          <div className="relative">
+            {/* Connector line desktop only */}
+            <div className="hidden md:block absolute top-10 left-[calc(16.5%+1px)] right-[calc(16.5%+1px)] h-px bg-white/10 z-0" />
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-60px' }}
+              variants={staggerContainer(0.12)}
+            >
+              {STEPS_FLOW.map(s => (
+                <motion.div
+                  key={s.n}
+                  variants={fadeUpSpring}
+                  className="card-navy rounded-2xl p-7"
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-navy-950 flex items-center justify-center">
+                      <span className="text-gold-400 font-bold text-sm font-mono tracking-tight">{s.n}</span>
+                    </div>
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-2.5 leading-snug">{s.title}</h3>
+                  <p className="text-sm text-white/55 leading-relaxed">{s.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES (LP-07) ─────────────────────────────── */}
+      <section className="py-24 sm:py-32">
+        <div className="landing-container">
+          <InView className="mb-14">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-8 h-px bg-gold-500/60" />
+              <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">
+                O QUE VOCÊ DESCOBRE
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tighter mb-3">
+              Um relatório que seu contador respeitaria.
+            </h2>
+            <p className="text-white/55 text-base leading-relaxed">
+              Mas escrito pra você ler num café, sem precisar de tradução.
+            </p>
+          </InView>
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={staggerContainer(0.06)}
+          >
+            {FEATURES.map(f => (
+              <motion.div
+                key={f.title}
+                variants={fadeUpSpring}
+                className="card-navy group p-6 rounded-2xl cursor-default"
+                whileHover={{ y: -2 }}
+                transition={{ duration: 0.18 }}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${f.accent}`}>
+                  <Icon d={f.d} size={18} />
+                </div>
+                <h3 className="text-[15px] font-bold text-white mb-2 leading-snug">{f.title}</h3>
+                <p className="text-sm text-white/55 leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* TODO Plan 03 Task 2: FAQ, CTA Final, Footer */}
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
     </div>
