@@ -11,7 +11,7 @@
 **Depends on**: —
 **Requirements**: DS-01, DS-02, DS-03, DS-04, DS-05
 **UI hint**: yes
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 **Success Criteria**:
   1. Tailwind config tem cores navy, gold, slate como tokens nomeados
   2. Inter carrega via Google Fonts sem fallback visível
@@ -27,12 +27,18 @@ Plans:
 **Depends on**: Phase 1
 **Requirements**: LP-01, LP-02, LP-03, LP-04, LP-05, LP-06, LP-07, LP-08, LP-09
 **UI hint**: yes
+**Plans:** 3 plans
 **Success Criteria**:
   1. Hero exibe fundo animado (slate + raios dourados) sem piscar ao carregar
   2. Headline aparece com animação staggered character-by-character ou por linha
   3. Navbar é fixa, liquid-glass, não some no scroll
   4. Todas as seções têm entrada animada ao scroll (não carregam tudo de uma vez)
   5. CTA principal tem feedback visual de hover/click satisfatório
+
+Plans:
+- [ ] 02-01-PLAN.md — Add glow-pulse keyframe to tailwind.config.js (LP-01)
+- [ ] 02-02-PLAN.md — Rewrite Landing.jsx: shared utilities + Navbar + Hero (LP-02, LP-03, LP-04)
+- [ ] 02-03-PLAN.md — Complete Landing.jsx: Pain + Como Funciona + Features + FAQ + Footer (LP-05—LP-09)
 
 ### Phase 3: Fluxo Questionário
 **Goal**: Telas do questionário redesenhadas com o novo visual — transições suaves entre perguntas, progresso visível, sem flash branco entre telas
@@ -63,6 +69,6 @@ Plans:
 | Phase | Plans Complete | Status |
 |-------|----------------|--------|
 | 1. Design System | 1/2 | In Progress |
-| 2. Landing Page | 0/TBD | Not started |
+| 2. Landing Page | 0/3 | Planned |
 | 3. Questionário | 0/TBD | Not started |
 | 4. Diagnóstico | 0/TBD | Not started |

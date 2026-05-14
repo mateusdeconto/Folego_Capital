@@ -107,12 +107,17 @@ export default {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'spin-slow':  'spin 2s linear infinite',
         'float':      'float 6s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 10s ease-in-out infinite',
       },
 
       keyframes: {
         fadeIn:  { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
         slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
         float:   { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } },
+        'glow-pulse': {
+          '0%, 100%': { opacity: '0.10', transform: 'scale(1)' },
+          '50%':      { opacity: '0.15', transform: 'scale(1.08)' },
+        },
       },
 
       boxShadow: {
