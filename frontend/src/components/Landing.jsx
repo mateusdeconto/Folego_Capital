@@ -643,7 +643,106 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
         </div>
       </section>
 
-      {/* TODO Plan 03 Task 2: FAQ, CTA Final, Footer */}
+      {/* ── FAQ (LP-08) ──────────────────────────────────── */}
+      <section className="bg-navy-900 border-t border-white/8 py-24 sm:py-32">
+        <div className="landing-container-narrow">
+          <InView className="mb-10 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="w-8 h-px bg-gold-500/60" />
+              <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">
+                PERGUNTAS FREQUENTES
+              </span>
+              <span className="w-8 h-px bg-gold-500/60" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tighter">
+              O que você quer saber antes de começar
+            </h2>
+          </InView>
+
+          <div className="space-y-2">
+            {FAQS.map((item, i) => (
+              <FaqItem key={item.q} q={item.q} a={item.a} i={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA FINAL (LP-03 reinforcement) ─────────────── */}
+      <section className="relative overflow-hidden bg-navy-950 py-24 sm:py-32">
+        {/* Reuse a centered glow orb for visual interest */}
+        <div
+          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full z-0 animate-[glow-pulse_12s_ease-in-out_infinite]"
+          style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)' }}
+        />
+        <div className="landing-container-narrow relative z-10 text-center">
+          <InView>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <span className="w-8 h-px bg-gold-500/40" />
+              <span className="text-xs font-bold text-gold-400/70 uppercase tracking-widest">
+                Comece agora
+              </span>
+              <span className="w-8 h-px bg-gold-500/40" />
+            </div>
+            <h2 className="text-3xl sm:text-[2.8rem] font-bold text-white tracking-tighter mb-5 leading-tight">
+              Cinco minutos agora podem te
+              <br />
+              poupar meses no escuro.
+            </h2>
+            <p className="text-white/50 text-lg leading-relaxed mb-10">
+              Crie sua conta, responda 7 perguntas e receba seu diagnóstico completo.
+              Grátis para começar.
+            </p>
+            <motion.button
+              onClick={onEnter}
+              className="btn-gold inline-flex items-center gap-2"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.15 }}
+            >
+              Começar diagnóstico — grátis
+              <ArrowRight size={15} />
+            </motion.button>
+            <p className="text-xs text-white/25 mt-6">
+              Diagnóstico grátis. Plano Pro para quem quer mais.
+            </p>
+          </InView>
+        </div>
+      </section>
+
+      {/* ── FOOTER (LP-09) ───────────────────────────────── */}
+      <footer className="bg-navy-950 border-t border-white/8 py-12">
+        <div className="landing-container">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pb-8 border-b border-white/8">
+            {/* Logo + tagline */}
+            <div>
+              <Logo dark />
+              <p className="text-sm text-white/40 mt-3 leading-relaxed">
+                Clareza financeira para quem toca o negócio.
+              </p>
+            </div>
+            {/* Links */}
+            <div>
+              <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-3">Produto</p>
+              <nav className="space-y-2">
+                <a href="#como-funciona" className="block text-sm text-white/50 hover:text-white/80 transition-colors">Como funciona</a>
+                <button onClick={onEnter} className="block text-sm text-white/50 hover:text-white/80 transition-colors text-left">Fazer diagnóstico</button>
+              </nav>
+            </div>
+            {/* Legal */}
+            <div>
+              <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-3">Contato</p>
+              <a href="mailto:finchecks@gmail.com"
+                className="text-sm text-white/50 hover:text-white/80 underline underline-offset-2 transition-colors">
+                finchecks@gmail.com
+              </a>
+            </div>
+          </div>
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-white/25">Feito pra empresas brasileiras · Dados salvos com segurança</p>
+            <p className="text-xs text-white/20">© {new Date().getFullYear()} FinCheck</p>
+          </div>
+        </div>
+      </footer>
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
     </div>
