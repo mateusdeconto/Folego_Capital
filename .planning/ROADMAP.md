@@ -27,7 +27,7 @@ Plans:
 **Depends on**: Phase 1
 **Requirements**: LP-01, LP-02, LP-03, LP-04, LP-05, LP-06, LP-07, LP-08, LP-09
 **UI hint**: yes
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete ✅ (checkpoint:human-verify pending)
 **Success Criteria**:
   1. Hero exibe fundo animado (slate + raios dourados) sem piscar ao carregar
   2. Headline aparece com animação staggered character-by-character ou por linha
@@ -37,8 +37,8 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — Add glow-pulse keyframe to tailwind.config.js (LP-01)
-- [ ] 02-02-PLAN.md — Rewrite Landing.jsx: shared utilities + Navbar + Hero (LP-02, LP-03, LP-04)
-- [ ] 02-03-PLAN.md — Complete Landing.jsx: Pain + Como Funciona + Features + FAQ + Footer (LP-05—LP-09)
+- [x] 02-02-PLAN.md — Rewrite Landing.jsx: shared utilities + Navbar + Hero (LP-02, LP-03, LP-04)
+- [x] 02-03-PLAN.md — Complete Landing.jsx: Pain + Como Funciona + Features + FAQ + Footer (LP-05—LP-09)
 
 ### Phase 3: Fluxo Questionário
 **Goal**: Telas do questionário redesenhadas com o novo visual — transições suaves entre perguntas, progresso visível, sem flash branco entre telas
@@ -69,6 +69,6 @@ Plans:
 | Phase | Plans Complete | Status |
 |-------|----------------|--------|
 | 1. Design System | 2/2 | Complete |
-| 2. Landing Page | 1/3 | In Progress |
+| 2. Landing Page | 3/3 | Checkpoint pending |
 | 3. Questionário | 0/TBD | Not started |
 | 4. Diagnóstico | 0/TBD | Not started |
