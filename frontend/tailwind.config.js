@@ -73,6 +73,20 @@ export default {
           900: '#080E1C',
           950: '#030810',
         },
+
+        // Gold — acento premium, CTAs, destaques
+        gold: {
+          50:  '#FFFBEB',
+          100: '#FEF3C7',
+          200: '#FDE68A',
+          300: '#FCD34D',
+          400: '#FBBF24',
+          500: '#F59E0B', // principal
+          600: '#D97706',
+          700: '#B45309',
+          800: '#92400E',
+          900: '#78350F',
+        },
       },
 
       fontFamily: {
@@ -93,12 +107,17 @@ export default {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'spin-slow':  'spin 2s linear infinite',
         'float':      'float 6s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 10s ease-in-out infinite',
       },
 
       keyframes: {
         fadeIn:  { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
         slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
         float:   { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } },
+        'glow-pulse': {
+          '0%, 100%': { opacity: '0.10', transform: 'scale(1)' },
+          '50%':      { opacity: '0.15', transform: 'scale(1.08)' },
+        },
       },
 
       boxShadow: {
@@ -110,6 +129,8 @@ export default {
         'card-hover': '0 8px 24px rgba(18,14,10,0.12), 0 2px 4px rgba(18,14,10,0.06)',
         'money':      '0 4px 20px rgba(15,173,106,0.28)',
         'money-lg':   '0 8px 32px rgba(15,173,106,0.36)',
+        'gold':       '0 4px 20px rgba(245,158,11,0.30)',
+        'gold-lg':    '0 8px 32px rgba(245,158,11,0.40)',
       },
     },
   },
