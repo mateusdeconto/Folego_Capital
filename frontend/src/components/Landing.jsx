@@ -325,4 +325,179 @@ function FaqItem({ q, a, i }) {
   );
 }
 
-// Task 2: Navbar + Hero + export default appended below
+/* ── Componente principal ─────────────────────────────────── */
+export default function Landing({ onEnter, user, plan, onHistory }) {
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const heroRef = useRef(null);
+
+  function handleHistoricoClick() {
+    if (plan === 'paid' && onHistory) {
+      onHistory();
+    } else {
+      setShowUpgrade(true);
+    }
+  }
+
+  // Scroll-driven ReportCard transforms (D-11)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const cardOpacity    = useTransform(scrollYProgress, [0,    0.15], [0, 1]);
+  const cardY          = useTransform(scrollYProgress, [0,    0.15], [20, 0]);
+  const badgeOpacity   = useTransform(scrollYProgress, [0.15, 0.30], [0, 1]);
+  const badgeX         = useTransform(scrollYProgress, [0.15, 0.30], [-8, 0]);
+  const metricsOpacity = useTransform(scrollYProgress, [0.25, 0.40], [0, 1]);
+  const recoOpacity    = useTransform(scrollYProgress, [0.35, 0.50], [0, 1]);
+
+  return (
+    <div className="landing-root">
+
+      {/* ── NAVBAR (LP-04) ──────────────────────────────── */}
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-50 h-16 backdrop-blur-md border-b border-white/10"
+        style={{ backgroundColor: 'rgba(3,8,16,0.80)' }}
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease }}
+      >
+        <div className="landing-container flex items-center justify-between h-full">
+          <Logo dark />
+          <nav className="flex items-center gap-1">
+            <a href="#como-funciona"
+              className="hidden sm:block px-3 py-1.5 text-sm font-medium text-white/60 hover:text-white transition-colors">
+              Como funciona
+            </a>
+            <button
+              onClick={handleHistoricoClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/60 hover:text-white transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Histórico
+            </button>
+            <motion.button
+              onClick={onEnter}
+              className="ml-2 btn-gold text-sm py-2 px-4"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.15 }}>
+              {user ? 'Minha conta' : 'Começar grátis'}
+            </motion.button>
+          </nav>
+        </div>
+      </motion.header>
+
+      {/* ── HERO (LP-01, LP-02, LP-03, D-01 to D-11) ───── */}
+      <section ref={heroRef} className="relative overflow-hidden min-h-screen bg-slate-950 pt-16">
+        {/* Glow orb 1 — centered top, large (D-02) */}
+        <div
+          className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full z-0 animate-[glow-pulse_10s_ease-in-out_infinite]"
+          style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.13) 0%, transparent 70%)' }}
+        />
+        {/* Glow orb 2 — lower right, smaller, 4s offset (D-02, D-03) */}
+        <div
+          className="pointer-events-none absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full z-0 animate-[glow-pulse_12s_ease-in-out_2s_infinite]"
+          style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.09) 0%, transparent 70%)' }}
+        />
+
+        <div className="landing-container relative z-10 pt-16 pb-28 sm:pt-24 sm:pb-36">
+          <div className="grid lg:grid-cols-[1fr_1fr] gap-14 lg:gap-20 items-center">
+
+            {/* Left column: staggered hero text (D-05, D-06) */}
+            <motion.div
+              className="max-w-xl"
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer(0.15, 0.1)}
+            >
+              {/* Badge "Diagnóstico gratuito" (D-06 order: Badge first) */}
+              <motion.div variants={fadeUp}
+                className="inline-flex items-center gap-2.5 mb-7 px-4 py-1.5 rounded-full border border-gold-500/25 bg-gold-500/10">
+                <motion.span
+                  className="w-1.5 h-1.5 rounded-full bg-gold-400"
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <span className="text-xs font-bold text-gold-400 tracking-widest uppercase">
+                  Diagnóstico gratuito
+                </span>
+              </motion.div>
+
+              {/* Headline — stagger per line (D-05) */}
+              <motion.h1
+                className="font-bold text-white text-[2.8rem] sm:text-5xl md:text-[3.6rem] leading-[1.05] tracking-tightest mb-7"
+                variants={staggerContainer(0.15, 0)}
+                initial="hidden"
+                animate="visible"
+              >
+                <motion.span variants={fadeUp} className="block">Seu negócio dá lucro</motion.span>
+                <motion.span variants={fadeUp} className="block text-gold-400">de verdade?</motion.span>
+              </motion.h1>
+
+              {/* Subtext */}
+              <motion.p variants={fadeUp}
+                className="text-lg text-white/65 leading-relaxed mb-10 max-w-md">
+                Descubra em 3 minutos o que seus números realmente dizem — e o que fazer agora.
+              </motion.p>
+
+              {/* CTA buttons (LP-03, D-06 order: CTAs last) */}
+              <motion.div variants={fadeUp} className="flex items-center gap-4 flex-wrap">
+                <motion.button
+                  onClick={onEnter}
+                  className="btn-gold inline-flex items-center gap-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  Fazer meu diagnóstico
+                  <ArrowRight size={15} />
+                </motion.button>
+                <a href="#como-funciona"
+                  className="text-sm font-semibold text-white/50 hover:text-white/80 transition-colors py-2">
+                  Ver como funciona →
+                </a>
+              </motion.div>
+
+              {/* Stats row */}
+              <motion.div
+                className="flex items-center gap-6 mt-10 pt-8 border-t border-white/10"
+                initial="hidden"
+                animate="visible"
+                variants={staggerContainer(0.1, 0.6)}
+              >
+                {[
+                  { n: '3 min', label: 'para o diagnóstico' },
+                  { n: '100%', label: 'gratuito para começar' },
+                  { n: 'IA', label: 'com dados do seu setor' },
+                ].map(s => (
+                  <motion.div key={s.n} variants={fadeUpSpring}>
+                    <p className="text-xl font-bold text-white font-mono">{s.n}</p>
+                    <p className="text-[11px] text-white/40 mt-0.5">{s.label}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            {/* Right column: ReportCard (D-10, D-11, D-12) */}
+            <div className="hidden lg:block">
+              <ReportCard
+                cardStyle={{ opacity: cardOpacity, y: cardY }}
+                badgeStyle={{ opacity: badgeOpacity, x: badgeX }}
+                metricsStyle={{ opacity: metricsOpacity }}
+                recoStyle={{ opacity: recoOpacity }}
+              />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* TODO Plan 03: Pain, Como Funciona, Features, FAQ, CTA Final, Footer */}
+
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+    </div>
+  );
+}
