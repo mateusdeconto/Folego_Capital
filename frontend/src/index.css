@@ -191,6 +191,54 @@
     @apply text-xs font-bold text-money-600 uppercase tracking-widest;
   }
 
+  /* ---------- LANDING COMPONENTS (navy+gold) ---------- */
+  /* Phase 1 additions — landing only. App components untouched per D-01/D-02. */
+
+  /* Botão dourado — CTA principal da landing */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2.5 py-3.5 px-7 font-bold
+           rounded-xl text-[15px] tracking-tight
+           active:scale-[0.98] transition-all duration-150
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    background-color: #F59E0B; /* gold-500 */
+    color: #080E1C; /* navy-900 */
+    box-shadow: 0 4px 20px rgba(245,158,11,0.28); /* shadow-gold */
+  }
+  .btn-gold:hover {
+    background-color: #FBBF24; /* gold-400 */
+  }
+
+  /* Botão contorno navy — CTAs secundários na landing */
+  .btn-navy-outline {
+    @apply inline-flex items-center justify-center gap-2.5 py-3.5 px-7 font-semibold
+           rounded-xl text-white text-[15px] tracking-tight
+           bg-transparent
+           active:scale-[0.98] transition-all duration-200;
+    border: 1px solid rgba(255,255,255,0.30); /* white/30 */
+  }
+  .btn-navy-outline:hover {
+    border-color: #FBBF24; /* gold-400 */
+    color: #FBBF24; /* gold-400 */
+  }
+
+  /* Card navy — seções escuras da landing (features, how-it-works) */
+  .card-navy {
+    @apply rounded-2xl text-white;
+    background-color: #080E1C; /* navy-900 */
+    border: 1px solid rgba(255,255,255,0.10); /* white/10 */
+    transition: border-color 0.2s ease;
+  }
+  .card-navy:hover {
+    border-color: rgba(245,158,11,0.30); /* gold-500/30 */
+  }
+
+  /* Badge dourado — labels de destaque na landing */
+  .badge-gold {
+    @apply badge;
+    background-color: #FEF3C7; /* gold-100 */
+    color: #92400E; /* gold-800 */
+  }
+
   /* ---------- TABELA ---------- */
 
   .data-row {
