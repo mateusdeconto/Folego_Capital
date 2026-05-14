@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Redesign Visual Completo
-status: Executing Phase 2
-last_updated: "2026-05-14T21:18:00Z"
+status: Ready to execute
+last_updated: "2026-05-14T21:54:38.743Z"
 progress:
   total_phases: 4
   completed_phases: 1
@@ -20,7 +20,7 @@ In Progress — Phase 2, Plan 01 complete
 ## Current Position
 
 Phase: 2 (landing-page) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Last Activity
 
@@ -39,6 +39,7 @@ Plan: 2 of 3
 - Gold tokens: Tailwind amber palette, gold-500 = #F59E0B
 - Inter já presente no index.html — sem alteração necessária
 - glow-pulse keyframe: opacity 0.10/0.15 + scale 1/1.08, 10s cycle (D-01/D-03/D-04 locked)
+- [Phase 02-landing-page]: Hero background is bg-slate-950 per D-04 locked; ReportCard has timed fallback entrance + scroll-driven transforms additive via style prop
 
 ## Performance Metrics
 
@@ -47,6 +48,7 @@ Plan: 2 of 3
 | 01-design-system-foundation | 01 | 5min | 1 | 1 |
 | 01-design-system-foundation | 02 | 8min | 1 | 1 |
 | 02-landing-page | 01 | 8min | 1 | 1 |
+| Phase 02-landing-page P02 | 35min | 2 tasks | 4 files |
 
 ## Blockers
 

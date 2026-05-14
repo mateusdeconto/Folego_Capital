@@ -27,7 +27,7 @@ Plans:
 **Depends on**: Phase 1
 **Requirements**: LP-01, LP-02, LP-03, LP-04, LP-05, LP-06, LP-07, LP-08, LP-09
 **UI hint**: yes
-**Plans:** 1/3 plans complete
+**Plans:** 1/3 plans executed
 **Success Criteria**:
   1. Hero exibe fundo animado (slate + raios dourados) sem piscar ao carregar
   2. Headline aparece com animação staggered character-by-character ou por linha

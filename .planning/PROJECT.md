@@ -1,59 +1,57 @@
-# FinCheck — Diagnóstico Financeiro para PMEs
+# FinCheck — Redesign Visual Completo
 
-## Visão
+## What This Is
 
-Aplicação web MVP que permite donos de pequenas empresas brasileiras responderem perguntas simples sobre o negócio e receberem um diagnóstico financeiro completo em linguagem humana, sem jargão contábil.
+Redesign completo da interface do FinCheck — diagnóstico financeiro para PMEs brasileiras. O produto existe e funciona (MVP em produção no Railway), mas o design atual parece genérico/IA, afastando clientes. O objetivo é criar uma identidade visual premium e única.
 
-## Problema
+## Core Value
 
-Donos de PMEs não entendem a saúde financeira do próprio negócio porque as ferramentas existentes usam linguagem de contador, não de empreendedor. Resultado: decisões no escuro, caixa que estoura sem aviso, endividamento progressivo.
+O usuário dono de PME abre o site, **sente confiança imediata** e **enxerga possibilidade** — não medo. Entende em segundos que o FinCheck vai clarear o que ele não enxerga nos próprios números. Clica no CTA sem hesitar.
 
-## Solução
+## Context
 
-Um formulário guiado com 6 perguntas em linguagem cotidiana → IA processa e gera diagnóstico completo com alertas e recomendações → chat para tirar dúvidas sobre os próprios números.
+- **Stack**: React 18 + Vite + Tailwind CSS + Framer Motion + Supabase
+- **Deploy**: Railway (backend) + Vercel/Railway (frontend)
+- **Usuário-alvo**: Dono de PME brasileira, qualquer setor, 25–55 anos
+- **Problema atual**: Design mistura 3 linguagens visuais (dark hero + light content + glass cards), parece template genérico de fintech dark
+- **Feedback de clientes**: "parece IA", "feio", "não transmite confiança"
 
-## Público-Alvo
+## Visual Direction
 
-Dono de PME brasileira (restaurante, varejo, serviços, indústria). Não precisa ter conhecimento contábil.
-
-## Fluxo Principal
-
-1. **Onboarding** — Nome do negócio + segmento
-2. **Questionário** — 6 perguntas numéricas, uma por tela
-3. **Loading** — Processamento via Anthropic API
-4. **Diagnóstico** — 4 seções com streaming progressivo
-5. **Chat** — Perguntas livres com contexto dos dados
-
-## Stack
-
-- Frontend: React + Vite + Tailwind CSS
-- Backend: Node.js + Express
-- IA: Anthropic API (claude-sonnet-4-5)
-- Estado: em memória (sem banco de dados)
-
-## Definição de Pronto
-
-- Usuário consegue passar pelo fluxo completo do início ao fim
-- Diagnóstico gerado em streaming aparece progressivamente
-- Chat responde com contexto dos dados do usuário
-- Design mobile-first, responsivo
+- **Background hero**: Luz cortando névoa — slate profundo (#0F172A), raios de luz dourados se expandindo devagar, efeito de amanhecer/clareza emergindo
+- **Paleta**: Navy + Ouro premium — deep navy como base, âmbar/gold (#F59E0B) como acento
+- **Estilo**: Cinematic, premium, confiança sem intimidar
+- **Animação**: Framer Motion — hero animado, entradas staggered, micro-interações nos CTAs
+- **Headline hero**: "Seu negócio dá lucro de verdade?" (pergunta direta, já validada)
+- **Tipografia**: Inter — limpa, moderna, autoridade
 
 ## Requirements
 
 ### Active
 
-- [ ] Formulário multi-step com 6 perguntas numéricas em R$
-- [ ] Onboarding com nome e segmento do negócio
-- [ ] Diagnóstico gerado via Anthropic API com streaming
-- [ ] 4 seções: Resumo Executivo, Pontos de Atenção, O que está funcionando, Recomendações
-- [ ] Chat pós-diagnóstico com contexto dos dados
-- [ ] Design mobile-first, azul escuro e branco
-- [ ] ANTHROPIC_API_KEY via variável de ambiente
-- [ ] Sem login ou autenticação
+- [ ] Design system: paleta navy+gold, tokens de cor, tipografia Inter, componentes base (botões, cards, badges)
+- [ ] Landing page completa: hero animado + pain section + como funciona + features + FAQ + footer
+- [ ] Fluxo questionário: telas de perguntas com novo visual, barra de progresso, transições
+- [ ] Tela de diagnóstico: resultado com métricas animadas, alertas visuais, hierarquia clara
 
 ### Out of Scope
 
-- Banco de dados / persistência — MVP usa estado em memória
-- Autenticação / login — não necessário no MVP
-- Exportar PDF — fase futura
-- Múltiplos usuários simultâneos com sessões isoladas — fase futura
+- Backend/API changes — apenas frontend visual
+- Dark mode — foco em light/dark premium único
+- Mobile app — web responsivo suficiente por ora
+
+## Key Decisions
+
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Framer Motion (não GSAP) | Já instalado, React-native, menos bundle | Confirmed |
+| CSS animation para background | Sem URL de vídeo disponível, mais único que template | Confirmed |
+| Navy + Gold | Transmite premium/confiança sem ser frio (verde atual era genérico) | Confirmed |
+| Pergunta direta no headline | Testada pelo usuário, cria identificação imediata | Confirmed |
+
+---
+*Last updated: 2026-05-14 após initialization*
+
+## Evolution
+
+Este documento evolui a cada transição de fase e milestone.

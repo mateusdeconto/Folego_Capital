@@ -7,7 +7,19 @@
       "mcp__magic__21st_magic_component_builder",
       "mcp__aefd6774-3826-44b9-9e16-2f8b622ce9bb__*",
       "Read(*)",
-      "Skill(*)"
+      "Skill(*)",
+      "WebFetch(domain:animejs.com)",
+      "WebFetch(domain:motionsites.ai)",
+      "WebFetch(domain:21st.dev)",
+      "WebFetch(domain:www.npmjs.com)",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "mcp__Claude_in_Chrome__select_browser",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__read_console_messages",
+      "mcp__Claude_in_Chrome__read_page",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__javascript_tool"
     ]
   }
 }

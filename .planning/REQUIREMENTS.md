@@ -1,54 +1,57 @@
-# FinCheck — Requirements
+# Requirements — FinCheck Redesign Visual
 
-## Functional Requirements
+## v1 Requirements
 
-### FR-01: Onboarding
-- Campo de texto para nome do negócio (obrigatório)
-- Dropdown para segmento: Restaurante, Varejo, Serviços, Indústria, Outro
-- Validação: não avança sem preencher ambos
+### DS — Design System
 
-### FR-02: Questionário (6 perguntas)
-| # | Campo | Título | Exemplo |
-|---|-------|--------|---------|
-| 1 | revenue | Quanto você faturou esse mês? | Soma de tudo que entrou no caixa com vendas |
-| 2 | cogs | Quanto gastou pra entregar seu produto/serviço? | Ingredientes, mercadoria, mão de obra direta |
-| 3 | fixedExpenses | Quais foram seus gastos fixos? | Aluguel, salários, contas de luz/internet |
-| 4 | cashBalance | Quanto sobrou no caixa no fim do mês? | O saldo atual da sua conta bancária |
-| 5 | debtPayment | Quanto paga de dívidas por mês? | Parcelas de empréstimo, financiamentos |
-| 6 | accountsReceivable | Tem clientes que ainda não pagaram? | Vendas feitas mas ainda não recebidas |
+- [ ] **DS-01**: Design system define tokens de cor navy+gold (CSS custom properties + Tailwind config)
+- [ ] **DS-02**: Tipografia Inter carrega via Google Fonts, aplicada globalmente com antialiasing
+- [ ] **DS-03**: Botões têm estados hover/active/disabled visualmente distintos com novo visual
+- [ ] **DS-04**: Cards usam nova paleta (borda sutil, sombra consistente, sem glass excessivo)
+- [ ] **DS-05**: Badges e pills seguem novo sistema de cores semânticas
 
-- Cada pergunta: 1 por tela, input numérico formatado em R$
-- Permite voltar à pergunta anterior
-- Pergunta 5 e 6 podem ser 0 (negócio sem dívidas/inadimplência)
+### LP — Landing Page
 
-### FR-03: Diagnóstico via IA
-- Enviado para Anthropic API após completar questionário
-- Streaming progressivo (o texto aparece enquanto é gerado)
-- 4 seções obrigatórias:
-  1. Resumo Executivo (com saúde: Crítica / Atenção / Estável / Saudável)
-  2. Pontos de Atenção (até 3 alertas)
-  3. O que está funcionando (até 2 pontos positivos)
-  4. Recomendações para essa semana (3 ações concretas)
-- Linguagem: sem jargão, tom encorajador e direto
+- [ ] **LP-01**: Hero exibe fundo animado "luz cortando névoa" (CSS keyframes, slate + raios dourados)
+- [x] **LP-02**: Headline "Seu negócio dá lucro de verdade?" aparece com animação staggered ao carregar
+- [x] **LP-03**: CTA principal responde ao hover/click com feedback visual satisfatório
+- [x] **LP-04**: Navbar fixa com liquid-glass, logo FinCheck, links e CTA
+- [ ] **LP-05**: Seção de pain points mostra dores do usuário de forma empática (não alarmante)
+- [ ] **LP-06**: Seção "Como funciona" (3 passos) com entrada animada ao scroll
+- [ ] **LP-07**: Seção de features (6 cards) com layout limpo e iconografia consistente
+- [ ] **LP-08**: FAQ com accordion animado
+- [ ] **LP-09**: Footer com links e info
 
-### FR-04: Chat Financeiro
-- Aberto após o diagnóstico
-- Histórico de mensagens visível
-- IA responde com contexto dos dados fornecidos
-- Sugestões de perguntas iniciais
+### FL — Fluxo Questionário
 
-## Non-Functional Requirements
+- [ ] **FL-01**: Cada pergunta tem entrada/saída animada (slide horizontal entre perguntas)
+- [ ] **FL-02**: Barra de progresso animada mostra avanço
+- [ ] **FL-03**: Submit transiciona para loading com animação (sem flash branco)
 
-### NFR-01: Performance
-- Diagnóstico começa a aparecer em < 3s após envio
-- Streaming suave, sem travamentos
+### DG — Tela Diagnóstico
 
-### NFR-02: UX / Design
-- Mobile-first (320px+)
-- Responsivo até desktop
-- Cores: azul escuro (#1e3a5f) + branco (#ffffff)
-- Sem login, zero fricção
+- [ ] **DG-01**: Valores financeiros animam de 0 ao valor real ao entrar na tela
+- [ ] **DG-02**: Seções do diagnóstico revelam progressivamente com stagger
+- [ ] **DG-03**: Cards de alerta têm animação de destaque diferenciada
 
-### NFR-03: Segurança
-- ANTHROPIC_API_KEY apenas no backend (nunca exposta ao frontend)
-- Nenhum dado do usuário é persistido
+## v2 (Deferred)
+
+- Modo escuro
+- Animações com GSAP para maior controle
+- Parallax no hero com mouse tracking
+- Micro-animações no chat da IA
+
+## Out of Scope
+
+- Mudanças no backend/API
+- Novo onboarding de usuário
+- Mobile app nativo
+
+## Traceability
+
+| Requirement | Phase |
+|-------------|-------|
+| DS-01 — DS-05 | Phase 1 |
+| LP-01 — LP-09 | Phase 2 |
+| FL-01 — FL-03 | Phase 3 |
+| DG-01 — DG-03 | Phase 4 |
