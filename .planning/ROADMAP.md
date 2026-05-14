@@ -11,7 +11,7 @@
 **Depends on**: —
 **Requirements**: DS-01, DS-02, DS-03, DS-04, DS-05
 **UI hint**: yes
-**Plans:** 2/2 plans complete
+**Plans:** 2/2 plans complete ✅
 **Success Criteria**:
   1. Tailwind config tem cores navy, gold, slate como tokens nomeados
   2. Inter carrega via Google Fonts sem fallback visível
@@ -20,14 +20,14 @@
 
 Plans:
 - [x] 01-01-PLAN.md — Add gold color scale (50–900) and shadow-gold to tailwind.config.js; verify Inter (DS-01, DS-02)
-- [ ] 01-02-PLAN.md — Add .btn-gold, .btn-navy-outline, .card-navy, .badge-gold to index.css (DS-03, DS-04, DS-05)
+- [x] 01-02-PLAN.md — Add .btn-gold, .btn-navy-outline, .card-navy, .badge-gold to index.css (DS-03, DS-04, DS-05)
 
 ### Phase 2: Landing Page
 **Goal**: Landing page completamente redesenhada — hero com fundo animado "luz cortando névoa", todas as seções com novo visual e animações Framer Motion que transmitem confiança e convidam ao diagnóstico
 **Depends on**: Phase 1
 **Requirements**: LP-01, LP-02, LP-03, LP-04, LP-05, LP-06, LP-07, LP-08, LP-09
 **UI hint**: yes
-**Plans:** 3 plans
+**Plans:** 1/3 plans complete
 **Success Criteria**:
   1. Hero exibe fundo animado (slate + raios dourados) sem piscar ao carregar
   2. Headline aparece com animação staggered character-by-character ou por linha
@@ -36,7 +36,7 @@ Plans:
   5. CTA principal tem feedback visual de hover/click satisfatório
 
 Plans:
-- [ ] 02-01-PLAN.md — Add glow-pulse keyframe to tailwind.config.js (LP-01)
+- [x] 02-01-PLAN.md — Add glow-pulse keyframe to tailwind.config.js (LP-01)
 - [ ] 02-02-PLAN.md — Rewrite Landing.jsx: shared utilities + Navbar + Hero (LP-02, LP-03, LP-04)
 - [ ] 02-03-PLAN.md — Complete Landing.jsx: Pain + Como Funciona + Features + FAQ + Footer (LP-05—LP-09)
 
@@ -68,7 +68,7 @@ Plans:
 
 | Phase | Plans Complete | Status |
 |-------|----------------|--------|
-| 1. Design System | 1/2 | In Progress |
-| 2. Landing Page | 0/3 | Planned |
+| 1. Design System | 2/2 | Complete |
+| 2. Landing Page | 1/3 | In Progress |
 | 3. Questionário | 0/TBD | Not started |
 | 4. Diagnóstico | 0/TBD | Not started |
