@@ -410,6 +410,7 @@ export default function App() {
               onBack={() => setStep(savedCompanies.length > 0 ? STEPS.PREVIOUS : STEPS.LANDING)}
               initialData={onboardingPrefill}
               user={user}
+              existingDiagnoses={companyDiagnoses}
             />
           )}
 

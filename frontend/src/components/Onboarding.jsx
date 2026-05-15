@@ -48,11 +48,18 @@ function currentMonthValue() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export default function Onboarding({ onComplete, onBack, initialData = null, user = null }) {
+function formatMonthLabel(monthKey) {
+  const [year, month] = monthKey.split('-');
+  return new Date(year, parseInt(month, 10) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+}
+
+export default function Onboarding({ onComplete, onBack, initialData = null, user = null, existingDiagnoses = [] }) {
   const [businessName, setBusinessName] = useState(initialData?.businessName || '');
   const [segment, setSegment] = useState(initialData?.segment || '');
   const [customSegment, setCustomSegment] = useState(initialData?.customSegment || '');
   const [referenceMonth, setReferenceMonth] = useState(currentMonthValue());
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
 
   const isReusingCompany = Boolean(initialData?.businessName && initialData?.segment);
 
@@ -63,11 +70,24 @@ export default function Onboarding({ onComplete, onBack, initialData = null, use
     setReferenceMonth(currentMonthValue());
   }, [initialData]);
 
+  function monthFromDiagnosis(d) {
+    if (d.financial_data?.referenceMonth) return d.financial_data.referenceMonth;
+    const date = new Date(d.created_at);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
     if (!businessName.trim() || !segment || !referenceMonth) return;
     if (segment === 'outro' && !customSegment.trim()) return;
-    onComplete({ businessName: businessName.trim(), segment, referenceMonth, customSegment: customSegment.trim() || null });
+    const data = { businessName: businessName.trim(), segment, referenceMonth, customSegment: customSegment.trim() || null };
+    const hasDuplicate = existingDiagnoses.some(d => monthFromDiagnosis(d) === referenceMonth);
+    if (hasDuplicate) {
+      setPendingData(data);
+      setShowDuplicateModal(true);
+      return;
+    }
+    onComplete(data);
   }
 
   const canProceed = businessName.trim().length > 0 && segment !== '' && referenceMonth !== ''
@@ -282,6 +302,33 @@ export default function Onboarding({ onComplete, onBack, initialData = null, use
           ? 'Diagnósticos salvos na sua conta para acompanhamento histórico'
           : 'Seus dados ficam só no seu navegador. Crie uma conta para salvar o histórico.'}
       </p>
+
+      {showDuplicateModal && pendingData && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-ink-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4 animate-slide-up">
+            <div>
+              <p className="text-base font-bold text-ink-900">Diagnóstico já existe</p>
+              <p className="text-sm text-ink-500 mt-1 leading-relaxed">
+                Já existe um diagnóstico de <span className="font-semibold text-ink-700">{formatMonthLabel(pendingData.referenceMonth)}</span> para esta empresa. Deseja substituir?
+              </p>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={() => { setShowDuplicateModal(false); onComplete(pendingData); }}
+                className="btn-primary"
+              >
+                Sim, substituir
+              </button>
+              <button
+                onClick={() => { setShowDuplicateModal(false); setPendingData(null); }}
+                className="btn-back"
+              >
+                Trocar o mês
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
