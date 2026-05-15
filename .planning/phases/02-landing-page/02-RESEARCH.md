@@ -53,7 +53,7 @@
 | LP-01 | Hero displays animated "luz cortando névoa" background (CSS keyframes, slate + gold rays) | D-01 to D-04 locked; `glow-pulse` keyframe to add in tailwind.config.js |
 | LP-02 | Headline "Seu negócio dá lucro de verdade?" appears with staggered animation on load | D-05/D-06 locked; `staggerContainer` + `fadeUp` variants already in Landing.jsx |
 | LP-03 | Primary CTA responds to hover/click with satisfying visual feedback | `btn-gold` class already in index.css; add `whileHover` + `whileTap` Framer Motion props |
-| LP-04 | Fixed navbar with liquid-glass, FinCheck logo, links and CTA | Pattern: `backdrop-blur-md bg-navy-950/80 border-b border-white/10 sticky top-0 z-50` |
+| LP-04 | Fixed navbar with liquid-glass, Fôlego Capital logo, links and CTA | Pattern: `backdrop-blur-md bg-navy-950/80 border-b border-white/10 sticky top-0 z-50` |
 | LP-05 | Pain points section shows user pains empathetically (not alarmingly) | `PAIN_POINTS` array preserved; update hover to gold tones |
 | LP-06 | "Como funciona" section (3 steps) with scroll-triggered entry animation | `STEPS_FLOW` preserved; `staggerContainer` + `whileInView` + `viewport={{ once: true }}` |
 | LP-07 | Features section (6 cards) with clean layout and consistent iconography | `FEATURES` array preserved; update `accent` classes from `money-*` to `gold-*` |

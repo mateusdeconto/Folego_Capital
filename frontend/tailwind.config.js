@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ===== FINCHECK DESIGN SYSTEM v3 =====
+        // ===== FÔLEGO CAPITAL DESIGN SYSTEM v3 =====
         // Palheta quente: parchment + verde-dinheiro + navy dark.
         // Diferenciada de todo SaaS genérico cold-gray.
 
@@ -22,7 +22,7 @@ export default {
           900: '#080604', // absolute dark
         },
 
-        // Verde-dinheiro — identidade FinCheck
+        // Verde-dinheiro — identidade Fôlego Capital
         money: {
           50:  '#EDFBF2',
           100: '#D3F5E1',

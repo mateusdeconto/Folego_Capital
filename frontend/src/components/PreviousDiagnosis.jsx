@@ -1,15 +1,7 @@
 function Logo() {
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="w-8 h-8 rounded-xl bg-money-500 flex items-center justify-center">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M7 5 V19 M7 5 H17" stroke="white" strokeWidth="2.8"
-            strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M7 12 H15" stroke="white" strokeWidth="2.8"
-            strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
-        </svg>
-      </div>
-      <span className="font-bold text-ink-800 text-[15px] tracking-tight">FinCheck</span>
+    <div className="flex items-center">
+      <img src="/folego-logo.png" alt="Fôlego Capital" className="h-9 w-auto" />
     </div>
   );
 }

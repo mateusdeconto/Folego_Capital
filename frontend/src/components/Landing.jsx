@@ -65,20 +65,10 @@ function ArrowRight({ size = 15 }) {
 }
 
 /* ── Logo ─────────────────────────────────────────────────── */
-function Logo({ dark = false }) {
+function Logo() {
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="w-8 h-8 rounded-xl bg-gold-500 flex items-center justify-center shadow-sm">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M7 5 V19 M7 5 H17" stroke="white" strokeWidth="2.8"
-            strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M7 12 H15" stroke="white" strokeWidth="2.8"
-            strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
-        </svg>
-      </div>
-      <span className={`font-bold text-[15px] tracking-tight ${dark ? 'text-white' : 'text-white'}`}>
-        FinCheck
-      </span>
+    <div className="flex items-center">
+      <img src="/folego-logo.png" alt="Fôlego Capital" className="h-10 w-auto" />
     </div>
   );
 }
@@ -116,7 +106,7 @@ function ReportCard({ cardStyle = {}, badgeStyle = {}, metricsStyle = {}, recoSt
             <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
             <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
             <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-            <span className="ml-2 text-[11px] text-white/30 font-mono">fincheck.ai/diagnóstico</span>
+            <span className="ml-2 text-[11px] text-white/30 font-mono">folegocapital.com.br/diagnóstico</span>
           </div>
           <p className="text-[11px] text-white/50 font-medium uppercase tracking-widest mb-1">
             Diagnóstico financeiro
@@ -191,7 +181,7 @@ function ReportCard({ cardStyle = {}, badgeStyle = {}, metricsStyle = {}, recoSt
   );
 }
 
-/* ── Mock do relatório — versão ERRO (Padaria do João sem FinCheck) ── */
+/* ── Mock do relatório — versão ERRO (Padaria do João sem Fôlego Capital) ── */
 function ReportCardError() {
   return (
     <div className="relative">
@@ -207,7 +197,7 @@ function ReportCardError() {
             <span className="w-3 h-3 rounded-full bg-red-500/60" />
             <span className="w-3 h-3 rounded-full bg-yellow-500/40" />
             <span className="w-3 h-3 rounded-full bg-white/10" />
-            <span className="ml-3 text-xs text-white/30 font-mono">fincheck.ai/diagnóstico</span>
+            <span className="ml-3 text-xs text-white/30 font-mono">folegocapital.com.br/diagnóstico</span>
           </div>
           <p className="text-xs text-white/50 font-medium uppercase tracking-widest mb-1">
             Diagnóstico financeiro
@@ -271,7 +261,7 @@ function ReportCardError() {
   );
 }
 
-/* ── Mock do relatório — versão SUCESSO (Padaria do João com FinCheck) ── */
+/* ── Mock do relatório — versão SUCESSO (Padaria do João com Fôlego Capital) ── */
 function ReportCardSuccess() {
   return (
     <div className="relative">
@@ -288,13 +278,13 @@ function ReportCardSuccess() {
             <span className="w-3 h-3 rounded-full bg-white/15" />
             <span className="w-3 h-3 rounded-full bg-white/15" />
             <span className="w-3 h-3 rounded-full bg-white/15" />
-            <span className="ml-3 text-xs text-white/30 font-mono">fincheck.ai/diagnóstico</span>
+            <span className="ml-3 text-xs text-white/30 font-mono">folegocapital.com.br/diagnóstico</span>
           </div>
           <p className="text-xs text-white/50 font-medium uppercase tracking-widest mb-1">
             Diagnóstico financeiro
           </p>
           <p className="text-xl font-bold text-white leading-tight">
-            Padaria do João <span className="text-gold-400 text-base font-semibold">com FinCheck ✓</span>
+            Padaria do João <span className="text-gold-400 text-base font-semibold">com Fôlego Capital ✓</span>
           </p>
         </div>
 
@@ -437,7 +427,7 @@ const FAQS = [
   },
   {
     q: 'Substitui meu contador?',
-    a: 'Não. Seu contador continua essencial pra impostos e estratégia de longo prazo. O FinCheck é gestão do dia a dia — pra você tomar decisões rápidas sem marcar reunião.',
+    a: 'Não. Seu contador continua essencial pra impostos e estratégia de longo prazo. O Fôlego Capital é gestão do dia a dia — pra você tomar decisões rápidas sem marcar reunião.',
   },
   {
     q: 'Pra que tipo de empresa serve?',
@@ -734,7 +724,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
                   </svg>
                 </div>
                 <p className="text-sm font-semibold text-white/80">
-                  Se marcou pelo menos um, é exatamente pra isso que o FinCheck existe.
+                  Se marcou pelo menos um, é exatamente pra isso que o Fôlego Capital existe.
                 </p>
               </div>
             </InView>
@@ -774,7 +764,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
-              A FinCheck vai
+              O Fôlego Capital vai
             </motion.p>
             <motion.p
               className="text-[3rem] sm:text-[4rem] md:text-[5rem] font-black text-gold-400 tracking-tighter leading-none mt-1"
@@ -794,16 +784,16 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
               viewport={{ once: true }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              O João não sabia que estava no vermelho. Com a FinCheck, ele descobriu — e virou o jogo.
+              O João não sabia que estava no vermelho. Com o Fôlego Capital, ele descobriu — e virou o jogo.
             </motion.p>
           </InView>
 
-          {/* Card de sucesso: Padaria do João com FinCheck */}
+          {/* Card de sucesso: Padaria do João com Fôlego Capital */}
           <InView delay={200} className="mt-14">
             <div className="relative max-w-lg mx-auto">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
                 <span className="bg-gold-500 text-navy-950 text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
-                  DRE · Padaria do João — Dessa vez com FinCheck
+                  DRE · Padaria do João — Dessa vez com Fôlego Capital
                 </span>
               </div>
               <div className="pt-6">
@@ -996,15 +986,15 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
             {/* Legal */}
             <div>
               <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-3">Contato</p>
-              <a href="mailto:finchecks@gmail.com"
+              <a href="mailto:folegocapital@gmail.com"
                 className="text-sm text-white/50 hover:text-white/80 underline underline-offset-2 transition-colors">
-                finchecks@gmail.com
+                folegocapital@gmail.com
               </a>
             </div>
           </div>
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/25">Feito pra empresas brasileiras · Dados salvos com segurança</p>
-            <p className="text-xs text-white/20">© {new Date().getFullYear()} FinCheck</p>
+            <p className="text-xs text-white/20">© {new Date().getFullYear()} Fôlego Capital</p>
           </div>
         </div>
       </footer>

@@ -1,7 +1,7 @@
 {
-  "name": "fincheck-backend",
+  "name": "folego-capital-backend",
   "version": "1.0.0",
-  "description": "Backend do FinCheck — diagnóstico financeiro para PMEs",
+  "description": "Backend do Fôlego Capital — diagnóstico financeiro para PMEs",
   "main": "server.js",
   "type": "module",
   "scripts": {

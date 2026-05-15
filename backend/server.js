@@ -144,7 +144,7 @@ if (distExists) {
   // Sem dist em prod → resposta clara em vez de erro confuso
   app.get('/', (_req, res) => {
     res.status(503).type('text/html').send(`
-      <h1>FinCheck — frontend não disponível</h1>
+      <h1>Fôlego Capital — frontend não disponível</h1>
       <p>O backend está rodando mas o frontend ainda não foi buildado.</p>
       <p>Confira <a href="/api/health">/api/health</a> pra ver o status.</p>
     `);
@@ -163,5 +163,5 @@ app.use((err, req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ FinCheck rodando em http://localhost:${PORT} [${isProd ? 'prod' : 'dev'}]`);
+  console.log(`✅ Fôlego Capital rodando em http://localhost:${PORT} [${isProd ? 'prod' : 'dev'}]`);
 });

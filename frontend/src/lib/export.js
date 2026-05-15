@@ -142,7 +142,7 @@ function addGlossarySheet(wb) {
 
   // Título
   merges.push({ s: { r, c: 0 }, e: { r, c: 2 } });
-  rows.push([{ v: 'Glossário Financeiro — FinCheck', s: S_GT }, { v: '', s: S_GT }, { v: '', s: S_GT }]);
+  rows.push([{ v: 'Glossário Financeiro — Fôlego Capital', s: S_GT }, { v: '', s: S_GT }, { v: '', s: S_GT }]);
   r++;
 
   merges.push({ s: { r, c: 0 }, e: { r, c: 2 } });
@@ -171,7 +171,7 @@ function addGlossarySheet(wb) {
   }
 
   rows.push([{ v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }]);
-  rows.push([{ v: 'Gerado pelo FinCheck', s: S_GF }, { v: '', s: {} }, { v: '', s: {} }]);
+  rows.push([{ v: 'Gerado pelo Fôlego Capital', s: S_GF }, { v: '', s: {} }, { v: '', s: {} }]);
 
   const ws = XLSXStyle.utils.aoa_to_sheet(rows);
   ws['!cols'] = [{ wch: 22 }, { wch: 52 }, { wch: 52 }];
@@ -302,7 +302,7 @@ export async function downloadDRE(entries, filename) {
     addRow('Contas a Receber', m.accountsReceivable, '', mp ? m.accountsReceivable - mp.accountsReceivable : null, true);
     addRow('Ponto de Equilíbrio', m.breakEven, 'Faturamento mínimo', mp ? m.breakEven - mp.breakEven : null, false);
     addBlank();
-    const footerRow = [c('Gerado pelo FinCheck', S.footer), c('', {}), c('', {})];
+    const footerRow = [c('Gerado pelo Fôlego Capital', S.footer), c('', {}), c('', {})];
     if (hasComp) footerRow.push(c('', {}));
     rows.push(footerRow);
 
@@ -394,7 +394,7 @@ export async function downloadPDF(businessData, diagnosisText, financialData) {
     </style>
     <div class="fc-pdf">
       <div class="header">
-        <div class="logo">FinCheck — Diagnóstico Financeiro</div>
+        <div class="logo">Fôlego Capital — Diagnóstico Financeiro</div>
         <h1>${escapeHtml(businessData.businessName)}</h1>
         <div class="meta">${escapeHtml(businessData.segment)} &nbsp;·&nbsp; ${escapeHtml(dateLabel)}</div>
         ${badgeHtml}
@@ -405,7 +405,7 @@ export async function downloadPDF(businessData, diagnosisText, financialData) {
         <div class="summary-card"><div class="label">Caixa</div><div class="value">${formatBRL(m.cashBalance)}</div></div>
       </div>
       <div class="content">${renderedHtml}</div>
-      <div class="footer">Gerado pelo FinCheck — diagnóstico financeiro para pequenas empresas brasileiras</div>
+      <div class="footer">Gerado pelo Fôlego Capital — diagnóstico financeiro para pequenas empresas brasileiras</div>
     </div>
   `;
   document.body.appendChild(container);

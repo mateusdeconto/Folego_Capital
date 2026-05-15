@@ -294,7 +294,7 @@ When App.jsx transitions from `LOADING` → `DIAGNOSIS` step, the entire Diagnos
 | Export loading (Excel) | "Gerando planilha…" |
 | Email sent confirmation | "Enviado para {email}" |
 | Screen title label | "Diagnóstico financeiro" (existing — keep) |
-| Footer tagline | "FinCheck — diagnóstico em linguagem de dono" (existing — keep) |
+| Footer tagline | "Fôlego Capital — diagnóstico em linguagem de dono" (existing — keep) |
 | Health badge — Saudável | "Saúde financeira: Saudável" + "Margem confortável e caixa positivo" |
 | Health badge — Estável | "Saúde financeira: Estável" + "Operação equilibrada" |
 | Health badge — Atenção | "Saúde financeira: Atenção" + "Indicadores precisam de cuidado" |

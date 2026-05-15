@@ -1,7 +1,7 @@
 {
-  "name": "fincheck-frontend",
+  "name": "folego-capital-frontend",
   "version": "1.0.0",
-  "description": "Frontend do FinCheck — diagnóstico financeiro para PMEs",
+  "description": "Frontend do Fôlego Capital — diagnóstico financeiro para PMEs",
   "type": "module",
   "scripts": {
     "dev": "vite",

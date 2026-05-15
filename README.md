@@ -1,11 +1,11 @@
-# FinCheck 💰
+# Fôlego Capital 💰
 
 Diagnóstico financeiro para pequenas empresas brasileiras. Responda 6 perguntas simples e receba uma análise completa da saúde financeira do seu negócio — em linguagem humana, sem jargão contábil.
 
 ## Estrutura do Projeto
 
 ```
-fincheck/
+folego-capital/
 ├── backend/          # API Node.js + Express
 │   ├── server.js     # Servidor principal
 │   └── routes/

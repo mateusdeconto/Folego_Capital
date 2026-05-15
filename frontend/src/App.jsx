@@ -51,7 +51,7 @@ const INITIAL_FINANCIAL = {
   investments: 0,
 };
 
-const SESSION_KEY = 'fincheck_active_session';
+const SESSION_KEY = 'folego_capital_active_session';
 
 function loadSession() { return readSession(SESSION_KEY, null); }
 function saveSession(state) { writeSession(SESSION_KEY, state); }
@@ -311,7 +311,7 @@ export default function App() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    removeKey('fincheck_history');
+    removeKey('folego_capital_history');
     handleRestart();
   }
 

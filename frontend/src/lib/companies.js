@@ -1,7 +1,7 @@
 import { supabase } from './supabase.js';
 import { readJSON, writeJSON } from './storage.js';
 
-const STORAGE_KEY = 'fincheck_saved_companies_v1';
+const STORAGE_KEY = 'folego_capital_saved_companies_v1';
 
 function normalizeText(value) {
   return String(value || '').trim().toLowerCase();

@@ -1,4 +1,4 @@
-# Roadmap: FinCheck Redesign Visual
+# Roadmap: Fôlego Capital Redesign Visual
 
 ## Milestones
 

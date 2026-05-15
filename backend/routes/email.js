@@ -59,7 +59,7 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
               <td>
                 <span style="display:inline-flex;align-items:center;gap:8px;">
                   <span style="display:inline-block;width:28px;height:28px;background:#111827;border:1.5px solid #374151;border-radius:6px;text-align:center;line-height:28px;font-weight:bold;font-size:14px;color:#10b981;">F</span>
-                  <span style="color:#ffffff;font-weight:700;font-size:16px;letter-spacing:-0.3px;">FinCheck</span>
+                  <span style="color:#ffffff;font-weight:700;font-size:16px;letter-spacing:-0.3px;">Fôlego Capital</span>
                 </span>
               </td>
               <td align="right">
@@ -116,7 +116,7 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
 
         <!-- Footer -->
         <tr><td style="padding:28px 32px;border-top:1px solid #f3f4f6;margin-top:24px;">
-          <p style="font-size:12px;color:#9ca3af;margin:0 0 4px;">Este relatório foi gerado automaticamente pelo FinCheck.</p>
+          <p style="font-size:12px;color:#9ca3af;margin:0 0 4px;">Este relatório foi gerado automaticamente pelo Fôlego Capital.</p>
           <p style="font-size:12px;color:#9ca3af;margin:0;">Dúvidas? Responda este e-mail ou acesse <a href="https://fincheck-production-94bb.up.railway.app" style="color:#6b7280;">fincheck-production-94bb.up.railway.app</a></p>
         </td></tr>
 
@@ -156,7 +156,7 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
     console.log('[email] enviando para:', toEmail);
 
     const { error } = await resend.emails.send({
-      from: 'FinCheck <onboarding@resend.dev>',
+      from: 'Fôlego Capital <onboarding@resend.dev>',
       to: toEmail,
       subject: `Diagnóstico financeiro — ${businessData.businessName.replace(/[\r\n]/g, ' ')} · ${month}`,
       html: buildEmailHtml({ businessData, financialData, diagnosis, metrics }),

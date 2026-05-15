@@ -1,12 +1,12 @@
-# FinCheck — Redesign Visual Completo
+# Fôlego Capital — Redesign Visual Completo
 
 ## What This Is
 
-Redesign completo da interface do FinCheck — diagnóstico financeiro para PMEs brasileiras. O produto existe e funciona (MVP em produção no Railway), mas o design atual parece genérico/IA, afastando clientes. O objetivo é criar uma identidade visual premium e única.
+Redesign completo da interface do Fôlego Capital — diagnóstico financeiro para PMEs brasileiras. O produto existe e funciona (MVP em produção no Railway), mas o design atual parece genérico/IA, afastando clientes. O objetivo é criar uma identidade visual premium e única.
 
 ## Core Value
 
-O usuário dono de PME abre o site, **sente confiança imediata** e **enxerga possibilidade** — não medo. Entende em segundos que o FinCheck vai clarear o que ele não enxerga nos próprios números. Clica no CTA sem hesitar.
+O usuário dono de PME abre o site, **sente confiança imediata** e **enxerga possibilidade** — não medo. Entende em segundos que o Fôlego Capital vai clarear o que ele não enxerga nos próprios números. Clica no CTA sem hesitar.
 
 ## Context
 

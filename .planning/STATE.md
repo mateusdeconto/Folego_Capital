@@ -11,7 +11,7 @@ progress:
   completed_plans: 8
 ---
 
-# State — FinCheck Redesign
+# State — Fôlego Capital Redesign
 
 ## Status
 

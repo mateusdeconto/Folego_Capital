@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { writeSession, readSession, removeSession } from '../lib/storage.js';
 import { SECTOR_BENCHMARKS } from './Onboarding.jsx';
 
-const DRAFT_KEY = 'fincheck_questionnaire_draft';
+const DRAFT_KEY = 'folego_capital_questionnaire_draft';
 
 // Cada pergunta tem: campo, tipo, narrativa de capítulo, título, helper.
 // As "phases" agrupam perguntas em capítulos visíveis no painel lateral.

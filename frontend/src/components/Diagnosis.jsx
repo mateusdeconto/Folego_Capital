@@ -114,7 +114,7 @@ function buildWhatsAppMessage(businessData, financialData, diagnosis, metrics, h
   const rec    = extractFirstRecommendation(diagnosis);
 
   const lines = [
-    `*Diagnóstico FinCheck — ${businessData.businessName}*`,
+    `*Diagnóstico Fôlego Capital — ${businessData.businessName}*`,
     `${today}`,
     ``,
     `*Saúde:* ${status}`,
@@ -943,7 +943,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         )}
       </motion.div>
 
-      <p className="text-center text-xs text-ink-400 pb-4">FinCheck — diagnóstico em linguagem de dono</p>
+      <p className="text-center text-xs text-ink-400 pb-4">Fôlego Capital — diagnóstico em linguagem de dono</p>
 
       {showCorrect && onCorrectData && (
         <CorrectDataModal

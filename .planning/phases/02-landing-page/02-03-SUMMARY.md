@@ -71,7 +71,7 @@ completed: 2026-05-14
 - Features section: 6 `card-navy` cards in responsive 3-column grid with dynamic `f.accent` icon backgrounds
 - FAQ section: `FAQS.map` delegating to existing `FaqItem` with `AnimatePresence` height animation accordion
 - CTA Final: centered glow-pulse orb (reuses Hero pattern), `btn-gold`, navy-950 background
-- Footer: Logo, tagline per Copywriting Contract, product nav, `finchecks@gmail.com` contact, copyright year
+- Footer: Logo, tagline per Copywriting Contract, product nav, `folegocapital@gmail.com` contact, copyright year
 
 ## Task Commits
 

@@ -1,4 +1,4 @@
-# Requirements — FinCheck Redesign Visual
+# Requirements — Fôlego Capital Redesign Visual
 
 ## v1 Requirements
 
@@ -15,7 +15,7 @@
 - [ ] **LP-01**: Hero exibe fundo animado "luz cortando névoa" (CSS keyframes, slate + raios dourados)
 - [x] **LP-02**: Headline "Seu negócio dá lucro de verdade?" aparece com animação staggered ao carregar
 - [x] **LP-03**: CTA principal responde ao hover/click com feedback visual satisfatório
-- [x] **LP-04**: Navbar fixa com liquid-glass, logo FinCheck, links e CTA
+- [x] **LP-04**: Navbar fixa com liquid-glass, logo Fôlego Capital, links e CTA
 - [x] **LP-05**: Seção de pain points mostra dores do usuário de forma empática (não alarmante)
 - [x] **LP-06**: Seção "Como funciona" (3 passos) com entrada animada ao scroll
 - [x] **LP-07**: Seção de features (6 cards) com layout limpo e iconografia consistente

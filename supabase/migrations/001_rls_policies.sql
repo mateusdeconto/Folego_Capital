@@ -1,4 +1,4 @@
--- FinCheck — RLS policies obrigatórias
+-- Fôlego Capital — RLS policies obrigatórias
 -- Executar no Supabase SQL Editor ou via supabase db push
 
 -- ============================================================

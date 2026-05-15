@@ -18,7 +18,7 @@ export default function UpgradeModal({ onClose }) {
       >
         {/* Header */}
         <div className="bg-ink-900 px-6 py-5 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-ink-400 mb-1">FinCheck</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-ink-400 mb-1">Fôlego Capital</p>
           <h2 className="text-2xl font-bold text-white tracking-tight">Versão Pro</h2>
           <p className="text-sm text-ink-300 mt-1">Tudo que você precisa para crescer com clareza</p>
         </div>
