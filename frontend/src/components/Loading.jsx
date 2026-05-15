@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase.js';
 
 const LOADING_MESSAGES = [
@@ -127,42 +128,50 @@ export default function Loading({ businessData, financialData, accessToken, onCo
 
   if (countdown !== null) {
     return (
-      <div className="card p-8 text-center animate-fade-in">
-        <div className="mx-auto w-12 h-12 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center mb-5">
-          <svg className="w-5 h-5 text-amber-600 animate-pulse-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <motion.div
+        className="rounded-2xl p-8 text-center border border-white/10"
+        style={{ background: '#253d63' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-5 border" style={{ background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.2)' }}>
+          <svg className="w-5 h-5 text-amber-400 animate-pulse-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-lg font-bold text-ink-800 mb-2">A IA está sobrecarregada</h2>
-        <p className="text-ink-500 text-sm mb-6 leading-relaxed">
+        <h2 className="text-lg font-bold text-white mb-2">A IA está sobrecarregada</h2>
+        <p className="text-white/50 text-sm mb-6 leading-relaxed">
           Muita gente usando agora. Tentando novamente em…
         </p>
-        <div className="w-14 h-14 rounded-full border-2 border-ink-200 flex items-center justify-center mx-auto mb-6">
-          <span className="text-xl font-bold text-ink-700 font-mono">{countdown}</span>
+        <div className="w-14 h-14 rounded-full border-2 flex items-center justify-center mx-auto mb-6" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
+          <span className="text-xl font-bold text-white font-mono">{countdown}</span>
         </div>
         <button onClick={() => { setCountdown(null); fetchDiagnosis(); }} className="btn-back">
           Tentar agora
         </button>
-      </div>
+      </motion.div>
     );
   }
 
   if (error) {
     const overloaded = isOverloadedMsg(error);
     return (
-      <div className="card p-8 text-center animate-fade-in">
-        <div className="mx-auto w-12 h-12 rounded-full bg-loss-50 border border-loss-100 flex items-center justify-center mb-5">
-          <svg className="w-5 h-5 text-loss-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <motion.div
+        className="rounded-2xl p-8 text-center border border-white/10"
+        style={{ background: '#253d63' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-5 border" style={{ background: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)' }}>
+          <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
         </div>
-        <h2 className="text-lg font-bold text-ink-800 mb-2">
+        <h2 className="text-lg font-bold text-white mb-2">
           {overloaded ? 'IA temporariamente indisponível' : 'Algo deu errado'}
         </h2>
-        <p className="text-ink-500 text-sm mb-6 leading-relaxed">
-          {overloaded
-            ? 'A IA está com alta demanda agora. Aguarde alguns segundos.'
-            : error}
+        <p className="text-white/50 text-sm mb-6 leading-relaxed">
+          {overloaded ? 'A IA está com alta demanda agora. Aguarde alguns segundos.' : error}
         </p>
         <button onClick={() => { autoRetryCount.current = 0; fetchDiagnosis(); }} className="btn-primary">
           Tentar novamente
@@ -170,47 +179,70 @@ export default function Loading({ businessData, financialData, accessToken, onCo
         <button onClick={onError} className="btn-back mt-2.5">
           Voltar ao formulário
         </button>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="card p-10 text-center animate-fade-in">
-      <div className="flex justify-center mb-7">
+    <motion.div
+      className="rounded-2xl p-10 text-center border border-white/10"
+      style={{ background: '#253d63' }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* Gold spinner */}
+      <div className="flex justify-center mb-8">
         <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-2 border-ink-100" />
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-money-500 animate-spin" />
-          {/* Inner dot */}
+          <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-gold-400 animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-4 h-4 rounded-full bg-money-100 flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-money-500" />
+            <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.2)' }}>
+              <div className="w-2 h-2 rounded-full bg-gold-500" />
             </div>
           </div>
         </div>
       </div>
 
-      <p className="text-[11px] font-bold text-money-600 uppercase tracking-widest mb-2">
+      {/* Business name */}
+      <p className="text-[11px] font-bold text-gold-400 uppercase tracking-widest mb-3">
         {businessData.businessName}
       </p>
 
-      <h2 className="text-xl font-bold text-ink-800 mb-3 min-h-[56px] tracking-tight">
-        {LOADING_MESSAGES[messageIndex]}
-      </h2>
+      {/* Animated message — AnimatePresence fade */}
+      <div className="relative min-h-[56px] flex items-center justify-center mb-3">
+        <AnimatePresence mode="wait">
+          <motion.h2
+            key={messageIndex}
+            className="text-xl font-bold text-white tracking-tight"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            {LOADING_MESSAGES[messageIndex]}
+          </motion.h2>
+        </AnimatePresence>
+      </div>
 
-      <p className="text-ink-400 text-sm">
+      <p className="text-white/40 text-sm mb-8">
         Analisando seus números — leva alguns segundos.
       </p>
 
-      <div className="flex justify-center gap-1.5 mt-7">
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-1.5">
         {LOADING_MESSAGES.map((_, i) => (
-          <div
+          <motion.div
             key={i}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              i === messageIndex ? 'bg-money-500 w-5' : 'bg-ink-200 w-1.5'
-            }`}
+            animate={{
+              width: i === messageIndex ? 20 : 6,
+              backgroundColor: i === messageIndex ? '#F59E0B' : 'rgba(255,255,255,0.15)',
+            }}
+            transition={{ duration: 0.3 }}
+            className="h-1 rounded-full"
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
