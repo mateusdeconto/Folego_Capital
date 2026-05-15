@@ -1,34 +1,41 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { readSession, writeSession, removeSession } from './lib/storage.js';
+import { readSession, writeSession, removeSession, removeKey } from './lib/storage.js';
 import { supabase } from './lib/supabase.js';
-import { saveDiagnosis, loadLastDiagnosis, loadAllDiagnoses } from './lib/diagnoses.js';
+import { saveDiagnosis, loadAllDiagnoses } from './lib/diagnoses.js';
 import { loadUserPlan } from './lib/plans.js';
+import {
+  loadSavedCompanies,
+  mergeCompanies,
+  recordsForCompany,
+  saveCompanyProfile,
+  syncLegacyCompaniesToSupabase,
+} from './lib/companies.js';
 
 import Landing from './components/Landing.jsx';
 import Onboarding from './components/Onboarding.jsx';
 import Auth from './components/Auth.jsx';
-import PreviousDiagnosis from './components/PreviousDiagnosis.jsx';
+import CompanySelector from './components/CompanySelector.jsx';
 import History from './components/History.jsx';
 import Comparison from './components/Comparison.jsx';
 
-const Questionnaire    = lazy(() => import('./components/Questionnaire.jsx'));
-const Loading          = lazy(() => import('./components/Loading.jsx'));
-const Diagnosis        = lazy(() => import('./components/Diagnosis.jsx'));
-const Chat             = lazy(() => import('./components/Chat.jsx'));
-const MonthlyTracking  = lazy(() => import('./components/MonthlyTracking.jsx'));
+const Questionnaire = lazy(() => import('./components/Questionnaire.jsx'));
+const Loading = lazy(() => import('./components/Loading.jsx'));
+const Diagnosis = lazy(() => import('./components/Diagnosis.jsx'));
+const Chat = lazy(() => import('./components/Chat.jsx'));
+const MonthlyTracking = lazy(() => import('./components/MonthlyTracking.jsx'));
 
 const STEPS = {
-  LANDING:       'landing',
-  AUTH:          'auth',
-  PREVIOUS:      'previous',
-  ONBOARDING:    'onboarding',
+  LANDING: 'landing',
+  AUTH: 'auth',
+  PREVIOUS: 'previous',
+  ONBOARDING: 'onboarding',
   QUESTIONNAIRE: 'questionnaire',
-  LOADING:       'loading',
-  DIAGNOSIS:     'diagnosis',
-  HISTORY:       'history',
-  COMPARISON:    'comparison',
-  CHAT:          'chat',
-  TRACKING:      'tracking',
+  LOADING: 'loading',
+  DIAGNOSIS: 'diagnosis',
+  HISTORY: 'history',
+  COMPARISON: 'comparison',
+  CHAT: 'chat',
+  TRACKING: 'tracking',
 };
 
 const INITIAL_FINANCIAL = {
@@ -59,31 +66,43 @@ function FullScreenSpinner() {
 
 const WIDTH_BY_STEP = {
   questionnaire: 'w-full max-w-5xl',
-  diagnosis:     'w-full max-w-2xl',
-  history:       'w-full max-w-2xl',
-  comparison:    'w-full max-w-2xl',
-  default:       'w-full max-w-lg',
+  diagnosis: 'w-full max-w-2xl',
+  history: 'w-full max-w-2xl',
+  previous: 'w-full max-w-2xl',
+  comparison: 'w-full max-w-2xl',
+  default: 'w-full max-w-lg',
 };
 
+function toBusinessDataFromRecord(record) {
+  return {
+    businessName: record.business_name,
+    segment: record.segment,
+    customSegment: record.financial_data?._customSegment || null,
+  };
+}
+
 export default function App() {
+  const initial = loadSession();
+
   const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
-
-  const initial = loadSession();
-  const [step, setStep]                   = useState(initial?.step || STEPS.LANDING);
-  const [businessData, setBusinessData]   = useState(initial?.businessData || { businessName: '', segment: '' });
+  const [step, setStep] = useState(initial?.step || STEPS.LANDING);
+  const [businessData, setBusinessData] = useState(initial?.businessData || { businessName: '', segment: '' });
   const [financialData, setFinancialData] = useState(initial?.financialData || INITIAL_FINANCIAL);
-  const [diagnosis, setDiagnosis]         = useState(initial?.diagnosis || '');
+  const [diagnosis, setDiagnosis] = useState('');
   const [initialValues, setInitialValues] = useState(null);
+  const [allDiagnoses, setAllDiagnoses] = useState([]);
+  const [savedCompanies, setSavedCompanies] = useState([]);
+  const [activeCompany, setActiveCompany] = useState(initial?.businessData?.businessName ? initial.businessData : null);
+  const [onboardingPrefill, setOnboardingPrefill] = useState(initial?.businessData?.businessName ? initial.businessData : null);
+  const [comparisonPair, setComparisonPair] = useState(null);
+  const [chatOrigin, setChatOrigin] = useState(STEPS.DIAGNOSIS);
+  const [trackingOrigin, setTrackingOrigin] = useState(STEPS.DIAGNOSIS);
+  const [plan, setPlan] = useState('free');
+  const [macroData, setMacroData] = useState(null);
 
-  const [previousRecord, setPreviousRecord]   = useState(null);
-  const [allDiagnoses, setAllDiagnoses]       = useState([]);
-  const [comparisonPair, setComparisonPair]   = useState(null);
-  const [chatOrigin, setChatOrigin]           = useState(STEPS.DIAGNOSIS);
-  const [trackingOrigin, setTrackingOrigin]   = useState(STEPS.DIAGNOSIS);
-  const [plan, setPlan]                       = useState('free');
-  const [macroData, setMacroData]             = useState(null);
+  const companyDiagnoses = recordsForCompany(allDiagnoses, activeCompany);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
@@ -111,25 +130,41 @@ export default function App() {
   async function handleUserLoggedIn(loggedUser, currentStep) {
     loadUserPlan(loggedUser.id).then(setPlan);
 
+    const records = await loadAllDiagnoses(loggedUser.id);
+    const syncedCompanies = await syncLegacyCompaniesToSupabase(loggedUser.id);
+    const mergedCompanies = mergeCompanies(syncedCompanies, records);
+
+    setAllDiagnoses(records);
+    setSavedCompanies(mergedCompanies);
+
     const inProgress = currentStep && ![STEPS.LANDING, STEPS.AUTH, STEPS.PREVIOUS].includes(currentStep);
     if (inProgress) {
-      loadAllDiagnoses(loggedUser.id).then(setAllDiagnoses);
+      if (initial?.businessData?.businessName) {
+        setActiveCompany(initial.businessData);
+        setOnboardingPrefill(initial.businessData);
+      }
       return;
     }
 
-    const record = await loadLastDiagnosis(loggedUser.id);
-    if (record) {
-      setPreviousRecord(record);
+    if (mergedCompanies.length > 0) {
+      setActiveCompany(mergedCompanies[0]);
+      setOnboardingPrefill(mergedCompanies[0]);
       setStep(STEPS.PREVIOUS);
-      loadAllDiagnoses(loggedUser.id).then(setAllDiagnoses);
-    } else {
-      setStep(STEPS.ONBOARDING);
+      return;
     }
+
+    setActiveCompany(null);
+    setOnboardingPrefill(null);
+    setStep(STEPS.ONBOARDING);
   }
 
   useEffect(() => {
-    if (step === STEPS.LANDING) { removeSession(SESSION_KEY); return; }
-    saveSession({ step, businessData, financialData, diagnosis });
+    if (step === STEPS.LANDING) {
+      removeSession(SESSION_KEY);
+      return;
+    }
+
+    saveSession({ step, businessData, financialData });
   }, [step, businessData, financialData, diagnosis]);
 
   async function handleAuthComplete(session) {
@@ -138,15 +173,81 @@ export default function App() {
     await handleUserLoggedIn(session.user, null);
   }
 
-  function handleViewPrevious() {
-    if (!previousRecord) return;
-    setBusinessData({ businessName: previousRecord.business_name, segment: previousRecord.segment });
-    setFinancialData(previousRecord.financial_data);
-    setDiagnosis(previousRecord.diagnosis_text);
+  function syncCompanyState(company) {
+    setActiveCompany(company);
+    setOnboardingPrefill(company);
+  }
+
+  function handleViewPrevious(company = activeCompany) {
+    const latestRecord = recordsForCompany(allDiagnoses, company)[0];
+    if (!latestRecord) return;
+
+    syncCompanyState(company);
+    setBusinessData(toBusinessDataFromRecord(latestRecord));
+    setFinancialData(latestRecord.financial_data);
+    setDiagnosis(latestRecord.diagnosis_text);
     setStep(STEPS.DIAGNOSIS);
   }
 
-  function handleOnboardingComplete(data) {
+  function handleUseCompany(company) {
+    syncCompanyState(company);
+    setBusinessData({
+      businessName: company.businessName,
+      segment: company.segment,
+      customSegment: company.customSegment || null,
+    });
+    setInitialValues(null);
+    setDiagnosis('');
+    setFinancialData(INITIAL_FINANCIAL);
+    setStep(STEPS.ONBOARDING);
+  }
+
+  function handleCreateAnotherCompany() {
+    setActiveCompany(null);
+    setOnboardingPrefill(null);
+    setBusinessData({ businessName: '', segment: '' });
+    setInitialValues(null);
+    setDiagnosis('');
+    setFinancialData(INITIAL_FINANCIAL);
+    setStep(STEPS.ONBOARDING);
+  }
+
+  function getCompanySummary(company) {
+    const records = recordsForCompany(allDiagnoses, company);
+    const latest = records[0] || null;
+
+    return {
+      latestRecord: latest,
+      recordsCount: records.length,
+      lastCreatedAt: latest?.created_at || company.updatedAt || company.createdAt || null,
+      lastReferenceMonth: latest?.financial_data?.referenceMonth || null,
+    };
+  }
+
+  function handleOpenHistory(company = activeCompany) {
+    if (!company) return;
+    syncCompanyState(company);
+    setStep(STEPS.HISTORY);
+  }
+
+  function handleOpenTracking(company = activeCompany, origin = STEPS.HISTORY) {
+    const latestRecord = recordsForCompany(allDiagnoses, company)[0];
+    if (!latestRecord) return;
+
+    syncCompanyState(company);
+    setBusinessData(toBusinessDataFromRecord(latestRecord));
+    setFinancialData(latestRecord.financial_data);
+    setTrackingOrigin(origin);
+    setStep(STEPS.TRACKING);
+  }
+
+  async function handleOnboardingComplete(data) {
+    if (user) {
+      const updatedCompanies = await saveCompanyProfile(user.id, data);
+      setSavedCompanies(mergeCompanies(updatedCompanies, allDiagnoses));
+    }
+
+    syncCompanyState(data);
     setBusinessData(data);
     setStep(STEPS.QUESTIONNAIRE);
   }
@@ -166,11 +267,13 @@ export default function App() {
     setDiagnosis(text);
     if (macro) setMacroData(macro);
     setStep(STEPS.DIAGNOSIS);
+
     if (user) {
       await saveDiagnosis({ userId: user.id, businessData, financialData, diagnosisText: text });
-      // Recarrega histórico completo após salvar
       const updated = await loadAllDiagnoses(user.id);
       setAllDiagnoses(updated);
+      const currentCompanies = await loadSavedCompanies(user.id);
+      setSavedCompanies(mergeCompanies(currentCompanies, updated));
     }
   }
 
@@ -181,7 +284,8 @@ export default function App() {
     setFinancialData(INITIAL_FINANCIAL);
     setDiagnosis('');
     setInitialValues(null);
-    setPreviousRecord(null);
+    setActiveCompany(null);
+    setOnboardingPrefill(null);
   }
 
   function handleRefill(prevEntry) {
@@ -192,11 +296,9 @@ export default function App() {
   }
 
   function handleSelectFromHistory(record) {
-    setBusinessData({
-      businessName: record.business_name,
-      segment: record.segment,
-      customSegment: record.financial_data?._customSegment || null,
-    });
+    const company = toBusinessDataFromRecord(record);
+    syncCompanyState(company);
+    setBusinessData(company);
     setFinancialData(record.financial_data);
     setDiagnosis(record.diagnosis_text);
     setStep(STEPS.DIAGNOSIS);
@@ -209,6 +311,7 @@ export default function App() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
+    removeKey('fincheck_history');
     handleRestart();
   }
 
@@ -217,21 +320,22 @@ export default function App() {
   const noHeader = [STEPS.AUTH, STEPS.PREVIOUS, STEPS.LANDING];
 
   return (
-    <div className={
-      step === STEPS.LANDING
-        ? ''
-        : [STEPS.QUESTIONNAIRE, STEPS.LOADING].includes(step)
-          ? 'min-h-screen flex items-start sm:items-center justify-center p-4 py-8'
-          : 'min-h-screen flex items-start sm:items-center justify-center p-4 py-8 bg-ink-50'
-    }
-    style={[STEPS.QUESTIONNAIRE, STEPS.LOADING].includes(step) ? { background: '#1e3050' } : {}}
+    <div
+      className={
+        step === STEPS.LANDING
+          ? ''
+          : [STEPS.QUESTIONNAIRE, STEPS.LOADING].includes(step)
+            ? 'min-h-screen flex items-start sm:items-center justify-center p-4 py-8'
+            : 'min-h-screen flex items-start sm:items-center justify-center p-4 py-8 bg-ink-50'
+      }
+      style={[STEPS.QUESTIONNAIRE, STEPS.LOADING].includes(step) ? { background: '#1e3050' } : {}}
     >
       {step === STEPS.LANDING && (
         <Landing
-          onEnter={() => setStep(user ? STEPS.ONBOARDING : STEPS.AUTH)}
+          onEnter={() => setStep(user ? (savedCompanies.length > 0 ? STEPS.PREVIOUS : STEPS.ONBOARDING) : STEPS.AUTH)}
           user={user}
           plan={plan}
-          onHistory={allDiagnoses.length > 0 && plan === 'paid' ? () => setStep(STEPS.HISTORY) : null}
+          onHistory={allDiagnoses.length > 0 && plan === 'paid' ? () => setStep(STEPS.PREVIOUS) : null}
         />
       )}
 
@@ -242,13 +346,13 @@ export default function App() {
             <div className="flex items-center gap-2">
               {step !== STEPS.HISTORY && allDiagnoses.length > 0 && plan === 'paid' && (
                 <button
-                  onClick={() => setStep(STEPS.HISTORY)}
+                  onClick={() => setStep(STEPS.PREVIOUS)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-ink-700 bg-white border border-ink-200 rounded-lg hover:bg-ink-50 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Histórico
+                  Empresas
                 </button>
               )}
               <button
@@ -266,30 +370,28 @@ export default function App() {
             <Auth onComplete={handleAuthComplete} />
           )}
 
-          {step === STEPS.PREVIOUS && previousRecord && (
-            <PreviousDiagnosis
-              record={previousRecord}
-              onView={handleViewPrevious}
-              onNew={() => setStep(STEPS.ONBOARDING)}
-              onHistory={allDiagnoses.length > 0 && plan === 'paid' ? () => setStep(STEPS.HISTORY) : null}
+          {step === STEPS.PREVIOUS && savedCompanies.length > 0 && (
+            <CompanySelector
+              companies={savedCompanies}
+              plan={plan}
+              getSummary={getCompanySummary}
+              onUseCompany={handleUseCompany}
+              onViewLatest={handleViewPrevious}
+              onViewHistory={handleOpenHistory}
+              onCreateAnother={handleCreateAnotherCompany}
               onLogout={handleLogout}
             />
           )}
 
           {step === STEPS.HISTORY && (
             <History
-              records={allDiagnoses}
+              records={companyDiagnoses}
+              companyName={activeCompany?.businessName || null}
               onSelect={handleSelectFromHistory}
               onCompare={handleCompare}
-              onNewAnalysis={() => setStep(STEPS.ONBOARDING)}
-              onOpenTracking={allDiagnoses.length > 0 ? () => {
-                const latest = allDiagnoses[0];
-                setBusinessData({ businessName: latest.business_name, segment: latest.segment });
-                setFinancialData(latest.financial_data);
-                setTrackingOrigin(STEPS.HISTORY);
-                setStep(STEPS.TRACKING);
-              } : null}
-              onBack={() => setStep(STEPS.DIAGNOSIS)}
+              onNewAnalysis={() => handleUseCompany(activeCompany)}
+              onOpenTracking={companyDiagnoses.length > 0 ? () => handleOpenTracking(activeCompany, STEPS.HISTORY) : null}
+              onBack={() => setStep(STEPS.PREVIOUS)}
             />
           )}
 
@@ -305,7 +407,9 @@ export default function App() {
           {step === STEPS.ONBOARDING && (
             <Onboarding
               onComplete={handleOnboardingComplete}
-              onBack={() => setStep(STEPS.LANDING)}
+              onBack={() => setStep(savedCompanies.length > 0 ? STEPS.PREVIOUS : STEPS.LANDING)}
+              initialData={onboardingPrefill}
+              user={user}
             />
           )}
 
@@ -333,13 +437,14 @@ export default function App() {
               businessData={businessData}
               financialData={financialData}
               diagnosis={diagnosis}
-              allDiagnoses={allDiagnoses}
+              allDiagnoses={companyDiagnoses}
               plan={plan}
               user={user}
+              accessToken={accessToken}
               macroData={macroData}
               onOpenChat={() => { setChatOrigin(STEPS.DIAGNOSIS); setStep(STEPS.CHAT); }}
-              onOpenTracking={() => { setTrackingOrigin(STEPS.DIAGNOSIS); setStep(STEPS.TRACKING); }}
-              onOpenHistory={allDiagnoses.length > 0 ? () => setStep(STEPS.HISTORY) : null}
+              onOpenTracking={() => handleOpenTracking(activeCompany, STEPS.DIAGNOSIS)}
+              onOpenHistory={companyDiagnoses.length > 0 ? () => setStep(STEPS.PREVIOUS) : null}
               onCorrectData={handleCorrectData}
               onRestart={handleRestart}
             />
@@ -359,7 +464,7 @@ export default function App() {
               businessData={businessData}
               financialData={financialData}
               diagnosis={diagnosis}
-              allDiagnoses={allDiagnoses}
+              allDiagnoses={companyDiagnoses}
               comparisonPair={comparisonPair}
               accessToken={accessToken}
               onBack={() => setStep(chatOrigin)}

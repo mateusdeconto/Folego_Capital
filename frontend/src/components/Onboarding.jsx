@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export const SECTOR_BENCHMARKS = {
   restaurante: { grossMargin: [55, 70], netMargin: [3, 9],  cmvPct: [30, 40], tip: 'Controle de CMV (custo dos insumos) é o que define lucro no setor. Ideal: CMV abaixo de 35%.' },
@@ -50,11 +50,18 @@ function currentMonthValue() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export default function Onboarding({ onComplete, onBack }) {
-  const [businessName, setBusinessName] = useState('');
-  const [segment, setSegment] = useState('');
-  const [customSegment, setCustomSegment] = useState('');
+export default function Onboarding({ onComplete, onBack, initialData = null, user = null }) {
+  const [businessName, setBusinessName] = useState(initialData?.businessName || '');
+  const [segment, setSegment] = useState(initialData?.segment || '');
+  const [customSegment, setCustomSegment] = useState(initialData?.customSegment || '');
   const [referenceMonth, setReferenceMonth] = useState(currentMonthValue());
+
+  useEffect(() => {
+    setBusinessName(initialData?.businessName || '');
+    setSegment(initialData?.segment || '');
+    setCustomSegment(initialData?.customSegment || '');
+    setReferenceMonth(currentMonthValue());
+  }, [initialData]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -260,7 +267,9 @@ export default function Onboarding({ onComplete, onBack }) {
       </div>
 
       <p className="text-center text-xs text-ink-400 mt-5">
-        Seus dados ficam só no seu navegador
+        {user
+          ? 'Diagnósticos salvos na sua conta para acompanhamento histórico'
+          : 'Seus dados ficam só no seu navegador — crie uma conta para salvar o histórico'}
       </p>
     </div>
   );

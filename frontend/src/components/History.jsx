@@ -3,10 +3,10 @@ import { calcMetrics, formatBRL } from '../lib/metrics.js';
 import { downloadDRE, downloadPDF, recordToEntry, formatReferenceMonth } from '../lib/export.js';
 
 const HEALTH_MAP = {
-  'Saudável': { label: 'Saudável', dot: 'bg-money-500', text: 'text-money-700', bg: 'bg-money-50 border-money-200' },
-  'Estável':  { label: 'Estável',  dot: 'bg-brand-500', text: 'text-brand-700', bg: 'bg-brand-50 border-brand-200' },
-  'Atenção':  { label: 'Atenção',  dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
-  'Crítica':  { label: 'Crítica',  dot: 'bg-loss-500',  text: 'text-loss-700',  bg: 'bg-loss-50 border-loss-200'  },
+  Saudável: { label: 'Saudável', dot: 'bg-money-500', text: 'text-money-700', bg: 'bg-money-50 border-money-200' },
+  Estável: { label: 'Estável', dot: 'bg-brand-500', text: 'text-brand-700', bg: 'bg-brand-50 border-brand-200' },
+  Atenção: { label: 'Atenção', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+  Crítica: { label: 'Crítica', dot: 'bg-loss-500', text: 'text-loss-700', bg: 'bg-loss-50 border-loss-200' },
 };
 
 function extractHealth(text) {
@@ -22,11 +22,13 @@ function formatDate(iso) {
 
 function DeltaBadge({ current, previous }) {
   if (previous == null || previous === 0) return null;
+
   const delta = current - previous;
   const pct = ((delta / Math.abs(previous)) * 100).toFixed(1);
   const positive = delta >= 0;
   const colorClass = positive ? 'text-money-600 bg-money-50' : 'text-loss-600 bg-loss-50';
   const arrow = positive ? '↑' : '↓';
+
   return (
     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${colorClass}`}>
       {arrow} {Math.abs(pct)}%
@@ -36,15 +38,12 @@ function DeltaBadge({ current, previous }) {
 
 function recordLabel(rec) {
   const refMonth = rec.financial_data?.referenceMonth;
-  return refMonth
-    ? formatReferenceMonth(refMonth)
-    : formatDate(rec.created_at);
+  return refMonth ? formatReferenceMonth(refMonth) : formatDate(rec.created_at);
 }
 
-/* ── Modal: escolher períodos ───────────────────────────────────────────── */
 function PeriodPickerModal({ baseRecord, records, onConfirm, onClose }) {
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const others = records.filter(r => r.id !== baseRecord.id);
+  const others = records.filter(record => record.id !== baseRecord.id);
 
   function toggle(id) {
     setSelectedIds(prev => {
@@ -68,8 +67,9 @@ function PeriodPickerModal({ baseRecord, records, onConfirm, onClose }) {
 
         <div className="overflow-y-auto max-h-72 divide-y divide-ink-100">
           {others.map(rec => {
-            const m = calcMetrics(rec.financial_data);
+            const metrics = calcMetrics(rec.financial_data);
             const isChecked = selectedIds.has(rec.id);
+
             return (
               <label
                 key={rec.id}
@@ -84,7 +84,7 @@ function PeriodPickerModal({ baseRecord, records, onConfirm, onClose }) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ink-800">{recordLabel(rec)}</p>
                   <p className="text-xs text-ink-400 font-mono">
-                    Receita {formatBRL(m.revenue)} · Lucro {formatBRL(m.netProfit)}
+                    Receita {formatBRL(metrics.revenue)} · Lucro {formatBRL(metrics.netProfit)}
                   </p>
                 </div>
               </label>
@@ -101,7 +101,7 @@ function PeriodPickerModal({ baseRecord, records, onConfirm, onClose }) {
           </button>
           <button
             onClick={() => {
-              const chosen = others.filter(r => selectedIds.has(r.id));
+              const chosen = others.filter(record => selectedIds.has(record.id));
               if (chosen.length > 0) onConfirm(baseRecord, chosen);
             }}
             disabled={count === 0}
@@ -115,7 +115,6 @@ function PeriodPickerModal({ baseRecord, records, onConfirm, onClose }) {
   );
 }
 
-/* ── Dropdown do botão "Comparar" ───────────────────────────────────────── */
 function CompareMenu({ prevRec, onComparePrev, onOpenPicker, onClose }) {
   return (
     <>
@@ -129,7 +128,7 @@ function CompareMenu({ prevRec, onComparePrev, onOpenPicker, onClose }) {
             <svg className="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 3M21 7.5H7.5" />
             </svg>
-            Com o período anterior
+            Com período anterior
           </button>
         )}
         <button
@@ -139,19 +138,27 @@ function CompareMenu({ prevRec, onComparePrev, onOpenPicker, onClose }) {
           <svg className="w-4 h-4 text-ink-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h7.5M8.25 12h7.5m-7.5 5.25h4.5M3 6.75l1.5 1.5L6 6.75M3 12l1.5 1.5L6 12m-3 5.25l1.5 1.5L6 17.25" />
           </svg>
-          Escolher período…
+          Escolher período...
         </button>
       </div>
     </>
   );
 }
 
-export default function History({ records, onSelect, onCompare, onNewAnalysis, onOpenTracking, onBack }) {
-  const [selected, setSelected]         = useState(new Set());
-  const [loadingId, setLoadingId]       = useState(null);
+export default function History({
+  records,
+  companyName = null,
+  onSelect,
+  onCompare,
+  onNewAnalysis,
+  onOpenTracking,
+  onBack,
+}) {
+  const [selected, setSelected] = useState(new Set());
+  const [loadingId, setLoadingId] = useState(null);
   const [loadingMulti, setLoadingMulti] = useState(false);
-  const [openMenuId, setOpenMenuId]     = useState(null);
-  const [pickerBase, setPickerBase]     = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [pickerBase, setPickerBase] = useState(null);
 
   function toggleSelect(id) {
     setSelected(prev => {
@@ -162,7 +169,7 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
   }
 
   function toggleAll() {
-    setSelected(prev => prev.size === records.length ? new Set() : new Set(records.map(r => r.id)));
+    setSelected(prev => (prev.size === records.length ? new Set() : new Set(records.map(record => record.id))));
   }
 
   async function handleDownloadPDF(rec) {
@@ -173,8 +180,8 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
         rec.diagnosis_text,
         rec.financial_data,
       );
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       alert('Erro ao gerar PDF.');
     } finally {
       setLoadingId(null);
@@ -187,8 +194,8 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
       const entry = recordToEntry(rec);
       const safeName = rec.business_name.replace(/\s+/g, '_');
       await downloadDRE([entry], `DRE_${safeName}_${entry.sheetLabel.replace(/\s+/g, '_')}.xlsx`);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       alert('Erro ao gerar DRE.');
     } finally {
       setLoadingId(null);
@@ -196,15 +203,16 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
   }
 
   async function handleDownloadMultiDRE() {
-    const selectedRecords = records.filter(r => selected.has(r.id));
+    const selectedRecords = records.filter(record => selected.has(record.id));
     if (selectedRecords.length < 2) return;
+
     setLoadingMulti(true);
     try {
       const entries = selectedRecords.map(recordToEntry);
       const safeName = selectedRecords[0].business_name.replace(/\s+/g, '_');
       await downloadDRE(entries, `DRE_${safeName}_comparativo_${selectedRecords.length}meses.xlsx`);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       alert('Erro ao gerar DRE combinada.');
     } finally {
       setLoadingMulti(false);
@@ -221,15 +229,17 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
   }
 
   const selectedCount = selected.size;
-  const allSelected   = selectedCount === records.length;
+  const allSelected = selectedCount === records.length;
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-ink-900 tracking-tight">Histórico de análises</h1>
-          <p className="text-sm text-ink-400 mt-0.5">{records.length} {records.length === 1 ? 'análise' : 'análises'} salvas</p>
+          {companyName && <p className="text-sm text-ink-500 mt-0.5">{companyName}</p>}
+          <p className="text-sm text-ink-400 mt-0.5">
+            {records.length} {records.length === 1 ? 'análise' : 'análises'} salvas
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {onOpenTracking && (
@@ -247,7 +257,6 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
         </div>
       </div>
 
-      {/* Barra de seleção múltipla */}
       <div className="flex items-center justify-between bg-white border border-ink-200 rounded-xl px-4 py-3">
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
           <input
@@ -281,21 +290,19 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
         )}
       </div>
 
-      {/* Cards */}
-      {records.map((rec, idx) => {
-        const m          = calcMetrics(rec.financial_data);
-        const prev       = records[idx + 1] || null;
-        const prevM      = prev ? calcMetrics(prev.financial_data) : null;
-        const health     = extractHealth(rec.diagnosis_text);
+      {records.map((rec, index) => {
+        const metrics = calcMetrics(rec.financial_data);
+        const prev = records[index + 1] || null;
+        const prevMetrics = prev ? calcMetrics(prev.financial_data) : null;
+        const health = extractHealth(rec.diagnosis_text);
         const isSelected = selected.has(rec.id);
-        const hasOthers  = records.length > 1;
+        const hasOthers = records.length > 1;
 
         return (
           <div
             key={rec.id}
             className={`bg-white border-2 rounded-xl overflow-hidden transition-colors ${isSelected ? 'border-ink-900' : 'border-ink-200 hover:border-ink-300'}`}
           >
-            {/* Header do card */}
             <div className="flex items-start gap-3 p-5 pb-3">
               <input
                 type="checkbox"
@@ -306,7 +313,7 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs font-semibold text-ink-600">{recordLabel(rec)}</span>
-                  {idx === 0 && (
+                  {index === 0 && (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ink-900 text-white">mais recente</span>
                   )}
                 </div>
@@ -321,22 +328,20 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
               )}
             </div>
 
-            {/* Métricas */}
             <div className="grid grid-cols-3 gap-px bg-ink-100 border-t border-ink-100">
               {[
-                { label: 'Receita',       value: formatBRL(m.revenue),         delta: prevM && <DeltaBadge current={m.revenue} previous={prevM.revenue} /> },
-                { label: 'Lucro líquido', value: formatBRL(m.netProfit),       delta: prevM && <DeltaBadge current={m.netProfit} previous={prevM.netProfit} /> },
-                { label: 'Margem líq.',   value: `${m.netMargin.toFixed(1)}%`, delta: prevM && <DeltaBadge current={m.netMargin} previous={prevM.netMargin} /> },
-              ].map(col => (
-                <div key={col.label} className="bg-white px-4 py-3">
-                  <p className="text-[10px] text-ink-400 uppercase tracking-wider font-medium mb-1">{col.label}</p>
-                  <p className="text-sm font-bold text-ink-800 font-mono">{col.value}</p>
-                  {col.delta && <div className="mt-1">{col.delta}</div>}
+                { label: 'Receita', value: formatBRL(metrics.revenue), delta: prevMetrics && <DeltaBadge current={metrics.revenue} previous={prevMetrics.revenue} /> },
+                { label: 'Lucro líquido', value: formatBRL(metrics.netProfit), delta: prevMetrics && <DeltaBadge current={metrics.netProfit} previous={prevMetrics.netProfit} /> },
+                { label: 'Margem líq.', value: `${metrics.netMargin.toFixed(1)}%`, delta: prevMetrics && <DeltaBadge current={metrics.netMargin} previous={prevMetrics.netMargin} /> },
+              ].map(column => (
+                <div key={column.label} className="bg-white px-4 py-3">
+                  <p className="text-[10px] text-ink-400 uppercase tracking-wider font-medium mb-1">{column.label}</p>
+                  <p className="text-sm font-bold text-ink-800 font-mono">{column.value}</p>
+                  {column.delta && <div className="mt-1">{column.delta}</div>}
                 </div>
               ))}
             </div>
 
-            {/* Ações */}
             <div className="flex flex-wrap gap-2 p-3 bg-ink-50 border-t border-ink-100">
               <button
                 onClick={() => onSelect(rec)}
@@ -345,7 +350,6 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
                 Ver diagnóstico
               </button>
 
-              {/* Botão Comparar */}
               {hasOthers && (
                 <div className="relative flex-1 min-w-[90px]">
                   <button
@@ -355,7 +359,10 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
                     Comparar
                     <svg
                       className={`w-3 h-3 transition-transform ${openMenuId === rec.id ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
@@ -386,6 +393,7 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
                 )}
                 PDF
               </button>
+
               <button
                 onClick={() => handleDownloadDRE(rec)}
                 disabled={loadingId === `dre-${rec.id}`}
@@ -405,7 +413,6 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
         );
       })}
 
-      {/* Modal de escolha de período */}
       {pickerBase && (
         <PeriodPickerModal
           baseRecord={pickerBase}
@@ -415,7 +422,7 @@ export default function History({ records, onSelect, onCompare, onNewAnalysis, o
         />
       )}
 
-      <button onClick={onBack} className="btn-back w-full">← Voltar</button>
+      <button onClick={onBack} className="btn-back w-full">← Trocar empresa</button>
     </div>
   );
 }

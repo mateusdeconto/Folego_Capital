@@ -12,8 +12,16 @@ export async function requireAuth(req, res, next) {
   }
 
   const token = header.slice(7);
-  const { data, error } = await supabase.auth.getUser(token);
 
+  let result;
+  try {
+    result = await supabase.auth.getUser(token);
+  } catch (err) {
+    console.error('[auth] falha ao contatar Supabase:', err.message);
+    return res.status(503).json({ error: 'Serviço de autenticação indisponível. Tente novamente.' });
+  }
+
+  const { data, error } = result;
   if (error || !data?.user) {
     return res.status(401).json({ error: 'Sessão inválida ou expirada. Faça login novamente.' });
   }

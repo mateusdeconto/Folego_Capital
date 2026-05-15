@@ -548,7 +548,7 @@ function BenchmarkPremium({ macroData, segment, sectorLabel, plan, onUpgrade }) 
   );
 }
 
-export default function Diagnosis({ businessData, financialData, diagnosis, allDiagnoses = [], plan = 'free', user, macroData = null, onOpenChat, onOpenTracking, onOpenHistory, onCorrectData, onRestart }) {
+export default function Diagnosis({ businessData, financialData, diagnosis, allDiagnoses = [], plan = 'free', user, accessToken, macroData = null, onOpenChat, onOpenTracking, onOpenHistory, onCorrectData, onRestart }) {
   const renderedHtml  = useMemo(() => renderMarkdown(diagnosis),      [diagnosis]);
   const healthStatus  = useMemo(() => extractHealthStatus(diagnosis), [diagnosis]);
   const metrics       = useMemo(() => calcMetrics(financialData),     [financialData]);
@@ -630,10 +630,12 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
       const timeout = setTimeout(() => controller.abort(), 15000);
       const res = await fetch('/api/send-report', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
         signal: controller.signal,
         body: JSON.stringify({
-          toEmail: user.email,
           businessData,
           financialData,
           diagnosis,

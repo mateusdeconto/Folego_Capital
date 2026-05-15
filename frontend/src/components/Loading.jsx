@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase.js';
+import { SSEParser } from '../lib/sseParser.js';
 
 const LOADING_MESSAGES = [
   'Lendo seus números…',
@@ -62,6 +63,7 @@ export default function Loading({ businessData, financialData, accessToken, onCo
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      const parser = new SSEParser();
       let fullText = '';
       let capturedMacro = null;
 
@@ -70,17 +72,15 @@ export default function Loading({ businessData, financialData, accessToken, onCo
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
 
-        for (const line of chunk.split('\n')) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6).trim();
-          if (data === '[DONE]') {
+        for (const payload of parser.feed(chunk)) {
+          if (payload === '[DONE]') {
             clearTimeout(timeout);
             if (fullText) onComplete(fullText, capturedMacro);
             else throw new Error('Resposta vazia da IA. Tente novamente.');
             return;
           }
           try {
-            const parsed = JSON.parse(data);
+            const parsed = JSON.parse(payload);
             if (parsed.error) throw new Error(parsed.error);
             if (parsed.macro_data) { capturedMacro = parsed.macro_data; continue; }
             if (parsed.text) fullText += parsed.text;

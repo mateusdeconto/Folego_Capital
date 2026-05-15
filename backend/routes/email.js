@@ -1,7 +1,20 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { Resend } from 'resend';
+import { requireAuth } from '../middleware/auth.js';
+import { escapeHtml, applyBold } from '../lib/htmlUtils.js';
 
 const router = express.Router();
+
+// 3 envios por usuário a cada 15 minutos — impede relay de spam e custo descontrolado
+const emailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  keyGenerator: (req) => req.user?.id ?? req.ip,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitos envios em sequência. Aguarde alguns minutos.' },
+});
 
 // Formata BRL
 function fmt(v) {
@@ -15,15 +28,18 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
     ? new Date(businessData.referenceMonth + '-02').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
     : date;
 
-  // Converte markdown simples para HTML
+  const safeName    = escapeHtml(businessData.businessName);
+  const safeSegment = escapeHtml(businessData.segment);
+
+  // Converte markdown simples para HTML — texto escapado antes de qualquer interpolação
   const diagHtml = (diagnosis || '')
     .split('\n')
     .map(line => {
       const t = line.trim();
-      if (t.startsWith('## ')) return `<h3 style="color:#111827;font-size:15px;margin:20px 0 6px;">${t.slice(3)}</h3>`;
-      if (t.startsWith('• ') || t.startsWith('- ')) return `<li style="color:#374151;font-size:14px;margin-bottom:4px;">${t.slice(2).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</li>`;
+      if (t.startsWith('## ')) return `<h3 style="color:#111827;font-size:15px;margin:20px 0 6px;">${escapeHtml(t.slice(3))}</h3>`;
+      if (t.startsWith('• ') || t.startsWith('- ')) return `<li style="color:#374151;font-size:14px;margin-bottom:4px;">${applyBold(escapeHtml(t.slice(2)))}</li>`;
       if (!t) return '';
-      return `<p style="color:#374151;font-size:14px;margin:6px 0;">${t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>`;
+      return `<p style="color:#374151;font-size:14px;margin:6px 0;">${applyBold(escapeHtml(t))}</p>`;
     })
     .join('\n');
 
@@ -54,7 +70,7 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
           <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:16px 0 4px;letter-spacing:-0.5px;">
             Diagnóstico financeiro
           </h1>
-          <p style="color:#9ca3af;font-size:14px;margin:0;">${businessData.businessName} · ${businessData.segment} · ${month}</p>
+          <p style="color:#9ca3af;font-size:14px;margin:0;">${safeName} · ${safeSegment} · ${month}</p>
         </td></tr>
 
         <!-- Métricas principais -->
@@ -111,11 +127,16 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
 </html>`;
 }
 
-router.post('/', async (req, res) => {
-  const { toEmail, businessData, financialData, diagnosis, metrics } = req.body;
+router.post('/', requireAuth, emailLimiter, async (req, res) => {
+  const { businessData, financialData, diagnosis, metrics } = req.body;
+  const toEmail = req.user.email;
 
   if (!toEmail || !businessData || !financialData || !diagnosis) {
     return res.status(400).json({ error: 'Dados incompletos.' });
+  }
+
+  if (!metrics || typeof metrics.netProfit !== 'number' || typeof metrics.netMargin !== 'number' || typeof metrics.breakEven !== 'number') {
+    return res.status(400).json({ error: 'Métricas financeiras ausentes ou inválidas.' });
   }
 
   const resendKey = process.env.RESEND_API_KEY;
@@ -137,7 +158,7 @@ router.post('/', async (req, res) => {
     const { error } = await resend.emails.send({
       from: 'FinCheck <onboarding@resend.dev>',
       to: toEmail,
-      subject: `Diagnóstico financeiro — ${businessData.businessName} · ${month}`,
+      subject: `Diagnóstico financeiro — ${businessData.businessName.replace(/[\r\n]/g, ' ')} · ${month}`,
       html: buildEmailHtml({ businessData, financialData, diagnosis, metrics }),
     });
 

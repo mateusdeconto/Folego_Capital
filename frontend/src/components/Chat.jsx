@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { SSEParser } from '../lib/sseParser.js';
 
 const SUGGESTED_QUESTIONS = [
   'Por que minha margem está baixa?',
@@ -65,6 +66,7 @@ export default function Chat({ businessData, financialData, diagnosis, allDiagno
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      const parser = new SSEParser();
       let fullResponse = '';
 
       while (true) {
@@ -72,12 +74,10 @@ export default function Chat({ businessData, financialData, diagnosis, allDiagno
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
-        for (const line of chunk.split('\n')) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6).trim();
-          if (data === '[DONE]') break;
+        for (const payload of parser.feed(chunk)) {
+          if (payload === '[DONE]') break;
           try {
-            const parsed = JSON.parse(data);
+            const parsed = JSON.parse(payload);
             if (parsed.error) throw new Error(parsed.error);
             if (parsed.text) {
               fullResponse += parsed.text;
