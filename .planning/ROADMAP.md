@@ -60,7 +60,7 @@ Plans:
 **Depends on**: Phase 3
 **Requirements**: DG-01, DG-02, DG-03
 **UI hint**: yes
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 **Success Criteria**:
   1. Valores numéricos contam de 0 até o valor ao entrar na tela
   2. Seções revelam com stagger (uma após a outra)
