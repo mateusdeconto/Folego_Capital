@@ -450,8 +450,9 @@ function FaqItem({ q, a, i }) {
   const [open, setOpen] = useState(false);
   return (
     <motion.div
-      className={`bg-navy-800 rounded-2xl border overflow-hidden transition-all duration-200
+      className={`rounded-2xl border overflow-hidden transition-all duration-200
         ${open ? 'border-gold-400/40 shadow-sm' : 'border-white/10'}`}
+      style={{ background: '#253d63' }}
       whileHover={{ borderColor: 'rgba(251,191,36,0.25)' }}
     >
       <button
@@ -576,14 +577,14 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
           >
             {/* Badge */}
             <motion.div variants={fadeUp}
-              className="inline-flex items-center gap-2.5 mb-8 px-4 py-1.5 rounded-full border border-gold-500/25 bg-gold-500/10">
+              className="inline-flex items-center gap-2.5 mb-8 px-4 py-1.5 rounded-full border border-red-500/30 bg-red-500/10">
               <motion.span
-                className="w-1.5 h-1.5 rounded-full bg-gold-400"
+                className="w-1.5 h-1.5 rounded-full bg-red-400"
                 animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
               />
-              <span className="text-xs font-bold text-gold-400 tracking-widest uppercase">
-                Diagnóstico gratuito
+              <span className="text-xs font-bold text-red-400 tracking-widest uppercase">
+                Saúde da empresa em risco
               </span>
             </motion.div>
 
@@ -832,8 +833,6 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
           </InView>
 
           <div className="relative">
-            {/* Connector line desktop only */}
-            <div className="hidden md:block absolute top-10 left-[calc(16.5%+1px)] right-[calc(16.5%+1px)] h-px bg-white/10 z-0" />
             <motion.div
               className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10"
               initial="hidden"
@@ -845,12 +844,13 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
                 <motion.div
                   key={s.n}
                   variants={fadeUpSpring}
-                  className="card-navy rounded-2xl p-7"
-                  whileHover={{ y: -6, scale: 1.02, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                  className="rounded-2xl p-7"
+                  style={{ background: '#253d63', border: '1px solid rgba(255,255,255,0.10)' }}
+                  whileHover={{ y: -6, scale: 1.02, boxShadow: '0 20px 40px rgba(0,0,0,0.25)', borderColor: 'rgba(251,191,36,0.30)' }}
                   transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <div className="flex items-center gap-3 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-navy-950 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.25)' }}>
                       <span className="text-gold-400 font-bold text-sm font-mono tracking-tight">{s.n}</span>
                     </div>
                   </div>
@@ -892,8 +892,9 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
               <motion.div
                 key={f.title}
                 variants={fadeUpSpring}
-                className="card-navy group p-6 rounded-2xl cursor-default"
-                whileHover={{ y: -2 }}
+                className="group p-6 rounded-2xl cursor-default"
+                style={{ background: '#253d63', border: '1px solid rgba(255,255,255,0.10)' }}
+                whileHover={{ y: -2, borderColor: 'rgba(251,191,36,0.28)', backgroundColor: '#2d4872' }}
                 transition={{ duration: 0.18 }}
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${f.accent}`}>

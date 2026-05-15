@@ -1,14 +1,18 @@
 ---
-status: partial
+status: testing
 phase: 04-tela-de-diagnostico
 source: [04-VERIFICATION.md]
 started: 2026-05-15T00:00:00Z
-updated: 2026-05-15T00:00:00Z
+updated: 2026-05-15T15:30:00Z
 ---
 
 ## Current Test
 
-[awaiting human testing]
+number: 1
+name: Count-up Animation Visual Smoothness
+expected: |
+  Numbers count smoothly from R$ 0,00 to real values using easeOutCubic over 900–1200ms on Diagnosis mount (Lucro Líquido, Lucro Bruto, EBITDA, Ponto de Equilíbrio, Projeção 30 dias)
+awaiting: user response
 
 ## Tests
 

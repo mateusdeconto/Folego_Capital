@@ -217,7 +217,15 @@ export default function App() {
   const noHeader = [STEPS.AUTH, STEPS.PREVIOUS, STEPS.LANDING];
 
   return (
-    <div className={step === STEPS.LANDING ? '' : 'min-h-screen flex items-start sm:items-center justify-center p-4 py-8 bg-ink-50'}>
+    <div className={
+      step === STEPS.LANDING
+        ? ''
+        : [STEPS.QUESTIONNAIRE, STEPS.LOADING].includes(step)
+          ? 'min-h-screen flex items-start sm:items-center justify-center p-4 py-8'
+          : 'min-h-screen flex items-start sm:items-center justify-center p-4 py-8 bg-ink-50'
+    }
+    style={[STEPS.QUESTIONNAIRE, STEPS.LOADING].includes(step) ? { background: '#1e3050' } : {}}
+    >
       {step === STEPS.LANDING && (
         <Landing
           onEnter={() => setStep(user ? STEPS.ONBOARDING : STEPS.AUTH)}

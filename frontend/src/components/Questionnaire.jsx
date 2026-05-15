@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { writeSession, readSession, removeSession } from '../lib/storage.js';
 import { SECTOR_BENCHMARKS } from './Onboarding.jsx';
 
@@ -86,6 +87,12 @@ const QUESTIONS = [
 
 const TOTAL_PHASES = 5;
 
+const slideVariants = {
+  enter: (dir) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+  center: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 280, damping: 26 } },
+  exit: (dir) => ({ x: dir > 0 ? -40 : 40, opacity: 0, transition: { duration: 0.18, ease: 'easeIn' } }),
+};
+
 function formatCurrencyInput(raw) {
   const isNegative = raw.startsWith('-');
   const digits = raw.replace(/\D/g, '');
@@ -118,7 +125,7 @@ function HelperTip({ text }) {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-gold-400 hover:text-gold-300 transition-colors"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M12 18h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -126,7 +133,7 @@ function HelperTip({ text }) {
         {open ? 'Ok, entendi' : 'O que conta aqui?'}
       </button>
       {open && (
-        <div className="mt-2 p-3 bg-brand-50 border border-brand-100 rounded-md text-xs text-ink-600 leading-relaxed animate-fade-in">
+        <div className="mt-2 p-3 bg-gold-500/10 border border-gold-500/20 rounded-md text-xs text-white/70 leading-relaxed animate-fade-in">
           {text}
         </div>
       )}
@@ -151,29 +158,29 @@ function ItemizedInput({ items, onChange, exampleItems }) {
   return (
     <div className="space-y-2">
       {items.map((item, i) => (
-        <div key={i} className="item-row animate-fade-in">
+        <div key={i} className="item-row animate-fade-in" style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}>
           <input
             type="text"
             value={item.desc}
             onChange={e => handleDescChange(i, e.target.value)}
             placeholder={exampleItems?.[i] || `Item ${i + 1}`}
-            className="item-desc-input"
+            className="item-desc-input text-white/80 placeholder:text-white/30"
           />
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-xs font-medium text-ink-300 select-none">R$</span>
+            <span className="text-xs font-medium text-white/40 select-none">R$</span>
             <input
               type="text"
               inputMode="numeric"
               value={item.value}
               onChange={e => handleValueChange(i, e.target.value)}
               placeholder="0,00"
-              className="item-value-input"
+              className="item-value-input text-white placeholder:text-white/30"
             />
           </div>
           <button
             type="button"
             onClick={() => removeItem(i)}
-            className="w-7 h-7 flex items-center justify-center text-ink-300 hover:text-loss-500 hover:bg-loss-50 rounded-md transition-all duration-100 flex-shrink-0 text-lg leading-none"
+            className="w-7 h-7 flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-all duration-100 flex-shrink-0 text-lg leading-none"
             aria-label="Remover item"
           >
             ×
@@ -189,9 +196,9 @@ function ItemizedInput({ items, onChange, exampleItems }) {
       </button>
 
       {total > 0 && (
-        <div className="flex justify-between items-center px-1 pt-3 border-t border-ink-100 mt-3">
-          <span className="text-xs font-medium text-ink-400 uppercase tracking-wide">Total</span>
-          <span className="text-lg font-bold text-ink-800 font-mono">{formatBRL(total)}</span>
+        <div className="flex justify-between items-center px-1 pt-3 border-t border-white/10 mt-3">
+          <span className="text-xs font-medium text-white/40 uppercase tracking-wide">Total</span>
+          <span className="text-lg font-bold text-white font-mono">{formatBRL(total)}</span>
         </div>
       )}
     </div>
@@ -322,15 +329,15 @@ function LiveDRE({ values, businessData }) {
 
   function Row({ label, value, filled, bold = false, sign = '', benchWarn = false }) {
     const colorClass = !filled
-      ? 'text-ink-300'
+      ? 'text-white/20'
       : benchWarn
         ? 'text-amber-600'
         : value >= 0
-          ? 'text-ink-700'
+          ? 'text-white/85'
           : 'text-loss-600';
     return (
       <div className="flex justify-between items-center py-1.5 text-xs">
-        <span className={filled ? (benchWarn ? 'text-amber-600' : 'text-ink-500') : 'text-ink-300'}>{label}</span>
+        <span className={filled ? (benchWarn ? 'text-amber-600' : 'text-white/55') : 'text-white/20'}>{label}</span>
         <span className={`font-mono tabular-nums ${bold ? 'font-bold text-sm' : 'font-medium'} ${colorClass}`}>
           {filled ? `${sign}${formatBRLCompact(Math.abs(value))}` : '—'}
         </span>
@@ -340,56 +347,56 @@ function LiveDRE({ values, businessData }) {
 
   return (
     <div className="lg:sticky lg:top-4 space-y-3">
-      <div className="card p-5">
+      <div className="rounded-2xl p-5 border border-white/10" style={{ background: '#253d63' }}>
         <div className="flex items-center justify-between mb-1">
-          <p className="text-[11px] font-semibold text-ink-400 uppercase tracking-wider">Sua DRE em construção</p>
-          <span className="w-2 h-2 rounded-full bg-money-500 animate-pulse" />
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider">Sua DRE em construção</p>
+          <span className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
         </div>
-        <p className="text-sm font-bold text-ink-800 mb-4">{businessData.businessName}</p>
+        <p className="text-sm font-bold text-white mb-4">{businessData.businessName}</p>
 
         <Row label="(+) Receita"        value={rev}         filled={rev > 0}       sign="" />
         <Row label="(−) CMV"            value={cogs}        filled={cogs > 0}      sign="−" />
-        <div className="border-t border-ink-100 my-1" />
+        <div className="border-t border-white/10 my-1" />
         <Row label="= Lucro Bruto" value={grossProfit} filled={rev > 0 && cogs > 0} bold benchWarn={grossMarginBelowBench} />
         {rev > 0 && cogs > 0 && (
-          <p className={`text-[10px] text-right font-mono mb-1 ${grossMarginBelowBench ? 'text-amber-500 font-semibold' : 'text-ink-400'}`}>
+          <p className={`text-[10px] text-right font-mono mb-1 ${grossMarginBelowBench ? 'text-amber-500 font-semibold' : 'text-white/35'}`}>
             {grossMargin.toFixed(1)}% margem
             {grossMarginBelowBench && ` ⚠ abaixo do setor (${bench.grossMargin[0]}–${bench.grossMargin[1]}%)`}
           </p>
         )}
 
         <Row label="(−) Gastos fixos"   value={fixed}       filled={fixed > 0}     sign="−" />
-        <div className="border-t border-ink-100 my-1" />
+        <div className="border-t border-white/10 my-1" />
         <Row label="= EBITDA"           value={ebitda}      filled={rev > 0 && cogs > 0 && fixed > 0} bold />
 
         <Row label="(−) Dívidas"        value={debt}        filled={debt > 0}      sign="−" />
         <Row label="(−) Investimentos"  value={inv}         filled={inv > 0}       sign="−" />
-        <div className="border-t border-ink-200 my-2" />
+        <div className="border-t border-white/10 my-2" />
         <div className="flex justify-between items-center py-1.5">
-          <span className="text-sm font-bold text-ink-800">= Lucro Líquido</span>
+          <span className="text-sm font-bold text-white">= Lucro Líquido</span>
           <span className={`font-mono font-bold text-base ${
-            rev > 0 ? (netProfit >= 0 ? 'text-money-700' : 'text-loss-600') : 'text-ink-300'
+            rev > 0 ? (netProfit >= 0 ? 'text-money-700' : 'text-loss-600') : 'text-white/20'
           }`}>
             {rev > 0 ? formatBRLCompact(netProfit) : '—'}
           </span>
         </div>
         {rev > 0 && (
-          <p className="text-[10px] text-ink-400 text-right font-mono">
+          <p className="text-[10px] text-white/35 text-right font-mono">
             {netMargin.toFixed(1)}% margem líquida
           </p>
         )}
 
         {(cash !== 0 || ar > 0) && (
-          <div className="mt-3 pt-3 border-t border-ink-100 space-y-1.5">
-            <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">Outros</p>
+          <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+            <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">Outros</p>
             <div className="flex justify-between text-xs">
-              <span className="text-ink-500">Caixa</span>
-              <span className={`font-mono ${cash >= 0 ? 'text-ink-700' : 'text-loss-600'}`}>{formatBRLCompact(cash)}</span>
+              <span className="text-white/55">Caixa</span>
+              <span className={`font-mono ${cash >= 0 ? 'text-white/85' : 'text-loss-600'}`}>{formatBRLCompact(cash)}</span>
             </div>
             {ar > 0 && (
               <div className="flex justify-between text-xs">
-                <span className="text-ink-500">A receber</span>
-                <span className="font-mono text-ink-700">{formatBRLCompact(ar)}</span>
+                <span className="text-white/55">A receber</span>
+                <span className="font-mono text-white/85">{formatBRLCompact(ar)}</span>
               </div>
             )}
           </div>
@@ -398,12 +405,12 @@ function LiveDRE({ values, businessData }) {
 
       {/* Insight progressivo */}
       {insight && (
-        <div className={`card p-4 animate-fade-in border-l-4 ${
+        <div className={`rounded-2xl p-4 border border-white/10 border-l-4 animate-fade-in ${
           insight.tone === 'money' ? 'border-l-money-500'
           : insight.tone === 'warn' ? 'border-l-amber-400'
           : insight.tone === 'loss' ? 'border-l-loss-500'
           : 'border-l-brand-500'
-        }`}>
+        }`} style={{ background: '#253d63' }}>
           <div className="flex items-start gap-2.5">
             <svg className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
               insight.tone === 'money' ? 'text-money-600'
@@ -414,8 +421,8 @@ function LiveDRE({ values, businessData }) {
               <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
             </svg>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-ink-800 mb-0.5">{insight.title}</p>
-              <p className="text-xs text-ink-500 leading-relaxed">{insight.text}</p>
+              <p className="text-xs font-bold text-white mb-0.5">{insight.title}</p>
+              <p className="text-xs text-white/55 leading-relaxed">{insight.text}</p>
             </div>
           </div>
         </div>
@@ -433,6 +440,8 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
   });
 
   useEffect(() => { writeSession(DRAFT_KEY, values); }, [values]);
+
+  const dirRef = useRef(1);
 
   const question = QUESTIONS[currentIndex];
   const currentValue = values[question.field];
@@ -464,6 +473,7 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
   function handleNext() {
     if (!canProceed) return;
     if (currentIndex < QUESTIONS.length - 1) {
+      dirRef.current = 1;
       setCurrentIndex(i => i + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -490,6 +500,7 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
 
   function handleBack() {
     if (currentIndex > 0) {
+      dirRef.current = -1;
       setCurrentIndex(i => i - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -504,7 +515,7 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
   const isLast = currentIndex === QUESTIONS.length - 1;
 
   return (
-    <div className="animate-slide-up grid lg:grid-cols-[1.1fr_400px] gap-6 max-w-5xl w-full mx-auto">
+    <div className="grid lg:grid-cols-[1.1fr_400px] gap-6 max-w-5xl w-full mx-auto">
 
       {/* Coluna principal — pergunta */}
       <div>
@@ -512,14 +523,14 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
         <div className="flex items-center justify-between mb-5">
           <button
             onClick={handleBack}
-            className="text-ink-400 hover:text-ink-700 text-sm font-medium flex items-center gap-1.5 transition-colors"
+            className="text-white/60 hover:text-white text-sm font-medium flex items-center gap-1.5 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
             Voltar
           </button>
-          <span className="text-xs font-medium text-ink-400">
+          <span className="text-xs font-medium text-white/50">
             Capítulo {question.phase} de {TOTAL_PHASES}
           </span>
         </div>
@@ -527,132 +538,150 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
         {/* Progress + chapter title */}
         <div className="mb-7">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-gold-400 uppercase tracking-wider">
               {question.chapter}
             </span>
-            <span className="text-xs font-semibold text-ink-700 font-mono">
+            <span className="text-xs font-semibold text-white/60 font-mono">
               {Math.round(progress)}%
             </span>
           </div>
-          <div className="w-full h-1 bg-ink-100 rounded-full overflow-hidden">
-            <div className="progress-fill h-full rounded-full" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-
-        {/* Pergunta */}
-        <div className="card p-6 sm:p-7">
-          {newChapter && (
-            <p className="text-[11px] font-semibold text-ink-400 uppercase tracking-wider mb-2 animate-fade-in">
-              Pergunta {currentIndex + 1} de {QUESTIONS.length}
-            </p>
-          )}
-
-          <h2 className="text-2xl sm:text-[1.6rem] font-bold text-ink-900 tracking-tighter mb-2 leading-tight">
-            {question.title}
-          </h2>
-
-          <p className="text-ink-500 text-[15px] leading-relaxed mb-3">
-            {question.subtitle}
-          </p>
-
-          {question.helper && (
-            <div className="mb-6">
-              <HelperTip text={question.helper} />
-            </div>
-          )}
-
-          {/* Input */}
-          {isChoice ? (
-            <div className="space-y-2.5 mb-2">
-              {question.options.map(opt => {
-                const selected = currentValue === opt.value;
-                const isRisk   = opt.value === 'yes';
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setValues(prev => ({ ...prev, [question.field]: opt.value }))}
-                    className={`w-full text-left rounded-lg border p-4 transition-all duration-100
-                      ${selected
-                        ? isRisk
-                          ? 'border-loss-500 bg-loss-50'
-                          : 'border-money-500 bg-money-50'
-                        : 'border-ink-200 hover:border-ink-300 bg-white'
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
-                        ${selected
-                          ? isRisk ? 'border-loss-500 bg-loss-500' : 'border-money-500 bg-money-500'
-                          : 'border-ink-300'
-                        }`}>
-                        {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                      </div>
-                      <div>
-                        <p className={`text-sm font-semibold leading-tight
-                          ${selected ? (isRisk ? 'text-loss-700' : 'text-money-700') : 'text-ink-700'}`}>
-                          {opt.label}
-                        </p>
-                        <p className="text-xs text-ink-400 mt-0.5">{opt.detail}</p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : isItemized ? (
-            <ItemizedInput
-              items={currentValue || []}
-              onChange={newItems => setValues(prev => ({ ...prev, [question.field]: newItems }))}
-              exampleItems={question.exampleItems}
+          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gold-500"
+              animate={{ width: `${progress}%` }}
+              transition={{ type: 'spring', stiffness: 200, damping: 30 }}
             />
-          ) : (
-            <>
-              <div className="bg-ink-50 rounded-lg p-5 mb-3 border border-ink-200
-                              focus-within:border-brand-400 focus-within:bg-white transition-all">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-2xl font-semibold text-ink-300 font-mono">R$</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={currentValue}
-                    onChange={handleSingleInput}
-                    onKeyDown={handleKeyDown}
-                    placeholder="0,00"
-                    className="currency-input flex-1 min-w-0"
-                    autoFocus
-                  />
-                </div>
-                {question.allowZero && (
-                  <p className="text-center text-xs text-ink-400 mt-2">
-                    Pode deixar em branco se não tiver
-                  </p>
-                )}
-              </div>
-
-              <p className="text-xs text-ink-400 text-center mb-6">
-                {question.example}
-              </p>
-            </>
-          )}
-
-          {/* Botões */}
-          <div className={`space-y-2.5 ${isItemized ? 'mt-6' : ''}`}>
-            <button onClick={handleNext} disabled={!canProceed} className="btn-primary">
-              <span className="flex items-center justify-center gap-2">
-                {isLast ? 'Gerar diagnóstico' : 'Continuar'}
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-              </span>
-            </button>
-            <button onClick={handleBack} className="btn-back">
-              Voltar
-            </button>
           </div>
         </div>
 
-        <p className="text-center text-xs text-ink-400 mt-5">
+        {/* Pergunta — wrapped with AnimatePresence for slide transition */}
+        <AnimatePresence mode="wait" custom={dirRef.current}>
+          <motion.div
+            key={currentIndex}
+            custom={dirRef.current}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+          >
+            <div className="rounded-2xl p-6 sm:p-7 border border-white/10" style={{ background: '#253d63' }}>
+              {newChapter && (
+                <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2 animate-fade-in">
+                  Pergunta {currentIndex + 1} de {QUESTIONS.length}
+                </p>
+              )}
+
+              <h2 className="text-2xl sm:text-[1.6rem] font-bold text-white tracking-tighter mb-2 leading-tight">
+                {question.title}
+              </h2>
+
+              <p className="text-white/70 text-[15px] leading-relaxed mb-3">
+                {question.subtitle}
+              </p>
+
+              {question.helper && (
+                <div className="mb-6">
+                  <HelperTip text={question.helper} />
+                </div>
+              )}
+
+              {/* Input */}
+              {isChoice ? (
+                <div className="space-y-2.5 mb-2">
+                  {question.options.map(opt => {
+                    const selected = currentValue === opt.value;
+                    const isRisk   = opt.value === 'yes';
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setValues(prev => ({ ...prev, [question.field]: opt.value }))}
+                        className={`w-full text-left rounded-lg border p-4 transition-all duration-100
+                          ${selected
+                            ? isRisk
+                              ? 'border-loss-500 bg-loss-50'
+                              : 'border-money-500 bg-money-50'
+                            : 'border-white/15 hover:border-white/30'
+                          }`}
+                        style={!selected ? { background: 'rgba(255,255,255,0.06)' } : {}}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
+                            ${selected
+                              ? isRisk ? 'border-loss-500 bg-loss-500' : 'border-money-500 bg-money-500'
+                              : 'border-ink-300'
+                            }`}>
+                            {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                          <div>
+                            <p className={`text-sm font-semibold leading-tight
+                              ${selected ? (isRisk ? 'text-loss-700' : 'text-money-700') : 'text-white/80'}`}>
+                              {opt.label}
+                            </p>
+                            <p className="text-xs text-white/50 mt-0.5">{opt.detail}</p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : isItemized ? (
+                <ItemizedInput
+                  items={currentValue || []}
+                  onChange={newItems => setValues(prev => ({ ...prev, [question.field]: newItems }))}
+                  exampleItems={question.exampleItems}
+                />
+              ) : (
+                <>
+                  <div
+                    className="rounded-xl p-5 mb-3 border border-white/15 focus-within:border-gold-400 transition-all"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-2xl font-semibold text-white/40 font-mono">R$</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={currentValue}
+                        onChange={handleSingleInput}
+                        onKeyDown={handleKeyDown}
+                        placeholder="0,00"
+                        className="currency-input flex-1 min-w-0"
+                        autoFocus
+                      />
+                    </div>
+                    {question.allowZero && (
+                      <p className="text-center text-xs text-white/40 mt-2">
+                        Pode deixar em branco se não tiver
+                      </p>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-white/35 text-center mb-6">
+                    {question.example}
+                  </p>
+                </>
+              )}
+
+              {/* Botões */}
+              <div className={`space-y-2.5 ${isItemized ? 'mt-6' : ''}`}>
+                <button onClick={handleNext} disabled={!canProceed} className="btn-gold w-full">
+                  <span className="flex items-center justify-center gap-2">
+                    {isLast ? 'Gerar diagnóstico' : 'Continuar'}
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </span>
+                </button>
+                <button onClick={handleBack} className="btn-back">
+                  Voltar
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        <p className="text-center text-xs text-white/35 mt-5">
           Suas respostas são salvas automaticamente
         </p>
       </div>
