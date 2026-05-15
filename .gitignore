@@ -37,3 +37,7 @@ CUsersmateu*.txt
 
 # claude worktrees
 .claude/worktrees/
+
+# generated test artifacts (relatórios baixados em /public por engano)
+frontend/public/Diagnostico_*.pdf
+frontend/public/DRE_*.xlsx
