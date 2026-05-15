@@ -575,9 +575,24 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
       .catch(() => {});
   }, [plan]);
 
+  const shouldReduceMotion = useReducedMotion();
   const netProfitPositive = metrics.netProfit >= 0;
   const healthTone = healthStatus ? TONE_CLASSES[healthStatus.tone] : TONE_CLASSES.brand;
   const projTone = TONE_CLASSES[projection.status];
+
+  // Count-up animated values (DG-01) — disabled if user prefers reduced motion
+  const animatedNetProfit   = useCountUp(metrics.netProfit, 1200, shouldReduceMotion);
+  const animatedGrossProfit = useCountUp(metrics.grossProfit, 1000, shouldReduceMotion);
+  const animatedEbitda      = useCountUp(metrics.ebitda, 1000, shouldReduceMotion);
+  const animatedBreakEven   = useCountUp(metrics.breakEven, 1000, shouldReduceMotion);
+  const animatedProjection  = useCountUp(projection.projected, 900, shouldReduceMotion);
+
+  const isAlertHealth = healthStatus && (healthStatus.tone === 'warn' || healthStatus.tone === 'loss');
+  const healthBorderLeftClass = isAlertHealth
+    ? (healthStatus.tone === 'warn' ? 'border-l-4 border-l-amber-400' : 'border-l-4 border-l-loss-500')
+    : '';
+  const healthShadowClass = isAlertHealth ? 'shadow-md' : '';
+  const healthDotPulse    = isAlertHealth ? 'animate-pulse' : '';
 
   async function handleExcel() {
     setExporting(true);
@@ -644,9 +659,14 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
   }
 
   return (
-    <div className="animate-slide-up space-y-4">
+    <motion.div
+      className="space-y-4"
+      variants={shouldReduceMotion ? staggerContainerReduced : staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header */}
-      <div className="mb-1">
+      <motion.div className="mb-1" variants={fadeUp}>
         <p className="text-sm font-bold text-ink-400 uppercase tracking-wider mb-2">
           Diagnóstico financeiro
         </p>
@@ -659,22 +679,28 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
             <span className="ml-2 text-ink-400">· {formatReferenceMonth(businessData.referenceMonth)}</span>
           )}
         </p>
-      </div>
+      </motion.div>
 
       {/* Health badge */}
       {healthStatus && (
-        <div className={`flex items-center gap-3 p-4 rounded-lg border ${healthTone.bg} ${healthTone.border}`}>
-          <span className={`w-2.5 h-2.5 rounded-full ${healthTone.dot}`} />
+        <motion.div
+          className={`flex items-center gap-3 p-4 rounded-lg border ${healthTone.bg} ${healthTone.border} ${healthBorderLeftClass} ${healthShadowClass}`}
+          variants={isAlertHealth ? shakeIn : fadeUp}
+        >
+          <span className={`w-2.5 h-2.5 rounded-full ${healthTone.dot} ${healthDotPulse}`} />
           <div className="flex-1">
             <p className={`text-sm font-bold ${healthTone.text}`}>Saúde financeira: {healthStatus.label}</p>
             <p className="text-xs text-ink-500 mt-0.5">{healthStatus.desc}</p>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Mistura financeira */}
       {financialData.mixedAccounts && (
-        <div className="rounded-lg p-4 border border-loss-200 bg-loss-50">
+        <motion.div
+          className="rounded-lg p-4 border border-loss-200 bg-loss-50 border-l-4 border-l-loss-500 shadow-md"
+          variants={shakeIn}
+        >
           <div className="flex items-start gap-3">
             <svg className="w-5 h-5 text-loss-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -688,11 +714,11 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Card hero — Lucro líquido */}
-      <div className="card-dark p-6">
+      <motion.div className="card-dark p-6" variants={fadeUp}>
         <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-xs font-medium text-ink-300 uppercase tracking-wider mb-1">
@@ -705,7 +731,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
           </span>
         </div>
         <p className={`text-4xl font-bold tracking-tighter font-mono ${netProfitPositive ? 'text-money-500' : 'text-loss-500'}`}>
-          {formatBRL(metrics.netProfit)}
+          {formatBRL(animatedNetProfit)}
         </p>
         <p className="text-sm mt-1 text-ink-300 font-medium">
           Margem líquida: {metrics.netMargin.toFixed(1)}%
@@ -714,42 +740,46 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-ink-800">
           <div>
             <p className="text-[11px] text-ink-400 uppercase tracking-wider font-medium mb-1">Lucro Bruto</p>
-            <p className="text-base font-bold font-mono">{formatBRL(metrics.grossProfit)}</p>
+            <p className="text-base font-bold font-mono">{formatBRL(animatedGrossProfit)}</p>
             <p className="text-xs text-ink-400 mt-0.5">{metrics.grossMargin.toFixed(1)}%</p>
           </div>
           <div>
             <p className="text-[11px] text-ink-400 uppercase tracking-wider font-medium mb-1">EBITDA</p>
-            <p className="text-base font-bold font-mono">{formatBRL(metrics.ebitda)}</p>
+            <p className="text-base font-bold font-mono">{formatBRL(animatedEbitda)}</p>
             <p className="text-xs text-ink-400 mt-0.5">
               {financialData.revenue > 0 ? ((metrics.ebitda / financialData.revenue) * 100).toFixed(1) : 0}%
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Diagnóstico */}
-      <div className="card p-6">
+      <motion.div className="card p-6" variants={fadeUp}>
         <div className="diagnosis-content" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
-      </div>
+      </motion.div>
 
       {/* Benchmark */}
-      <BenchmarkChart metrics={metrics} segment={businessData.segment} />
+      <motion.div variants={fadeUp}>
+        <BenchmarkChart metrics={metrics} segment={businessData.segment} />
+      </motion.div>
 
       {/* Benchmark — SEBRAE + BCB */}
-      <BenchmarkPremium
-        macroData={localMacro}
-        segment={businessData.segment}
-        sectorLabel={sectorLabel}
-        plan={plan}
-        onUpgrade={() => setShowUpgrade(true)}
-      />
+      <motion.div variants={fadeUp}>
+        <BenchmarkPremium
+          macroData={localMacro}
+          segment={businessData.segment}
+          sectorLabel={sectorLabel}
+          plan={plan}
+          onUpgrade={() => setShowUpgrade(true)}
+        />
+      </motion.div>
 
       {/* Ponto de equilíbrio destacado */}
       {metrics.breakEven > 0 && (
-        <div className="card p-5 border-2 border-brand-200 bg-gradient-to-br from-brand-50 to-white">
+        <motion.div className="card p-5 border-2 border-brand-200 bg-gradient-to-br from-brand-50 to-white" variants={fadeUp}>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600 mb-1">Ponto de Equilíbrio</p>
           <p className="text-[11px] text-ink-400 mb-3">Faturamento mínimo para não perder dinheiro</p>
-          <p className="text-4xl font-bold text-ink-900 font-mono tracking-tighter">{formatBRL(metrics.breakEven)}</p>
+          <p className="text-4xl font-bold text-ink-900 font-mono tracking-tighter">{formatBRL(animatedBreakEven)}</p>
           <p className="text-xs text-ink-500 mt-2 leading-relaxed">
             Você precisa faturar pelo menos <strong>{formatBRL(metrics.breakEven)}/mês</strong> para cobrir todos os custos.
           </p>
@@ -764,11 +794,11 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
               }
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Projeção 30 dias */}
-      <div className="card p-5">
+      <motion.div className="card p-5" variants={fadeUp}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm font-bold text-ink-800">Projeção dos próximos 30 dias</p>
@@ -778,7 +808,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         </div>
 
         <p className={`text-xl font-bold tracking-tighter font-mono mb-1 ${projTone.text}`}>
-          {formatBRL(projection.projected)}
+          {formatBRL(animatedProjection)}
         </p>
         <p className="text-xs text-ink-400 mb-4">saldo projetado</p>
 
@@ -806,10 +836,10 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
             <span className={`text-sm font-bold font-mono ${projTone.text}`}>{formatBRL(projection.projected)}</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Exportações */}
-      <div className="card p-5">
+      <motion.div className="card p-5" variants={fadeUp}>
         <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-3">Exportar relatório</p>
         <div className="grid grid-cols-2 gap-2.5 mb-2.5">
           <button onClick={handlePDF} disabled={pdfExporting} className="btn-pdf disabled:opacity-50">
@@ -852,25 +882,27 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
             )}
           </button>
         )}
-      </div>
+      </motion.div>
 
       {/* Compartilhar */}
-      <button
-        onClick={() => {
-          const msg = buildWhatsAppMessage(businessData, financialData, diagnosis, metrics, healthStatus);
-          window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-        }}
-        className="w-full flex items-center justify-center gap-2.5 py-3 px-5 rounded-xl font-semibold text-white text-[15px] active:scale-[0.99] transition-all"
-        style={{ background: '#25d366' }}
-      >
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-        </svg>
-        Compartilhar no WhatsApp
-      </button>
+      <motion.div variants={fadeUp}>
+        <button
+          onClick={() => {
+            const msg = buildWhatsAppMessage(businessData, financialData, diagnosis, metrics, healthStatus);
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+          }}
+          className="w-full flex items-center justify-center gap-2.5 py-3 px-5 rounded-xl font-semibold text-white text-[15px] active:scale-[0.99] transition-all"
+          style={{ background: '#25d366' }}
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          Compartilhar no WhatsApp
+        </button>
+      </motion.div>
 
       {/* Ações — pro features com lock para free */}
-      <div className="space-y-2.5">
+      <motion.div className="space-y-2.5" variants={fadeUp}>
         {allDiagnoses.length > 0 && (
           <button
             onClick={isPaid ? onOpenHistory : () => setShowUpgrade(true)}
@@ -923,7 +955,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
             Escreveu algum dado errado? <span className="underline">Corrija aqui</span>
           </button>
         )}
-      </div>
+      </motion.div>
 
       <p className="text-center text-xs text-ink-400 pb-4">FinCheck — diagnóstico em linguagem de dono</p>
 
@@ -937,6 +969,6 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
       )}
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
-    </div>
+    </motion.div>
   );
 }
