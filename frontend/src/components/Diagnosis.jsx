@@ -1,8 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { calcMetrics, formatBRL } from '../lib/metrics.js';
 import { downloadDRE, downloadPDF, currentToEntry, recordToEntry, formatReferenceMonth } from '../lib/export.js';
 import { SECTOR_BENCHMARKS } from './Onboarding.jsx';
 import UpgradeModal from './UpgradeModal.jsx';
+
+// Framer Motion variants — module scope, reuse across all sections
+const fadeUp = {
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+};
+
+const shakeIn = {
+  hidden:  { opacity: 0, x: -8 },
+  visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 20 } },
+};
+
+const staggerContainer = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0 } },
+};
+
+const staggerContainerReduced = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0, delayChildren: 0 } },
+};
 
 function renderMarkdown(text) {
   if (!text) return '';
@@ -131,6 +153,30 @@ function calcProjection(f, m) {
   return { projected, coverageDays, status, sentence, cash, revenue, fixed, debt };
 }
 
+// Count-up hook — RAF + easeOutCubic. Handles negative targets via abs+sign.
+function useCountUp(target, duration = 1200, disabled = false) {
+  const [value, setValue] = useState(disabled ? target : 0);
+  useEffect(() => {
+    if (disabled) { setValue(target); return; }
+    const safeTarget = Number.isFinite(target) ? target : 0;
+    if (safeTarget === 0) { setValue(0); return; }
+    const sign = Math.sign(safeTarget);
+    const abs = Math.abs(safeTarget);
+    let start = null;
+    let rafId;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      setValue(abs * eased * sign);
+      if (p < 1) rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => { if (rafId) cancelAnimationFrame(rafId); };
+  }, [target, duration, disabled]);
+  return value;
+}
+
 function BenchmarkChart({ metrics, segment }) {
   const bench = SECTOR_BENCHMARKS[segment] || SECTOR_BENCHMARKS.outro;
   const userCmvPct = metrics.revenue > 0 ? (metrics.cogs / metrics.revenue) * 100 : 0;
@@ -143,7 +189,7 @@ function BenchmarkChart({ metrics, segment }) {
 
   return (
     <div className="card p-5">
-      <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-4">Você vs. média do setor</p>
+      <p className="text-sm font-bold text-ink-400 uppercase tracking-wider mb-4">Você vs. média do setor</p>
       <div className="space-y-4">
         {rows.map(row => {
           const maxVal = Math.max(row.user, row.range[1]) * 1.3 || 100;
@@ -167,13 +213,23 @@ function BenchmarkChart({ metrics, segment }) {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-ink-400 w-8 shrink-0">Você</span>
                   <div className="flex-1 h-2.5 bg-ink-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${userColor}`} style={{ width: `${userW}%` }} />
+                    <motion.div
+                      className={`h-full rounded-full ${userColor}`}
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${userW}%` }}
+                      transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
+                    />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-ink-400 w-8 shrink-0">Setor</span>
                   <div className="flex-1 h-2.5 bg-ink-100 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-brand-300" style={{ width: `${sectW}%` }} />
+                    <motion.div
+                      className="h-full rounded-full bg-brand-300"
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${sectW}%` }}
+                      transition={{ duration: 0.6, ease: 'easeOut', delay: 0.5 }}
+                    />
                   </div>
                 </div>
               </div>
@@ -591,10 +647,10 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
     <div className="animate-slide-up space-y-4">
       {/* Header */}
       <div className="mb-1">
-        <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-2">
+        <p className="text-sm font-bold text-ink-400 uppercase tracking-wider mb-2">
           Diagnóstico financeiro
         </p>
-        <h1 className="text-3xl font-bold text-ink-900 tracking-tighter">
+        <h1 className="text-4xl font-bold text-ink-900 tracking-tighter">
           {businessData.businessName}
         </h1>
         <p className="text-ink-500 text-sm mt-0.5 capitalize">
@@ -655,7 +711,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
           Margem líquida: {metrics.netMargin.toFixed(1)}%
         </p>
 
-        <div className="grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-ink-800">
+        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-ink-800">
           <div>
             <p className="text-[11px] text-ink-400 uppercase tracking-wider font-medium mb-1">Lucro Bruto</p>
             <p className="text-base font-bold font-mono">{formatBRL(metrics.grossProfit)}</p>
@@ -721,7 +777,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
           <span className={`w-2.5 h-2.5 rounded-full ${projTone.dot}`} />
         </div>
 
-        <p className={`text-2xl font-bold tracking-tighter font-mono mb-1 ${projTone.text}`}>
+        <p className={`text-xl font-bold tracking-tighter font-mono mb-1 ${projTone.text}`}>
           {formatBRL(projection.projected)}
         </p>
         <p className="text-xs text-ink-400 mb-4">saldo projetado</p>
