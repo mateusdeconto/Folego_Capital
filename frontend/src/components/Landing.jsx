@@ -566,44 +566,17 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
           style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.09) 0%, transparent 70%)' }}
         />
 
-        {/* ── Sun rays — luz do fim do túnel ──────────────── */}
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <svg
-            className="absolute -top-10 left-1/2 -translate-x-1/2 w-[1400px] h-[900px] opacity-[0.055]"
-            viewBox="0 0 1400 900"
-            preserveAspectRatio="xMidYMid slice"
-            fill="none"
-          >
-            {Array.from({ length: 22 }, (_, i) => {
-              const angle = -110 + i * 10;
-              const rad = (angle * Math.PI) / 180;
-              const x2 = 700 + Math.sin(rad) * 2200;
-              const y2 = 0 + Math.cos(rad) * 2200;
-              return (
-                <line
-                  key={i}
-                  x1="700" y1="0"
-                  x2={x2} y2={y2}
-                  stroke="#F59E0B"
-                  strokeWidth={i % 5 === 2 ? '3' : i % 3 === 0 ? '2' : '1'}
-                  opacity={i % 4 === 1 ? '0.8' : '0.5'}
-                />
-              );
-            })}
-          </svg>
-        </div>
-
         <div className="landing-container relative z-10 pt-16 pb-20 sm:pt-24 sm:pb-28">
-          {/* Hero text — centralizado */}
+          {/* Hero text — centralizado, largura total */}
           <motion.div
-            className="max-w-3xl mx-auto text-center"
+            className="text-center"
             initial="hidden"
             animate="visible"
             variants={staggerContainer(0.15, 0.1)}
           >
             {/* Badge */}
             <motion.div variants={fadeUp}
-              className="inline-flex items-center gap-2.5 mb-7 px-4 py-1.5 rounded-full border border-gold-500/25 bg-gold-500/10">
+              className="inline-flex items-center gap-2.5 mb-8 px-4 py-1.5 rounded-full border border-gold-500/25 bg-gold-500/10">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-gold-400"
                 animate={{ opacity: [1, 0.3, 1] }}
@@ -614,35 +587,50 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
               </span>
             </motion.div>
 
-            {/* Headline — stagger per line */}
+            {/* Headline — stagger per line, grande */}
             <motion.h1
-              className="font-bold text-white text-[2.8rem] sm:text-5xl md:text-[3.8rem] leading-[1.05] tracking-tightest mb-7"
-              variants={staggerContainer(0.15, 0)}
+              className="font-black text-white text-[3.2rem] sm:text-6xl md:text-[5rem] lg:text-[5.5rem] leading-[1.02] tracking-tighter mb-8"
+              variants={staggerContainer(0.18, 0)}
               initial="hidden"
               animate="visible"
             >
               <motion.span variants={fadeUp} className="block">Seu negócio dá lucro</motion.span>
-              <motion.span variants={fadeUp} className="block text-gold-400">de verdade?</motion.span>
+              <motion.span
+                variants={fadeUp}
+                className="block text-gold-400"
+                animate={{ textShadow: ['0 0 40px rgba(245,158,11,0)', '0 0 60px rgba(245,158,11,0.3)', '0 0 40px rgba(245,158,11,0)'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+              >
+                de verdade?
+              </motion.span>
             </motion.h1>
 
             {/* Subtext */}
             <motion.p variants={fadeUp}
-              className="text-lg text-white/65 leading-relaxed mb-10 max-w-xl mx-auto">
+              className="text-xl text-white/60 leading-relaxed mb-10 max-w-2xl mx-auto">
               Descubra em 3 minutos o que seus números realmente dizem — e o que fazer agora.
             </motion.p>
 
             {/* CTAs */}
-            <motion.div variants={fadeUp} className="flex items-center justify-center gap-4 flex-wrap mb-10">
-              <motion.button
-                onClick={onEnter}
-                className="btn-gold inline-flex items-center gap-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.15 }}
-              >
-                Fazer meu diagnóstico
-                <ArrowRight size={15} />
-              </motion.button>
+            <motion.div variants={fadeUp} className="flex items-center justify-center gap-4 flex-wrap mb-12">
+              {/* Botão com anel pulsante */}
+              <div className="relative">
+                <motion.div
+                  className="absolute inset-0 rounded-xl bg-gold-500/30"
+                  animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0, 0.6] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.button
+                  onClick={onEnter}
+                  className="relative btn-gold inline-flex items-center gap-2 text-base px-6 py-3"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  Fazer meu diagnóstico
+                  <ArrowRight size={16} />
+                </motion.button>
+              </div>
               <a href="#como-funciona"
                 className="text-sm font-semibold text-white/50 hover:text-white/80 transition-colors py-2">
                 Ver como funciona →
@@ -651,10 +639,10 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
 
             {/* Stats row */}
             <motion.div
-              className="flex items-center justify-center gap-8 pt-8 border-t border-white/10"
+              className="flex items-center justify-center gap-10 sm:gap-16 pt-8 border-t border-white/10 max-w-xl mx-auto"
               initial="hidden"
               animate="visible"
-              variants={staggerContainer(0.1, 0.6)}
+              variants={staggerContainer(0.1, 0.7)}
             >
               {[
                 { n: '3 min', label: 'para o diagnóstico' },
@@ -662,8 +650,8 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
                 { n: 'IA', label: 'com dados do seu setor' },
               ].map(s => (
                 <motion.div key={s.n} variants={fadeUpSpring} className="text-center">
-                  <p className="text-xl font-bold text-white font-mono">{s.n}</p>
-                  <p className="text-[11px] text-white/40 mt-0.5">{s.label}</p>
+                  <p className="text-2xl font-bold text-white font-mono">{s.n}</p>
+                  <p className="text-[11px] text-white/40 mt-1">{s.label}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -671,89 +659,149 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
 
           {/* ReportCard de erro — Padaria do João perdido */}
           <motion.div
-            className="mt-16 max-w-sm mx-auto"
-            initial={{ opacity: 0, y: 30 }}
+            className="mt-20 max-w-md mx-auto"
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...springGentle, delay: 0.9 }}
+            transition={{ ...springGentle, delay: 1.0 }}
           >
-            <p className="text-center text-xs text-white/30 uppercase tracking-widest font-semibold mb-4">
+            <motion.p
+              className="text-center text-sm text-white/50 uppercase tracking-widest font-bold mb-6 flex items-center justify-center gap-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+            >
+              <span className="w-8 h-px bg-white/20" />
               É assim que João estava antes
-            </p>
+              <span className="w-8 h-px bg-white/20" />
+            </motion.p>
             <ReportCardError />
           </motion.div>
         </div>
       </section>
 
-      {/* ── PAIN POINTS (LP-05) ──────────────────────────── */}
-      <section className="landing-container py-24 sm:py-32">
-        <div className="max-w-3xl mx-auto">
-          <InView className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="w-8 h-px bg-gold-500/60" />
-              <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">
-                POR QUE DONO DE NEGÓCIO NÃO DORME
-              </span>
-            </div>
-            <h2 className="text-3xl sm:text-[2.6rem] font-bold text-white tracking-tighter leading-tight">
-              Tocar um negócio sem ler<br className="hidden sm:block" /> os números é dirigir de olhos fechados.
-            </h2>
-          </InView>
-
-          <motion.div
-            className="space-y-2"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer(0.055)}
-          >
-            {PAIN_POINTS.map(p => (
-              <motion.div
-                key={p}
-                variants={fadeUp}
-                className="group flex items-start gap-4 p-4 glass-card rounded-2xl transition-colors duration-200"
-                whileHover={{ borderColor: 'rgba(251,191,36,0.20)' }}
-              >
-                <div className="w-6 h-6 rounded-full bg-gold-500/10 border border-gold-500/20
-                                flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="w-2 h-2 rounded-full bg-gold-400" />
-                </div>
-                <p className="text-[15px] text-white/75 leading-relaxed">{p}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <InView delay={100}>
-            <div className="mt-10 p-5 bg-gold-500/10 border border-gold-500/20 rounded-2xl flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-gold-500 flex items-center justify-center flex-shrink-0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+      {/* ── PAIN POINTS (LP-05) — fundo escuro ───────────── */}
+      <section style={{ background: '#0F172A' }} className="py-24 sm:py-32">
+        <div className="landing-container">
+          <div className="max-w-3xl mx-auto">
+            <InView className="mb-12">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="w-8 h-px bg-gold-500/60" />
+                <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">
+                  POR QUE DONO DE NEGÓCIO NÃO DORME
+                </span>
               </div>
-              <p className="text-sm font-semibold text-white/80">
-                Se marcou pelo menos um, é exatamente pra isso que o FinCheck existe.
-              </p>
-            </div>
-          </InView>
+              <h2 className="text-3xl sm:text-[2.6rem] font-bold text-white tracking-tighter leading-tight">
+                Tocar um negócio sem ler<br className="hidden sm:block" /> os números é dirigir de olhos fechados.
+              </h2>
+            </InView>
 
-          {/* ── Grande frase de impacto ────────────────────── */}
-          <InView delay={150} className="mt-20 text-center">
-            <p className="text-[2.8rem] sm:text-[3.5rem] md:text-[4.2rem] font-black text-white tracking-tighter leading-none">
+            <motion.div
+              className="space-y-2"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-60px' }}
+              variants={staggerContainer(0.06)}
+            >
+              {PAIN_POINTS.map(p => (
+                <motion.div
+                  key={p}
+                  variants={fadeUp}
+                  className="group flex items-start gap-4 p-4 glass-card rounded-2xl cursor-default"
+                  whileHover={{ x: 5, backgroundColor: 'rgba(245,158,11,0.04)', borderColor: 'rgba(251,191,36,0.25)' }}
+                  whileTap={{ scale: 0.99 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <motion.div
+                    className="w-6 h-6 rounded-full bg-gold-500/10 border border-gold-500/20
+                                flex items-center justify-center flex-shrink-0 mt-0.5"
+                    whileHover={{ scale: 1.2, backgroundColor: 'rgba(245,158,11,0.2)' }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-gold-400" />
+                  </motion.div>
+                  <p className="text-[15px] text-white/75 leading-relaxed group-hover:text-white/90 transition-colors">{p}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <InView delay={100}>
+              <div className="mt-10 p-5 bg-gold-500/10 border border-gold-500/20 rounded-2xl flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-gold-500 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white/80">
+                  Se marcou pelo menos um, é exatamente pra isso que o FinCheck existe.
+                </p>
+              </div>
+            </InView>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TRANSFORMAÇÃO — paleta clareia progressivamente ── */}
+      <section
+        className="relative overflow-hidden py-28 sm:py-36"
+        style={{ background: 'linear-gradient(to bottom, #0F172A 0%, #111827 25%, #152033 55%, #1a2842 80%, #1e3050 100%)' }}
+      >
+        {/* Glow ambiente suave — como amanhecer */}
+        <div
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full z-0"
+          style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.07) 0%, transparent 65%)' }}
+        />
+        {/* Raios de luz discretos — saindo do escuro */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          <svg className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-[0.04]"
+            viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" fill="none">
+            {[...Array(10)].map((_, i) => {
+              const a = -50 + i * 11;
+              const r = (a * Math.PI) / 180;
+              return <line key={i} x1="600" y1="0" x2={600 + Math.sin(r) * 1800} y2={Math.cos(r) * 1800}
+                stroke="#F59E0B" strokeWidth={i % 3 === 1 ? '3' : '1.5'} opacity={i % 2 ? '0.7' : '0.4'} />;
+            })}
+          </svg>
+        </div>
+
+        <div className="landing-container relative z-10 max-w-3xl mx-auto text-center">
+          {/* Grande frase de impacto */}
+          <InView>
+            <motion.p
+              className="text-[3rem] sm:text-[4rem] md:text-[5rem] font-black text-white tracking-tighter leading-none"
+              whileInView={{ scale: [0.92, 1] }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
               A FinCheck vai
-            </p>
-            <p className="text-[2.8rem] sm:text-[3.5rem] md:text-[4.2rem] font-black text-gold-400 tracking-tighter leading-none mt-1">
+            </motion.p>
+            <motion.p
+              className="text-[3rem] sm:text-[4rem] md:text-[5rem] font-black text-gold-400 tracking-tighter leading-none mt-1"
+              whileInView={{ scale: [0.92, 1] }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              animate={{
+                textShadow: ['0 0 0px rgba(245,158,11,0)', '0 0 60px rgba(245,158,11,0.35)', '0 0 0px rgba(245,158,11,0)'],
+              }}
+            >
               salvar você.
-            </p>
-            <p className="text-white/40 text-base mt-5 max-w-md mx-auto leading-relaxed">
+            </motion.p>
+            <motion.p
+              className="text-white/50 text-lg mt-6 max-w-md mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
               O João não sabia que estava no vermelho. Com a FinCheck, ele descobriu — e virou o jogo.
-            </p>
+            </motion.p>
           </InView>
 
-          {/* ── Card de sucesso: Padaria do João com FinCheck ─ */}
-          <InView delay={200} className="mt-12">
+          {/* Card de sucesso: Padaria do João com FinCheck */}
+          <InView delay={200} className="mt-14">
             <div className="relative max-w-md mx-auto">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                <span className="bg-gold-500 text-navy-950 text-[11px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-md">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
+                <span className="bg-gold-500 text-navy-950 text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
                   DRE · Padaria do João — Dessa vez com FinCheck
                 </span>
               </div>
@@ -798,8 +846,8 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
                   key={s.n}
                   variants={fadeUpSpring}
                   className="card-navy rounded-2xl p-7"
-                  whileHover={{ y: -2 }}
-                  transition={{ duration: 0.2 }}
+                  whileHover={{ y: -6, scale: 1.02, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-xl bg-navy-950 flex items-center justify-center">
@@ -900,9 +948,9 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
               <span className="w-8 h-px bg-gold-500/40" />
             </div>
             <h2 className="text-3xl sm:text-[2.8rem] font-bold text-white tracking-tighter mb-5 leading-tight">
-              Cinco minutos agora vão colocar
+              Cinco minutos agora vão colocar luz
               <br />
-              <span className="text-gold-400">luz nos seus meses de escuro.</span>
+              <span className="text-gold-400">nos seus meses escuros.</span>
             </h2>
             <p className="text-white/50 text-lg leading-relaxed mb-10">
               Crie sua conta, responda 7 perguntas e receba seu diagnóstico completo.
