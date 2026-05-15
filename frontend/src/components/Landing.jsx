@@ -67,8 +67,9 @@ function ArrowRight({ size = 15 }) {
 /* ── Logo ─────────────────────────────────────────────────── */
 function Logo() {
   return (
-    <div className="flex items-center">
-      <img src="/folego-logo.png" alt="Fôlego Capital" className="h-10 w-auto" />
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[20px] font-extrabold text-white tracking-tight">Fôlego</span>
+      <span className="text-[18px] font-semibold text-gold-400 tracking-tight">Capital</span>
     </div>
   );
 }
