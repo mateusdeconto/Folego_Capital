@@ -194,7 +194,7 @@ function ReportCard({ cardStyle = {}, badgeStyle = {}, metricsStyle = {}, recoSt
 /* ── Mock do relatório — versão ERRO (Padaria do João sem FinCheck) ── */
 function ReportCardError() {
   return (
-    <div className="relative max-w-sm mx-auto">
+    <div className="relative">
       <motion.div
         className="relative bg-navy-800 rounded-2xl shadow-lg border border-red-500/25 overflow-hidden"
         initial={{ opacity: 0, y: 24 }}
@@ -202,53 +202,53 @@ function ReportCardError() {
         transition={{ ...springGentle, delay: 0.6 }}
       >
         {/* Header */}
-        <div className="bg-navy-950 px-5 py-4">
+        <div className="bg-navy-950 px-6 py-5">
           <div className="flex items-center gap-1.5 mb-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
-            <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
-            <span className="ml-2 text-[11px] text-white/30 font-mono">fincheck.ai/diagnóstico</span>
+            <span className="w-3 h-3 rounded-full bg-red-500/60" />
+            <span className="w-3 h-3 rounded-full bg-yellow-500/40" />
+            <span className="w-3 h-3 rounded-full bg-white/10" />
+            <span className="ml-3 text-xs text-white/30 font-mono">fincheck.ai/diagnóstico</span>
           </div>
-          <p className="text-[11px] text-white/50 font-medium uppercase tracking-widest mb-1">
+          <p className="text-xs text-white/50 font-medium uppercase tracking-widest mb-1">
             Diagnóstico financeiro
           </p>
-          <p className="text-lg font-bold text-white leading-tight">Padaria do João</p>
+          <p className="text-xl font-bold text-white leading-tight">Padaria do João</p>
         </div>
 
         {/* Corpo */}
-        <div className="p-5 space-y-4">
+        <div className="p-6 space-y-5">
           {/* Badge saúde — alerta */}
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/25">
-            <div className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/25">
+            <div className="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
                   stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div>
-              <p className="text-[11px] text-red-400 font-bold uppercase tracking-wider">Saúde financeira</p>
-              <p className="text-sm font-bold text-white">Em risco crítico ↓</p>
+              <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Saúde financeira</p>
+              <p className="text-base font-bold text-white">Em risco crítico ↓</p>
             </div>
           </div>
 
           {/* Métricas — negativas */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="bg-navy-900 rounded-xl p-3 border border-red-500/20">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Lucro líquido</p>
-              <p className="text-[17px] font-bold text-red-400 font-mono">-R$ 2.840</p>
-              <p className="text-[10px] text-red-400/60 mt-0.5">prejuízo no mês ↓</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-navy-900 rounded-xl p-4 border border-red-500/20">
+              <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1.5">Lucro líquido</p>
+              <p className="text-[26px] font-bold text-red-400 font-mono leading-none">-R$ 2.840</p>
+              <p className="text-[11px] text-red-400/60 mt-1.5">prejuízo no mês ↓</p>
             </div>
-            <div className="bg-navy-900 rounded-xl p-3 border border-red-500/20">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Margem bruta</p>
-              <p className="text-[17px] font-bold text-red-400 font-mono">18,4%</p>
-              <p className="text-[10px] text-red-400/60 mt-0.5">abaixo da média ✗</p>
+            <div className="bg-navy-900 rounded-xl p-4 border border-red-500/20">
+              <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1.5">Margem bruta</p>
+              <p className="text-[26px] font-bold text-red-400 font-mono leading-none">18,4%</p>
+              <p className="text-[11px] text-red-400/60 mt-1.5">abaixo da média ✗</p>
             </div>
           </div>
 
           {/* Alerta */}
-          <div className="border-l-2 border-red-400 pl-3">
-            <p className="text-[11px] text-red-400 font-bold uppercase tracking-wide mb-1">⚠ Alerta crítico</p>
-            <p className="text-[12px] text-white/60 leading-relaxed">
+          <div className="border-l-2 border-red-400 pl-4">
+            <p className="text-xs text-red-400 font-bold uppercase tracking-wide mb-1">⚠ Alerta crítico</p>
+            <p className="text-sm text-white/60 leading-relaxed">
               Custo operacional engolindo o faturamento. João está perdido e não sabe.
             </p>
           </div>
@@ -257,14 +257,14 @@ function ReportCardError() {
 
       {/* Badge flutuante — vermelho */}
       <motion.div
-        className="absolute -right-4 -bottom-4 bg-navy-800 rounded-xl shadow-lg border border-red-500/25 px-3.5 py-3"
+        className="absolute -right-5 -bottom-5 bg-navy-800 rounded-xl shadow-lg border border-red-500/25 px-4 py-3"
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <p className="text-[10px] text-white/40 font-medium mb-0.5">Vs. setor (Alimentação)</p>
+        <p className="text-[11px] text-white/40 font-medium mb-0.5">Vs. setor (Alimentação)</p>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-red-500" />
-          <p className="text-xs font-bold text-white">Você está abaixo da média</p>
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+          <p className="text-sm font-bold text-white">Você está abaixo da média</p>
         </div>
       </motion.div>
     </div>
@@ -274,7 +274,7 @@ function ReportCardError() {
 /* ── Mock do relatório — versão SUCESSO (Padaria do João com FinCheck) ── */
 function ReportCardSuccess() {
   return (
-    <div className="relative max-w-sm mx-auto">
+    <div className="relative">
       <motion.div
         className="relative bg-navy-800 rounded-2xl shadow-gold border border-gold-500/20 overflow-hidden"
         initial={{ opacity: 0, y: 24 }}
@@ -283,55 +283,55 @@ function ReportCardSuccess() {
         transition={{ ...springGentle, delay: 0.3 }}
       >
         {/* Header */}
-        <div className="bg-navy-950 px-5 py-4">
+        <div className="bg-navy-950 px-6 py-5">
           <div className="flex items-center gap-1.5 mb-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-            <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-            <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-            <span className="ml-2 text-[11px] text-white/30 font-mono">fincheck.ai/diagnóstico</span>
+            <span className="w-3 h-3 rounded-full bg-white/15" />
+            <span className="w-3 h-3 rounded-full bg-white/15" />
+            <span className="w-3 h-3 rounded-full bg-white/15" />
+            <span className="ml-3 text-xs text-white/30 font-mono">fincheck.ai/diagnóstico</span>
           </div>
-          <p className="text-[11px] text-white/50 font-medium uppercase tracking-widest mb-1">
+          <p className="text-xs text-white/50 font-medium uppercase tracking-widest mb-1">
             Diagnóstico financeiro
           </p>
-          <p className="text-lg font-bold text-white leading-tight">
-            Padaria do João <span className="text-gold-400 text-sm font-semibold">com FinCheck ✓</span>
+          <p className="text-xl font-bold text-white leading-tight">
+            Padaria do João <span className="text-gold-400 text-base font-semibold">com FinCheck ✓</span>
           </p>
         </div>
 
         {/* Corpo */}
-        <div className="p-5 space-y-4">
+        <div className="p-6 space-y-5">
           {/* Badge saúde — ok */}
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-gold-500/10 border border-gold-500/20">
-            <div className="w-7 h-7 rounded-lg bg-gold-500 flex items-center justify-center flex-shrink-0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-gold-500/10 border border-gold-500/20">
+            <div className="w-10 h-10 rounded-lg bg-gold-500 flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div>
-              <p className="text-[11px] text-gold-400 font-bold uppercase tracking-wider">Saúde financeira</p>
-              <p className="text-sm font-bold text-white">Saudável ↑</p>
+              <p className="text-xs text-gold-400 font-bold uppercase tracking-wider">Saúde financeira</p>
+              <p className="text-base font-bold text-white">Saudável ↑</p>
             </div>
           </div>
 
           {/* Métricas — positivas */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="bg-navy-900 rounded-xl p-3 border border-white/8">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Lucro líquido</p>
-              <p className="text-[17px] font-bold text-gold-400 font-mono">R$ 8.420</p>
-              <p className="text-[10px] text-white/40 mt-0.5">margem 14,2% ↑</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-navy-900 rounded-xl p-4 border border-white/8">
+              <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1.5">Lucro líquido</p>
+              <p className="text-[26px] font-bold text-gold-400 font-mono leading-none">R$ 8.420</p>
+              <p className="text-[11px] text-white/40 mt-1.5">margem 14,2% ↑</p>
             </div>
-            <div className="bg-navy-900 rounded-xl p-3 border border-white/8">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Margem bruta</p>
-              <p className="text-[17px] font-bold text-white font-mono">69,3%</p>
-              <p className="text-[10px] text-white/40 mt-0.5">acima da média ✓</p>
+            <div className="bg-navy-900 rounded-xl p-4 border border-white/8">
+              <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1.5">Margem bruta</p>
+              <p className="text-[26px] font-bold text-white font-mono leading-none">69,3%</p>
+              <p className="text-[11px] text-white/40 mt-1.5">acima da média ✓</p>
             </div>
           </div>
 
           {/* Recomendação */}
-          <div className="border-l-2 border-gold-400 pl-3">
-            <p className="text-[11px] text-gold-400 font-bold uppercase tracking-wide mb-1">Ação esta semana</p>
-            <p className="text-[12px] text-white/60 leading-relaxed">
+          <div className="border-l-2 border-gold-400 pl-4">
+            <p className="text-xs text-gold-400 font-bold uppercase tracking-wide mb-1">Ação esta semana</p>
+            <p className="text-sm text-white/60 leading-relaxed">
               Margem acima do setor. Reinvista parte do lucro em equipamento — você tem fôlego.
             </p>
           </div>
@@ -340,14 +340,14 @@ function ReportCardSuccess() {
 
       {/* Badge flutuante — dourado */}
       <motion.div
-        className="absolute -right-4 -bottom-4 bg-navy-800 rounded-xl shadow-lg border border-gold-500/20 px-3.5 py-3"
+        className="absolute -right-5 -bottom-5 bg-navy-800 rounded-xl shadow-lg border border-gold-500/20 px-4 py-3"
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <p className="text-[10px] text-white/40 font-medium mb-0.5">Vs. setor (Alimentação)</p>
+        <p className="text-[11px] text-white/40 font-medium mb-0.5">Vs. setor (Alimentação)</p>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-gold-500" />
-          <p className="text-xs font-bold text-white">Você está acima da média</p>
+          <div className="w-2.5 h-2.5 rounded-full bg-gold-500" />
+          <p className="text-sm font-bold text-white">Você está acima da média</p>
         </div>
       </motion.div>
     </div>
@@ -659,7 +659,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
 
           {/* ReportCard de erro — Padaria do João perdido */}
           <motion.div
-            className="mt-20 max-w-md mx-auto"
+            className="mt-20 max-w-lg mx-auto"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...springGentle, delay: 1.0 }}
@@ -799,7 +799,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
 
           {/* Card de sucesso: Padaria do João com FinCheck */}
           <InView delay={200} className="mt-14">
-            <div className="relative max-w-md mx-auto">
+            <div className="relative max-w-lg mx-auto">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
                 <span className="bg-gold-500 text-navy-950 text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
                   DRE · Padaria do João — Dessa vez com FinCheck
@@ -814,7 +814,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
       </section>
 
       {/* ── COMO FUNCIONA (LP-06) ────────────────────────── */}
-      <section id="como-funciona" className="bg-navy-900 py-24 sm:py-32">
+      <section id="como-funciona" className="py-24 sm:py-32" style={{ background: '#1e3050' }}>
         <div className="landing-container">
           <InView className="mb-14">
             <div className="flex items-center gap-3 mb-4">
@@ -864,7 +864,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
       </section>
 
       {/* ── FEATURES (LP-07) ─────────────────────────────── */}
-      <section className="py-24 sm:py-32">
+      <section className="py-24 sm:py-32" style={{ background: '#1a2c4a' }}>
         <div className="landing-container">
           <InView className="mb-14">
             <div className="flex items-center gap-3 mb-4">
@@ -908,7 +908,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
       </section>
 
       {/* ── FAQ (LP-08) ──────────────────────────────────── */}
-      <section className="bg-navy-900 border-t border-white/8 py-24 sm:py-32">
+      <section className="border-t border-white/8 py-24 sm:py-32" style={{ background: '#1e3050' }}>
         <div className="landing-container-narrow">
           <InView className="mb-10 text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -932,7 +932,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
       </section>
 
       {/* ── CTA FINAL (LP-03 reinforcement) ─────────────── */}
-      <section className="relative overflow-hidden bg-navy-950 py-24 sm:py-32">
+      <section className="relative overflow-hidden py-24 sm:py-32" style={{ background: '#162540' }}>
         {/* Reuse a centered glow orb for visual interest */}
         <div
           className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full z-0 animate-[glow-pulse_12s_ease-in-out_infinite]"
@@ -974,7 +974,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
       </section>
 
       {/* ── FOOTER (LP-09) ───────────────────────────────── */}
-      <footer className="bg-navy-950 border-t border-white/8 py-12">
+      <footer className="border-t border-white/8 py-12" style={{ background: '#111f35' }}>
         <div className="landing-container">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pb-8 border-b border-white/8">
             {/* Logo + tagline */}
