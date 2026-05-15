@@ -1,7 +1,8 @@
 function Logo() {
   return (
-    <div className="flex items-center">
-      <img src="/folego-logo.png" alt="Fôlego Capital" className="h-9 w-auto" />
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[18px] font-extrabold text-ink-900 tracking-tight">Fôlego</span>
+      <span className="text-[16px] font-semibold text-gold-600 tracking-tight">Capital</span>
     </div>
   );
 }
