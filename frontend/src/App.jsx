@@ -454,6 +454,7 @@ export default function App() {
             <MonthlyTracking
               businessData={businessData}
               financialData={financialData}
+              allDiagnoses={companyDiagnoses}
               onBack={() => setStep(trackingOrigin)}
               onRefill={handleRefill}
             />

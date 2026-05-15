@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { readJSON, writeJSON, STORAGE_AVAILABLE } from '../lib/storage.js';
+import { useMemo } from 'react';
 import { calcMetrics, formatBRL, formatBRLCompact } from '../lib/metrics.js';
 
-const STORAGE_KEY = 'fincheck_history';
 const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTH_NAMES_LONG = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                           'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -16,41 +14,27 @@ function getMonthLong(monthKey) {
   return `${MONTH_NAMES_LONG[parseInt(month, 10) - 1]} de ${year}`;
 }
 
-function loadHistory() { return readJSON(STORAGE_KEY, []); }
-
-function saveEntry(businessData, financialData) {
-  const history = loadHistory();
-  const today = new Date();
-  const monthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-
-  const m = calcMetrics(financialData);
-  const entry = {
-    date:               today.toISOString().split('T')[0],
-    month:              monthKey,
-    businessName:       businessData.businessName,
-    segment:            businessData.segment,
-    revenue:            m.revenue,
-    cogs:               m.cogs,
-    fixedExpenses:      m.fixedExpenses,
-    cashBalance:        m.cashBalance,
-    debtPayment:        m.debtPayment,
-    investments:        m.investments,
-    accountsReceivable: m.accountsReceivable,
-    netProfit:          m.netProfit,
-    netMargin:          m.netMargin,
-    grossMargin:        m.grossMargin,
-  };
-
-  const updated = [...history.filter(e => e.month !== monthKey), entry]
+function diagnosesToHistory(diagnoses = []) {
+  const byMonth = {};
+  for (const d of diagnoses) {
+    const date = new Date(d.created_at);
+    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (!byMonth[month] || d.created_at > byMonth[month].created_at) {
+      byMonth[month] = { ...d, month };
+    }
+  }
+  return Object.values(byMonth)
+    .map(d => {
+      const m = calcMetrics(d.financial_data);
+      return {
+        date:  new Date(d.created_at).toISOString().split('T')[0],
+        month: d.month,
+        businessName: d.business_name,
+        segment:      d.segment,
+        ...m,
+      };
+    })
     .sort((a, b) => a.month.localeCompare(b.month));
-  writeJSON(STORAGE_KEY, updated);
-
-  return { entry, monthKey };
-}
-
-function deleteEntry(monthKey) {
-  const history = loadHistory();
-  writeJSON(STORAGE_KEY, history.filter(e => e.month !== monthKey));
 }
 
 // Sparkline minimalista
@@ -128,15 +112,10 @@ function CompareRow({ label, current, previous, format, isPP = false }) {
   );
 }
 
-export default function MonthlyTracking({ businessData, financialData, onBack, onRefill }) {
-  const [currentEntry, setCurrentEntry]   = useState(null);
-  const [history, setHistory]             = useState([]);
+export default function MonthlyTracking({ businessData, financialData, allDiagnoses = [], onBack, onRefill }) {
+  const history = useMemo(() => diagnosesToHistory(allDiagnoses), [allDiagnoses]);
 
-  useEffect(() => {
-    const { entry } = saveEntry(businessData, financialData);
-    setCurrentEntry(entry);
-    setHistory(loadHistory());
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const currentEntry = history.length > 0 ? history[history.length - 1] : null;
 
   const previousEntry = useMemo(() => {
     if (!currentEntry) return null;
@@ -149,12 +128,6 @@ export default function MonthlyTracking({ businessData, financialData, onBack, o
   const revenueValues   = last6.map(e => e.revenue);
   const netProfitValues = last6.map(e => e.netProfit);
   const cashValues      = last6.map(e => e.cashBalance);
-
-  function handleDelete(monthKey) {
-    if (!confirm('Excluir esse registro? Não dá pra desfazer.')) return;
-    deleteEntry(monthKey);
-    setHistory(loadHistory());
-  }
 
   const dateLabel = currentEntry
     ? new Date(currentEntry.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -170,15 +143,6 @@ export default function MonthlyTracking({ businessData, financialData, onBack, o
           {businessData.businessName}
         </h1>
       </div>
-
-      {/* Storage warning */}
-      {!STORAGE_AVAILABLE && (
-        <div className="card p-4 border-amber-200 bg-amber-50">
-          <p className="text-sm text-amber-700 leading-relaxed">
-            Seu navegador está bloqueando o armazenamento temporário. Tente sair do modo anônimo.
-          </p>
-        </div>
-      )}
 
       {/* Saved confirmation */}
       {currentEntry && (
@@ -200,7 +164,7 @@ export default function MonthlyTracking({ businessData, financialData, onBack, o
         <div className="card p-5 space-y-5">
           <div>
             <p className="text-sm font-bold text-ink-800">Evolução nos últimos {last6.length} meses</p>
-            <p className="text-xs text-ink-400 mt-0.5">Salvo no seu navegador</p>
+            <p className="text-xs text-ink-400 mt-0.5">Salvo na sua conta</p>
           </div>
 
           <div>
@@ -248,22 +212,11 @@ export default function MonthlyTracking({ businessData, financialData, onBack, o
           <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-3">Histórico completo</p>
           <div className="divide-y divide-ink-100">
             {[...history].reverse().map((entry) => (
-              <div key={entry.month} className="flex items-center justify-between py-2.5">
-                <div>
-                  <p className="text-sm font-semibold text-ink-700">{getMonthLong(entry.month)}</p>
-                  <p className="text-xs text-ink-400 font-mono">
-                    Lucro: {formatBRL(entry.netProfit)} · Margem {entry.netMargin.toFixed(1)}%
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleDelete(entry.month)}
-                  className="text-ink-300 hover:text-loss-500 hover:bg-loss-50 w-8 h-8 rounded-md flex items-center justify-center transition-colors"
-                  aria-label="Excluir registro"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                </button>
+              <div key={entry.month} className="py-2.5">
+                <p className="text-sm font-semibold text-ink-700">{getMonthLong(entry.month)}</p>
+                <p className="text-xs text-ink-400 font-mono">
+                  Lucro: {formatBRL(entry.netProfit)} · Margem {entry.netMargin.toFixed(1)}%
+                </p>
               </div>
             ))}
           </div>
