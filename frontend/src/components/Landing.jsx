@@ -191,6 +191,169 @@ function ReportCard({ cardStyle = {}, badgeStyle = {}, metricsStyle = {}, recoSt
   );
 }
 
+/* ── Mock do relatório — versão ERRO (Padaria do João sem FinCheck) ── */
+function ReportCardError() {
+  return (
+    <div className="relative max-w-sm mx-auto">
+      <motion.div
+        className="relative bg-navy-800 rounded-2xl shadow-lg border border-red-500/25 overflow-hidden"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...springGentle, delay: 0.6 }}
+      >
+        {/* Header */}
+        <div className="bg-navy-950 px-5 py-4">
+          <div className="flex items-center gap-1.5 mb-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
+            <span className="w-2.5 h-2.5 rounded-full bg-white/10" />
+            <span className="ml-2 text-[11px] text-white/30 font-mono">fincheck.ai/diagnóstico</span>
+          </div>
+          <p className="text-[11px] text-white/50 font-medium uppercase tracking-widest mb-1">
+            Diagnóstico financeiro
+          </p>
+          <p className="text-lg font-bold text-white leading-tight">Padaria do João</p>
+        </div>
+
+        {/* Corpo */}
+        <div className="p-5 space-y-4">
+          {/* Badge saúde — alerta */}
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/25">
+            <div className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[11px] text-red-400 font-bold uppercase tracking-wider">Saúde financeira</p>
+              <p className="text-sm font-bold text-white">Em risco crítico ↓</p>
+            </div>
+          </div>
+
+          {/* Métricas — negativas */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="bg-navy-900 rounded-xl p-3 border border-red-500/20">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Lucro líquido</p>
+              <p className="text-[17px] font-bold text-red-400 font-mono">-R$ 2.840</p>
+              <p className="text-[10px] text-red-400/60 mt-0.5">prejuízo no mês ↓</p>
+            </div>
+            <div className="bg-navy-900 rounded-xl p-3 border border-red-500/20">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Margem bruta</p>
+              <p className="text-[17px] font-bold text-red-400 font-mono">18,4%</p>
+              <p className="text-[10px] text-red-400/60 mt-0.5">abaixo da média ✗</p>
+            </div>
+          </div>
+
+          {/* Alerta */}
+          <div className="border-l-2 border-red-400 pl-3">
+            <p className="text-[11px] text-red-400 font-bold uppercase tracking-wide mb-1">⚠ Alerta crítico</p>
+            <p className="text-[12px] text-white/60 leading-relaxed">
+              Custo operacional engolindo o faturamento. João está perdido e não sabe.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Badge flutuante — vermelho */}
+      <motion.div
+        className="absolute -right-4 -bottom-4 bg-navy-800 rounded-xl shadow-lg border border-red-500/25 px-3.5 py-3"
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <p className="text-[10px] text-white/40 font-medium mb-0.5">Vs. setor (Alimentação)</p>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-red-500" />
+          <p className="text-xs font-bold text-white">Você está abaixo da média</p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ── Mock do relatório — versão SUCESSO (Padaria do João com FinCheck) ── */
+function ReportCardSuccess() {
+  return (
+    <div className="relative max-w-sm mx-auto">
+      <motion.div
+        className="relative bg-navy-800 rounded-2xl shadow-gold border border-gold-500/20 overflow-hidden"
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ ...springGentle, delay: 0.3 }}
+      >
+        {/* Header */}
+        <div className="bg-navy-950 px-5 py-4">
+          <div className="flex items-center gap-1.5 mb-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
+            <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
+            <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
+            <span className="ml-2 text-[11px] text-white/30 font-mono">fincheck.ai/diagnóstico</span>
+          </div>
+          <p className="text-[11px] text-white/50 font-medium uppercase tracking-widest mb-1">
+            Diagnóstico financeiro
+          </p>
+          <p className="text-lg font-bold text-white leading-tight">
+            Padaria do João <span className="text-gold-400 text-sm font-semibold">com FinCheck ✓</span>
+          </p>
+        </div>
+
+        {/* Corpo */}
+        <div className="p-5 space-y-4">
+          {/* Badge saúde — ok */}
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-gold-500/10 border border-gold-500/20">
+            <div className="w-7 h-7 rounded-lg bg-gold-500 flex items-center justify-center flex-shrink-0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[11px] text-gold-400 font-bold uppercase tracking-wider">Saúde financeira</p>
+              <p className="text-sm font-bold text-white">Saudável ↑</p>
+            </div>
+          </div>
+
+          {/* Métricas — positivas */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="bg-navy-900 rounded-xl p-3 border border-white/8">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Lucro líquido</p>
+              <p className="text-[17px] font-bold text-gold-400 font-mono">R$ 8.420</p>
+              <p className="text-[10px] text-white/40 mt-0.5">margem 14,2% ↑</p>
+            </div>
+            <div className="bg-navy-900 rounded-xl p-3 border border-white/8">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide mb-1">Margem bruta</p>
+              <p className="text-[17px] font-bold text-white font-mono">69,3%</p>
+              <p className="text-[10px] text-white/40 mt-0.5">acima da média ✓</p>
+            </div>
+          </div>
+
+          {/* Recomendação */}
+          <div className="border-l-2 border-gold-400 pl-3">
+            <p className="text-[11px] text-gold-400 font-bold uppercase tracking-wide mb-1">Ação esta semana</p>
+            <p className="text-[12px] text-white/60 leading-relaxed">
+              Margem acima do setor. Reinvista parte do lucro em equipamento — você tem fôlego.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Badge flutuante — dourado */}
+      <motion.div
+        className="absolute -right-4 -bottom-4 bg-navy-800 rounded-xl shadow-lg border border-gold-500/20 px-3.5 py-3"
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <p className="text-[10px] text-white/40 font-medium mb-0.5">Vs. setor (Alimentação)</p>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-gold-500" />
+          <p className="text-xs font-bold text-white">Você está acima da média</p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 /* ── Dados de conteúdo ────────────────────────────────────── */
 
 const PAIN_POINTS = [
@@ -390,108 +553,134 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
         </div>
       </motion.header>
 
-      {/* ── HERO (LP-01, LP-02, LP-03, D-01 to D-11) ───── */}
+      {/* ── HERO (LP-01, LP-02, LP-03) ─────────────────────── */}
       <section ref={heroRef} className="relative overflow-hidden min-h-screen bg-slate-950 pt-16">
-        {/* Glow orb 1 — centered top, large (D-02) */}
+        {/* Glow orb 1 — centered top, large */}
         <div
           className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full z-0 animate-[glow-pulse_10s_ease-in-out_infinite]"
           style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.13) 0%, transparent 70%)' }}
         />
-        {/* Glow orb 2 — lower right, smaller, 4s offset (D-02, D-03) */}
+        {/* Glow orb 2 — lower right, offset */}
         <div
           className="pointer-events-none absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full z-0 animate-[glow-pulse_12s_ease-in-out_2s_infinite]"
           style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.09) 0%, transparent 70%)' }}
         />
 
-        <div className="landing-container relative z-10 pt-16 pb-28 sm:pt-24 sm:pb-36">
-          <div className="grid lg:grid-cols-[1fr_1fr] gap-14 lg:gap-20 items-center">
-
-            {/* Left column: staggered hero text (D-05, D-06) */}
-            <motion.div
-              className="max-w-xl"
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer(0.15, 0.1)}
-            >
-              {/* Badge "Diagnóstico gratuito" (D-06 order: Badge first) */}
-              <motion.div variants={fadeUp}
-                className="inline-flex items-center gap-2.5 mb-7 px-4 py-1.5 rounded-full border border-gold-500/25 bg-gold-500/10">
-                <motion.span
-                  className="w-1.5 h-1.5 rounded-full bg-gold-400"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        {/* ── Sun rays — luz do fim do túnel ──────────────── */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          <svg
+            className="absolute -top-10 left-1/2 -translate-x-1/2 w-[1400px] h-[900px] opacity-[0.055]"
+            viewBox="0 0 1400 900"
+            preserveAspectRatio="xMidYMid slice"
+            fill="none"
+          >
+            {Array.from({ length: 22 }, (_, i) => {
+              const angle = -110 + i * 10;
+              const rad = (angle * Math.PI) / 180;
+              const x2 = 700 + Math.sin(rad) * 2200;
+              const y2 = 0 + Math.cos(rad) * 2200;
+              return (
+                <line
+                  key={i}
+                  x1="700" y1="0"
+                  x2={x2} y2={y2}
+                  stroke="#F59E0B"
+                  strokeWidth={i % 5 === 2 ? '3' : i % 3 === 0 ? '2' : '1'}
+                  opacity={i % 4 === 1 ? '0.8' : '0.5'}
                 />
-                <span className="text-xs font-bold text-gold-400 tracking-widest uppercase">
-                  Diagnóstico gratuito
-                </span>
-              </motion.div>
+              );
+            })}
+          </svg>
+        </div>
 
-              {/* Headline — stagger per line (D-05) */}
-              <motion.h1
-                className="font-bold text-white text-[2.8rem] sm:text-5xl md:text-[3.6rem] leading-[1.05] tracking-tightest mb-7"
-                variants={staggerContainer(0.15, 0)}
-                initial="hidden"
-                animate="visible"
-              >
-                <motion.span variants={fadeUp} className="block">Seu negócio dá lucro</motion.span>
-                <motion.span variants={fadeUp} className="block text-gold-400">de verdade?</motion.span>
-              </motion.h1>
-
-              {/* Subtext */}
-              <motion.p variants={fadeUp}
-                className="text-lg text-white/65 leading-relaxed mb-10 max-w-md">
-                Descubra em 3 minutos o que seus números realmente dizem — e o que fazer agora.
-              </motion.p>
-
-              {/* CTA buttons (LP-03, D-06 order: CTAs last) */}
-              <motion.div variants={fadeUp} className="flex items-center gap-4 flex-wrap">
-                <motion.button
-                  onClick={onEnter}
-                  className="btn-gold inline-flex items-center gap-2"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  Fazer meu diagnóstico
-                  <ArrowRight size={15} />
-                </motion.button>
-                <a href="#como-funciona"
-                  className="text-sm font-semibold text-white/50 hover:text-white/80 transition-colors py-2">
-                  Ver como funciona →
-                </a>
-              </motion.div>
-
-              {/* Stats row */}
-              <motion.div
-                className="flex items-center gap-6 mt-10 pt-8 border-t border-white/10"
-                initial="hidden"
-                animate="visible"
-                variants={staggerContainer(0.1, 0.6)}
-              >
-                {[
-                  { n: '3 min', label: 'para o diagnóstico' },
-                  { n: '100%', label: 'gratuito para começar' },
-                  { n: 'IA', label: 'com dados do seu setor' },
-                ].map(s => (
-                  <motion.div key={s.n} variants={fadeUpSpring}>
-                    <p className="text-xl font-bold text-white font-mono">{s.n}</p>
-                    <p className="text-[11px] text-white/40 mt-0.5">{s.label}</p>
-                  </motion.div>
-                ))}
-              </motion.div>
+        <div className="landing-container relative z-10 pt-16 pb-20 sm:pt-24 sm:pb-28">
+          {/* Hero text — centralizado */}
+          <motion.div
+            className="max-w-3xl mx-auto text-center"
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer(0.15, 0.1)}
+          >
+            {/* Badge */}
+            <motion.div variants={fadeUp}
+              className="inline-flex items-center gap-2.5 mb-7 px-4 py-1.5 rounded-full border border-gold-500/25 bg-gold-500/10">
+              <motion.span
+                className="w-1.5 h-1.5 rounded-full bg-gold-400"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <span className="text-xs font-bold text-gold-400 tracking-widest uppercase">
+                Diagnóstico gratuito
+              </span>
             </motion.div>
 
-            {/* Right column: ReportCard (D-10, D-11, D-12) */}
-            <div className="hidden lg:block">
-              <ReportCard
-                cardStyle={{ opacity: cardOpacity, y: cardY }}
-                badgeStyle={{ opacity: badgeOpacity, x: badgeX }}
-                metricsStyle={{ opacity: metricsOpacity }}
-                recoStyle={{ opacity: recoOpacity }}
-              />
-            </div>
+            {/* Headline — stagger per line */}
+            <motion.h1
+              className="font-bold text-white text-[2.8rem] sm:text-5xl md:text-[3.8rem] leading-[1.05] tracking-tightest mb-7"
+              variants={staggerContainer(0.15, 0)}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.span variants={fadeUp} className="block">Seu negócio dá lucro</motion.span>
+              <motion.span variants={fadeUp} className="block text-gold-400">de verdade?</motion.span>
+            </motion.h1>
 
-          </div>
+            {/* Subtext */}
+            <motion.p variants={fadeUp}
+              className="text-lg text-white/65 leading-relaxed mb-10 max-w-xl mx-auto">
+              Descubra em 3 minutos o que seus números realmente dizem — e o que fazer agora.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div variants={fadeUp} className="flex items-center justify-center gap-4 flex-wrap mb-10">
+              <motion.button
+                onClick={onEnter}
+                className="btn-gold inline-flex items-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.15 }}
+              >
+                Fazer meu diagnóstico
+                <ArrowRight size={15} />
+              </motion.button>
+              <a href="#como-funciona"
+                className="text-sm font-semibold text-white/50 hover:text-white/80 transition-colors py-2">
+                Ver como funciona →
+              </a>
+            </motion.div>
+
+            {/* Stats row */}
+            <motion.div
+              className="flex items-center justify-center gap-8 pt-8 border-t border-white/10"
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer(0.1, 0.6)}
+            >
+              {[
+                { n: '3 min', label: 'para o diagnóstico' },
+                { n: '100%', label: 'gratuito para começar' },
+                { n: 'IA', label: 'com dados do seu setor' },
+              ].map(s => (
+                <motion.div key={s.n} variants={fadeUpSpring} className="text-center">
+                  <p className="text-xl font-bold text-white font-mono">{s.n}</p>
+                  <p className="text-[11px] text-white/40 mt-0.5">{s.label}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+
+          {/* ReportCard de erro — Padaria do João perdido */}
+          <motion.div
+            className="mt-16 max-w-sm mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...springGentle, delay: 0.9 }}
+          >
+            <p className="text-center text-xs text-white/30 uppercase tracking-widest font-semibold mb-4">
+              É assim que João estava antes
+            </p>
+            <ReportCardError />
+          </motion.div>
         </div>
       </section>
 
@@ -544,6 +733,33 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
               <p className="text-sm font-semibold text-white/80">
                 Se marcou pelo menos um, é exatamente pra isso que o FinCheck existe.
               </p>
+            </div>
+          </InView>
+
+          {/* ── Grande frase de impacto ────────────────────── */}
+          <InView delay={150} className="mt-20 text-center">
+            <p className="text-[2.8rem] sm:text-[3.5rem] md:text-[4.2rem] font-black text-white tracking-tighter leading-none">
+              A FinCheck vai
+            </p>
+            <p className="text-[2.8rem] sm:text-[3.5rem] md:text-[4.2rem] font-black text-gold-400 tracking-tighter leading-none mt-1">
+              salvar você.
+            </p>
+            <p className="text-white/40 text-base mt-5 max-w-md mx-auto leading-relaxed">
+              O João não sabia que estava no vermelho. Com a FinCheck, ele descobriu — e virou o jogo.
+            </p>
+          </InView>
+
+          {/* ── Card de sucesso: Padaria do João com FinCheck ─ */}
+          <InView delay={200} className="mt-12">
+            <div className="relative max-w-md mx-auto">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                <span className="bg-gold-500 text-navy-950 text-[11px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-md">
+                  DRE · Padaria do João — Dessa vez com FinCheck
+                </span>
+              </div>
+              <div className="pt-6">
+                <ReportCardSuccess />
+              </div>
             </div>
           </InView>
         </div>
@@ -684,9 +900,9 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
               <span className="w-8 h-px bg-gold-500/40" />
             </div>
             <h2 className="text-3xl sm:text-[2.8rem] font-bold text-white tracking-tighter mb-5 leading-tight">
-              Cinco minutos agora podem te
+              Cinco minutos agora vão colocar
               <br />
-              poupar meses no escuro.
+              <span className="text-gold-400">luz nos seus meses de escuro.</span>
             </h2>
             <p className="text-white/50 text-lg leading-relaxed mb-10">
               Crie sua conta, responda 7 perguntas e receba seu diagnóstico completo.
