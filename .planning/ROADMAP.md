@@ -45,10 +45,15 @@ Plans:
 **Depends on**: Phase 2
 **Requirements**: FL-01, FL-02, FL-03
 **UI hint**: yes
+**Plans:** 2/2 plans complete (checkpoint pending)
 **Success Criteria**:
   1. Avançar entre perguntas anima com slide horizontal (sem troca abrupta)
   2. Barra de progresso anima ao avançar
   3. Submit → loading não causa flash branco
+
+Plans:
+- [x] 03-01-PLAN.md — Questionnaire slide + navy redesign + App.jsx dark wrapper (FL-01, FL-02, FL-03 prep)
+- [x] 03-02-PLAN.md — Loading.jsx navy redesign + AnimatePresence message fade (FL-03 complete)
 
 ### Phase 4: Tela de Diagnóstico
 **Goal**: Tela de resultados redesenhada — números animam ao entrar, seções revelam progressivamente, alertas têm destaque visual
@@ -70,5 +75,5 @@ Plans:
 |-------|----------------|--------|
 | 1. Design System | 2/2 | Complete |
 | 2. Landing Page | 3/3 | Checkpoint pending |
-| 3. Questionário | 0/TBD | Not started |
+| 3. Questionário | 2/2 | Checkpoint pending |
 | 4. Diagnóstico | 0/TBD | Not started |

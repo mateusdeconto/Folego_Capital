@@ -2,33 +2,33 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Redesign Visual Completo
-status: Checkpoint — human-verify pending
-last_updated: "2026-05-14T23:05:00.000Z"
+status: In Progress — Phase 3 complete, checkpoint:human-verify pending
+last_updated: "2026-05-14T00:00:00.000Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 2
+  total_plans: 7
+  completed_plans: 7
 ---
 
 # State — FinCheck Redesign
 
 ## Status
 
-In Progress — Phase 2, Plan 03 tasks complete. Awaiting human-verify checkpoint.
+In Progress — Phase 3 complete (2/2 plans). Awaiting human-verify checkpoint before Phase 4.
 
 ## Current Position
 
-Phase: 2 (landing-page) — CHECKPOINT
-Plan: 3 of 3 (automated tasks done, checkpoint:human-verify pending)
+Phase: 3 (fluxo-questionario) — COMPLETE (checkpoint pending)
+Plan: 2 of 2 done
 
 ## Last Activity
 
-2026-05-14 — Plan 02-03 complete (automated tasks). Pain Points, Como Funciona, Features, FAQ, CTA Final, Footer written to Landing.jsx. All 9 LP requirements implemented. Human visual QA checkpoint pending.
+2026-05-14 — Phase 3 complete: 03-01 (Questionnaire slide + App.jsx dark wrapper) + 03-02 (Loading.jsx navy+gold + AnimatePresence). FL-01, FL-02, FL-03 addressed.
 
 ## Resume
 
-After human approves checkpoint: Phase 2 complete. Move to Phase 3.
+Await human verification of Phase 3 (questionnaire flow + loading screen visual). Then execute Phase 4 (Diagnóstico).
 
 ## Decisions
 
@@ -52,6 +52,8 @@ After human approves checkpoint: Phase 2 complete. Move to Phase 3.
 | 02-landing-page | 01 | 8min | 1 | 1 |
 | 02-landing-page | 02 | 35min | 2 | 4 |
 | 02-landing-page | 03 | 20min | 2 | 1 |
+| 03-fluxo-questionario | 01 | — | 1 | 3 |
+| 03-fluxo-questionario | 02 | 10min | 1 | 1 |
 
 ## Blockers
 
@@ -59,4 +61,4 @@ Nenhum
 
 ## Stopped At
 
-Completed 02-03 automated tasks — `.planning/phases/02-landing-page/02-03-PLAN.md` (checkpoint:human-verify pending)
+Completed 03-02 — `.planning/phases/03-fluxo-questionario/03-02-PLAN.md` (Phase 3 complete, checkpoint:human-verify pending)
