@@ -56,14 +56,18 @@ Plans:
 - [x] 03-02-PLAN.md — Loading.jsx navy redesign + AnimatePresence message fade (FL-03 complete)
 
 ### Phase 4: Tela de Diagnóstico
-**Goal**: Tela de resultados redesenhada — números animam ao entrar, seções revelam progressivamente, alertas têm destaque visual
+**Goal**: Tela de resultados redesenhada — números animam ao entrar via count-up, seções revelam progressivamente com Framer Motion stagger, cards de alerta têm shakeIn + border-l-4 + shadow-md + dot pulsando; fixes de tipografia/spacing por UI-SPEC
 **Depends on**: Phase 3
 **Requirements**: DG-01, DG-02, DG-03
 **UI hint**: yes
+**Plans:** 1 plan
 **Success Criteria**:
   1. Valores numéricos contam de 0 até o valor ao entrar na tela
   2. Seções revelam com stagger (uma após a outra)
   3. Cards de alerta têm animação diferenciada dos cards normais
+
+Plans:
+- [x] 04-01-PLAN.md — Diagnosis.jsx: motion stagger + useCountUp hook + alert shakeIn + typography fixes (DG-01, DG-02, DG-03)
 
 ---
 
@@ -76,4 +80,4 @@ Plans:
 | 1. Design System | 2/2 | Complete |
 | 2. Landing Page | 3/3 | Checkpoint pending |
 | 3. Questionário | 2/2 | Checkpoint pending |
-| 4. Diagnóstico | 0/TBD | Not started |
+| 4. Diagnóstico | 1/1 | Complete |

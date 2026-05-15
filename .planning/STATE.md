@@ -2,33 +2,33 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Redesign Visual Completo
-status: In Progress — Phase 4 context gathered, ready for planning
+status: In Progress — Phase 4 plan 01 complete
 last_updated: "2026-05-15T00:00:00.000Z"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 8
 ---
 
 # State — FinCheck Redesign
 
 ## Status
 
-In Progress — Phase 3 complete (2/2 plans). Awaiting human-verify checkpoint before Phase 4.
+In Progress — Phase 4 plan 01 complete (04-01). Diagnosis.jsx has Framer Motion stagger, count-up, alert differentiation. DG-01, DG-02, DG-03 done.
 
 ## Current Position
 
-Phase: 3 (fluxo-questionario) — COMPLETE (checkpoint pending)
-Plan: 2 of 2 done
+Phase: 4 (tela-de-diagnostico) — Plan 01 of 1 done
+Plan: 1 of 1 done
 
 ## Last Activity
 
-2026-05-14 — Phase 3 complete: 03-01 (Questionnaire slide + App.jsx dark wrapper) + 03-02 (Loading.jsx navy+gold + AnimatePresence). FL-01, FL-02, FL-03 addressed.
+2026-05-15 — Phase 4 plan 01 complete: Diagnosis.jsx surgical animation pass — stagger reveal, useCountUp hook, BenchmarkChart bar animation, typography fixes, alert card differentiation. Build clean (exit 0).
 
 ## Resume
 
-Phase 4 context gathered (2026-05-15). Run /gsd:plan-phase 4 to generate plans.
+Phase 4 plan 01 done. Awaiting human-verify for full Redesign Visual Completo milestone.
 
 ## Decisions
 
@@ -54,6 +54,14 @@ Phase 4 context gathered (2026-05-15). Run /gsd:plan-phase 4 to generate plans.
 | 02-landing-page | 03 | 20min | 2 | 1 |
 | 03-fluxo-questionario | 01 | — | 1 | 3 |
 | 03-fluxo-questionario | 02 | 10min | 1 | 1 |
+| 04-tela-de-diagnostico | 01 | 25min | 3 | 1 |
+
+## Decisions
+
+- [Phase 04-01]: useCountUp hook defined at module scope — disabled arg passes shouldReduceMotion for instant target return
+- [Phase 04-01]: Alert cards (warn/loss) use shakeIn + border-l-4 + shadow-md to differentiate from normal fadeUp cards
+- [Phase 04-01]: WhatsApp share button wrapped in motion.div (not motion.button) — preserves existing event handlers cleanly
+- [Phase 04-01]: CorrectDataModal + UpgradeModal NOT wrapped in motion.div — they have own animate-slide-up CSS
 
 ## Blockers
 
@@ -61,4 +69,4 @@ Nenhum
 
 ## Stopped At
 
-Completed 03-02 — `.planning/phases/03-fluxo-questionario/03-02-PLAN.md` (Phase 3 complete, checkpoint:human-verify pending)
+Completed 04-01 — `.planning/phases/04-tela-de-diagnostico/04-01-PLAN.md` (Phase 4 plan 01 done, DG-01/DG-02/DG-03 complete)
