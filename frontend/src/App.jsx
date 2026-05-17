@@ -344,17 +344,6 @@ export default function App() {
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs text-ink-400 truncate max-w-[180px]">{user.email}</span>
             <div className="flex items-center gap-2">
-              {step !== STEPS.HISTORY && allDiagnoses.length > 0 && plan === 'paid' && (
-                <button
-                  onClick={() => setStep(STEPS.PREVIOUS)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-ink-700 bg-white border border-ink-200 rounded-lg hover:bg-ink-50 transition-colors"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Empresas
-                </button>
-              )}
               <button
                 onClick={handleLogout}
                 className="px-3 py-1.5 text-xs font-semibold text-ink-500 bg-white border border-ink-200 rounded-lg hover:bg-ink-50 transition-colors"
@@ -444,7 +433,7 @@ export default function App() {
               accessToken={accessToken}
               macroData={macroData}
               onOpenChat={() => { setChatOrigin(STEPS.DIAGNOSIS); setStep(STEPS.CHAT); }}
-              onOpenTracking={() => handleOpenTracking(activeCompany, STEPS.DIAGNOSIS)}
+              onOpenTracking={() => { setTrackingOrigin(STEPS.DIAGNOSIS); setStep(STEPS.TRACKING); }}
               onOpenHistory={companyDiagnoses.length > 0 ? () => setStep(STEPS.PREVIOUS) : null}
               onCorrectData={handleCorrectData}
               onRestart={handleRestart}

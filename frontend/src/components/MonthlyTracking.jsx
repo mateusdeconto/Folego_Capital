@@ -17,8 +17,9 @@ function getMonthLong(monthKey) {
 function diagnosesToHistory(diagnoses = []) {
   const byMonth = {};
   for (const d of diagnoses) {
+    const ref = d.financial_data?.referenceMonth;
     const date = new Date(d.created_at);
-    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const month = ref || `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     if (!byMonth[month] || d.created_at > byMonth[month].created_at) {
       byMonth[month] = { ...d, month };
     }

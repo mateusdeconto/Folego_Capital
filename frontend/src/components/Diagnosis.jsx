@@ -184,7 +184,7 @@ function BenchmarkChart({ metrics, segment }) {
   const rows = [
     { label: 'Margem Bruta',   user: metrics.grossMargin, range: bench.grossMargin, higherBetter: true  },
     { label: 'Margem Líquida', user: metrics.netMargin,   range: bench.netMargin,   higherBetter: true  },
-    { label: 'CMV %',          user: userCmvPct,           range: bench.cmvPct,      higherBetter: false },
+    { label: 'Custo de vendas (%)', user: userCmvPct,      range: bench.cmvPct,      higherBetter: false },
   ];
 
   return (
@@ -548,6 +548,54 @@ function BenchmarkPremium({ macroData, segment, sectorLabel, plan, onUpgrade }) 
   );
 }
 
+const GLOSSARY = [
+  { term: 'Receita bruta',          def: 'Tudo que entrou de dinheiro com vendas no mês, antes de qualquer desconto.' },
+  { term: 'Custo das vendas',       def: 'O que você gastou pra produzir ou comprar o que vendeu (matéria-prima, mercadoria, entregadores).' },
+  { term: 'Lucro bruto',            def: 'Receita menos o custo das vendas. É o quanto sobrou antes de pagar as contas fixas.' },
+  { term: 'Margem bruta (%)',       def: 'Porcentagem da receita que sobrou depois de descontar o custo das vendas.' },
+  { term: 'Despesas fixas',         def: 'Contas que você paga todo mês mesmo sem vender nada: aluguel, internet, folha de pagamento.' },
+  { term: 'Resultado da operação',  def: 'O que sobra depois de pagar custos e despesas fixas, mas antes de pagar dívidas e parcelas.' },
+  { term: 'Lucro líquido',          def: 'O que ficou no seu bolso de verdade depois de pagar tudo: custos, despesas e dívidas.' },
+  { term: 'Margem líquida (%)',     def: 'A porcentagem da receita que virou lucro líquido. Ex: 10% significa que de cada R$100 vendidos, R$10 ficaram.' },
+  { term: 'Ponto de equilíbrio',    def: 'O valor mínimo que você precisa faturar por mês pra não perder dinheiro.' },
+  { term: 'Projeção 30 dias',       def: 'Estimativa de quanto você vai ter em caixa no fim do mês, mantendo o ritmo atual.' },
+];
+
+function GlossaryCard() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="card overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-ink-50 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <svg className="w-4 h-4 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+          <span className="text-sm font-semibold text-ink-700">Glossário — o que significa cada número</span>
+        </div>
+        <svg
+          className={`w-4 h-4 text-ink-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+      {open && (
+        <div className="px-5 pb-5 divide-y divide-ink-100">
+          {GLOSSARY.map(({ term, def }) => (
+            <div key={term} className="py-3">
+              <p className="text-xs font-bold text-ink-800 mb-0.5">{term}</p>
+              <p className="text-xs text-ink-500 leading-relaxed">{def}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Diagnosis({ businessData, financialData, diagnosis, allDiagnoses = [], plan = 'free', user, accessToken, macroData = null, onOpenChat, onOpenTracking, onOpenHistory, onCorrectData, onRestart }) {
   const renderedHtml  = useMemo(() => renderMarkdown(diagnosis),      [diagnosis]);
   const healthStatus  = useMemo(() => extractHealthStatus(diagnosis), [diagnosis]);
@@ -746,7 +794,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
             <p className="text-xs text-ink-400 mt-0.5">{metrics.grossMargin.toFixed(1)}%</p>
           </div>
           <div>
-            <p className="text-[11px] text-ink-400 uppercase tracking-wider font-medium mb-1">EBITDA</p>
+            <p className="text-[11px] text-ink-400 uppercase tracking-wider font-medium mb-1">Resultado da operação</p>
             <p className="text-base font-bold font-mono">{formatBRL(animatedEbitda)}</p>
             <p className="text-xs text-ink-400 mt-0.5">
               {financialData.revenue > 0 ? ((metrics.ebitda / financialData.revenue) * 100).toFixed(1) : 0}%
@@ -838,6 +886,11 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
             <span className={`text-sm font-bold font-mono ${projTone.text}`}>{formatBRL(projection.projected)}</span>
           </div>
         </div>
+      </motion.div>
+
+      {/* Glossário */}
+      <motion.div variants={fadeUp}>
+        <GlossaryCard />
       </motion.div>
 
       {/* Exportações */}

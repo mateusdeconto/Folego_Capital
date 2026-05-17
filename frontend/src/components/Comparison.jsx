@@ -50,11 +50,11 @@ function DeltaCell({ rawVal, rawBase, display, invertColor = false, highlight = 
 
 const ROW_DEFS = [
   { key: 'revenue',       label: 'Receita Bruta',       format: 'brl', invertColor: false, highlight: false },
-  { key: 'cogs',          label: 'CMV',                 format: 'brl', invertColor: true,  highlight: false },
+  { key: 'cogs',          label: 'Custo das vendas',    format: 'brl', invertColor: true,  highlight: false },
   { key: 'grossProfit',   label: 'Lucro Bruto',         format: 'brl', invertColor: false, highlight: true  },
   { key: 'grossMargin',   label: 'Margem Bruta',        format: 'pct', invertColor: false, highlight: false },
   { key: 'fixedExpenses', label: 'Despesas Fixas',      format: 'brl', invertColor: true,  highlight: false },
-  { key: 'ebitda',        label: 'EBITDA',              format: 'brl', invertColor: false, highlight: false },
+  { key: 'ebitda',        label: 'Resultado da operação', format: 'brl', invertColor: false, highlight: false },
   { key: 'debtPayment',   label: 'Dívidas/Parcelas',    format: 'brl', invertColor: true,  highlight: false },
   { key: 'netProfit',     label: 'Lucro Líquido',       format: 'brl', invertColor: false, highlight: true  },
   { key: 'netMargin',     label: 'Margem Líquida',      format: 'pct', invertColor: false, highlight: true  },
