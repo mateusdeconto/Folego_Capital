@@ -1,12 +1,11 @@
 import express from 'express';
+import nodemailer from 'nodemailer';
 import rateLimit from 'express-rate-limit';
-import { Resend } from 'resend';
 import { requireAuth } from '../middleware/auth.js';
 import { escapeHtml, applyBold } from '../lib/htmlUtils.js';
 
 const router = express.Router();
 
-// 3 envios por usuário a cada 15 minutos — impede relay de spam e custo descontrolado
 const emailLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 3,
@@ -16,12 +15,22 @@ const emailLimiter = rateLimit({
   message: { error: 'Muitos envios em sequência. Aguarde alguns minutos.' },
 });
 
-// Formata BRL
 function fmt(v) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
 }
 
-// Constrói HTML do email
+export function createTransporter() {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+}
+
 function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
   const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   const month = businessData.referenceMonth
@@ -31,7 +40,6 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
   const safeName    = escapeHtml(businessData.businessName);
   const safeSegment = escapeHtml(businessData.segment);
 
-  // Converte markdown simples para HTML — texto escapado antes de qualquer interpolação
   const diagHtml = (diagnosis || '')
     .split('\n')
     .map(line => {
@@ -52,28 +60,24 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
     <tr><td align="center">
       <table width="100%" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
 
-        <!-- Header -->
-        <tr><td style="background:#111827;padding:28px 32px;">
+        <tr><td style="background:#1a3a2a;padding:28px 32px;">
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td>
-                <span style="display:inline-flex;align-items:center;gap:8px;">
-                  <span style="display:inline-block;width:28px;height:28px;background:#111827;border:1.5px solid #374151;border-radius:6px;text-align:center;line-height:28px;font-weight:bold;font-size:14px;color:#10b981;">F</span>
-                  <span style="color:#ffffff;font-weight:700;font-size:16px;letter-spacing:-0.3px;">Fôlego Capital</span>
-                </span>
+                <span style="color:#ffffff;font-weight:800;font-size:18px;letter-spacing:-0.5px;">Fôlego</span>
+                <span style="color:#c9a227;font-weight:600;font-size:17px;letter-spacing:-0.5px;"> Capital</span>
               </td>
               <td align="right">
-                <span style="color:#6b7280;font-size:12px;">${date}</span>
+                <span style="color:#a8c4b0;font-size:12px;">${date}</span>
               </td>
             </tr>
           </table>
           <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:16px 0 4px;letter-spacing:-0.5px;">
             Diagnóstico financeiro
           </h1>
-          <p style="color:#9ca3af;font-size:14px;margin:0;">${safeName} · ${safeSegment} · ${month}</p>
+          <p style="color:#a8c4b0;font-size:14px;margin:0;">${safeName} · ${safeSegment} · ${month}</p>
         </td></tr>
 
-        <!-- Métricas principais -->
         <tr><td style="padding:28px 32px 0;">
           <p style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 16px;">Resumo do mês</p>
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
@@ -84,7 +88,7 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
               </td>
               <td style="padding:16px;border-right:1px solid #e5e7eb;text-align:center;">
                 <p style="font-size:11px;color:#6b7280;margin:0 0 4px;text-transform:uppercase;">Lucro líquido</p>
-                <p style="font-size:18px;font-weight:700;color:${metrics.netProfit >= 0 ? '#10b981' : '#ef4444'};margin:0;font-variant-numeric:tabular-nums;">${fmt(metrics.netProfit)}</p>
+                <p style="font-size:18px;font-weight:700;color:${metrics.netProfit >= 0 ? '#2d6a4f' : '#ef4444'};margin:0;font-variant-numeric:tabular-nums;">${fmt(metrics.netProfit)}</p>
               </td>
               <td style="padding:16px;text-align:center;">
                 <p style="font-size:11px;color:#6b7280;margin:0 0 4px;text-transform:uppercase;">Margem líquida</p>
@@ -108,16 +112,14 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
           </table>
         </td></tr>
 
-        <!-- Diagnóstico -->
         <tr><td style="padding:28px 32px 0;">
           <p style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 16px;">Diagnóstico completo</p>
           <div style="font-size:14px;color:#374151;line-height:1.6;">${diagHtml}</div>
         </td></tr>
 
-        <!-- Footer -->
         <tr><td style="padding:28px 32px;border-top:1px solid #f3f4f6;margin-top:24px;">
           <p style="font-size:12px;color:#9ca3af;margin:0 0 4px;">Este relatório foi gerado automaticamente pelo Fôlego Capital.</p>
-          <p style="font-size:12px;color:#9ca3af;margin:0;">Dúvidas? Responda este e-mail ou acesse <a href="https://fincheck-production-94bb.up.railway.app" style="color:#6b7280;">fincheck-production-94bb.up.railway.app</a></p>
+          <p style="font-size:12px;color:#9ca3af;margin:0;">Acesse: <a href="https://fincheck-production-94bb.up.railway.app" style="color:#2d6a4f;">fincheck-production-94bb.up.railway.app</a></p>
         </td></tr>
 
       </table>
@@ -139,15 +141,13 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Métricas financeiras ausentes ou inválidas.' });
   }
 
-  const resendKey = process.env.RESEND_API_KEY;
-
-  if (!resendKey) {
-    console.error('[email] RESEND_API_KEY não configurada');
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.error('[email] GMAIL_USER ou GMAIL_APP_PASSWORD não configurados');
     return res.status(503).json({ error: 'Serviço de e-mail não configurado.' });
   }
 
   try {
-    const resend = new Resend(resendKey);
+    const transporter = createTransporter();
 
     const month = businessData.referenceMonth
       ? new Date(businessData.referenceMonth + '-02').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
@@ -155,17 +155,12 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
 
     console.log('[email] enviando para:', toEmail);
 
-    const { error } = await resend.emails.send({
-      from: 'Fôlego Capital <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from: `"Fôlego Capital" <${process.env.GMAIL_USER}>`,
       to: toEmail,
       subject: `Diagnóstico financeiro — ${businessData.businessName.replace(/[\r\n]/g, ' ')} · ${month}`,
       html: buildEmailHtml({ businessData, financialData, diagnosis, metrics }),
     });
-
-    if (error) {
-      console.error('[email] Resend error:', error);
-      return res.status(500).json({ error: 'Falha ao enviar e-mail. Tente novamente.' });
-    }
 
     console.log('[email] enviado com sucesso para:', toEmail);
     res.json({ ok: true });
