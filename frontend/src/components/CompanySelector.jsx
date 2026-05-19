@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import UpgradeModal from './UpgradeModal.jsx';
+import { calcPlanStatus, calcActionStats } from '../lib/weeklyPlans.js';
 
 function Icon({ d, size = 18, className = '' }) {
   return (
@@ -26,14 +27,73 @@ function formatLastSeen(date) {
   });
 }
 
+const PLAN_STATUS_CONFIG = {
+  ativo: {
+    label: 'Ativo',
+    dot: 'bg-money-500',
+    text: 'text-money-700',
+    bg: 'bg-money-50',
+    border: 'border-money-200',
+  },
+  precisa_revisao: {
+    label: 'Precisa revisão',
+    dot: 'bg-amber-400',
+    text: 'text-amber-700',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+  },
+  desatualizado: {
+    label: 'Desatualizado',
+    dot: 'bg-loss-500',
+    text: 'text-loss-700',
+    bg: 'bg-loss-50',
+    border: 'border-loss-200',
+  },
+};
+
+function WeeklyPlanBadge({ weeklyPlan, latestDiagnosisCreatedAt, onOpen }) {
+  if (!weeklyPlan) return null;
+
+  const status = calcPlanStatus(weeklyPlan, latestDiagnosisCreatedAt);
+  const cfg = PLAN_STATUS_CONFIG[status];
+  const stats = calcActionStats(weeklyPlan);
+
+  return (
+    <div className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border ${cfg.bg} ${cfg.border} mt-3`}>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
+        <span className={`text-xs font-semibold ${cfg.text}`}>Plano semanal</span>
+        {stats.total > 0 && (
+          <span className="text-xs text-ink-500">
+            · {stats.done}/{stats.total} concluídas
+          </span>
+        )}
+        <span className={`text-[10px] font-bold uppercase tracking-wider ${cfg.text} ml-1`}>
+          {cfg.label}
+        </span>
+      </div>
+      {onOpen && (
+        <button
+          onClick={onOpen}
+          className={`text-xs font-semibold flex-shrink-0 ${cfg.text} hover:opacity-70 transition-opacity`}
+        >
+          Ver plano →
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function CompanySelector({
   companies,
   plan,
   totalAnalysesCount = 0,
   getSummary,
+  getWeeklyPlanSummary,
   onUseCompany,
   onViewLatest,
   onViewHistory,
+  onOpenWeeklyPlan,
   onCreateAnother,
   onLogout,
 }) {
@@ -65,6 +125,7 @@ export default function CompanySelector({
       <div className="space-y-4">
         {companies.map(company => {
           const summary = getSummary(company);
+          const weeklyPlan = getWeeklyPlanSummary ? getWeeklyPlanSummary(company) : null;
 
           return (
             <div key={`${company.businessName}-${company.segment}-${company.customSegment || ''}`} className="card p-5">
@@ -80,7 +141,7 @@ export default function CompanySelector({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                 <div className="rounded-xl bg-ink-50 border border-ink-200 px-3 py-3">
                   <p className="text-[10px] uppercase tracking-widest font-semibold text-ink-400 mb-1">Última atividade</p>
                   <p className="text-sm font-semibold text-ink-700">{formatLastSeen(summary.lastCreatedAt)}</p>
@@ -97,7 +158,13 @@ export default function CompanySelector({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <WeeklyPlanBadge
+                weeklyPlan={weeklyPlan}
+                latestDiagnosisCreatedAt={summary.lastCreatedAt}
+                onOpen={onOpenWeeklyPlan && summary.recordsCount > 0 ? () => onOpenWeeklyPlan(company) : null}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-4">
                 <button
                   onClick={() => canAnalyze ? onUseCompany(company) : setShowUpgrade(true)}
                   className={`btn-primary !py-2.5${!canAnalyze ? ' relative' : ''}`}

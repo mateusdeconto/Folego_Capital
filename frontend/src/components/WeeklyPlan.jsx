@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { calcMetrics, generateWeeklyPlan } from '../lib/metrics.js';
 import { formatReferenceMonth } from '../lib/export.js';
 import {
@@ -6,6 +6,8 @@ import {
   saveWeeklyPlan,
   updateActionStatus,
   deactivateWeeklyPlan,
+  recordCheckin,
+  calcPlanStatus,
 } from '../lib/weeklyPlans.js';
 
 const RISK_TONE = {
@@ -95,6 +97,11 @@ export default function WeeklyPlan({
   const [actions, setActions] = useState([]);
   const [loadState, setLoadState] = useState('loading'); // 'loading' | 'ready' | 'generating' | 'error'
   const [updatingId, setUpdatingId] = useState(null);
+  const [showCheckin, setShowCheckin] = useState(false);
+  const [checkinNote, setCheckinNote] = useState('');
+  const [checkinSaving, setCheckinSaving] = useState(false);
+  const [checkinDone, setCheckinDone] = useState(false);
+  const noteRef = useRef(null);
 
   const metrics = useMemo(() => calcMetrics(financialData), [financialData]);
   const generatedPlan = useMemo(() => generateWeeklyPlan(metrics, financialData), [metrics, financialData]);
@@ -104,6 +111,11 @@ export default function WeeklyPlan({
   const isStale = useMemo(() => {
     if (!savedPlan?.source_diagnosis_created_at || !latestDiagnosis?.created_at) return false;
     return new Date(latestDiagnosis.created_at) > new Date(savedPlan.source_diagnosis_created_at);
+  }, [savedPlan, latestDiagnosis]);
+
+  const planStatus = useMemo(() => {
+    if (!savedPlan) return null;
+    return calcPlanStatus(savedPlan, latestDiagnosis?.created_at);
   }, [savedPlan, latestDiagnosis]);
 
   const displayRisk = useMemo(() => {
@@ -241,6 +253,23 @@ export default function WeeklyPlan({
     }
   }
 
+  async function handleCheckin() {
+    if (!savedPlan?.id) return;
+    setCheckinSaving(true);
+    const ok = await recordCheckin(savedPlan.id, checkinNote.trim());
+    if (ok) {
+      setSavedPlan(prev => ({
+        ...prev,
+        last_checkin_at: new Date().toISOString(),
+        checkin_note: checkinNote.trim() || null,
+      }));
+      setCheckinDone(true);
+      setShowCheckin(false);
+      setCheckinNote('');
+    }
+    setCheckinSaving(false);
+  }
+
   if (loadState === 'loading') {
     return (
       <div className="space-y-4">
@@ -288,6 +317,90 @@ export default function WeeklyPlan({
           </p>
         )}
       </div>
+
+      {/* Status do plano + check-in */}
+      {savedPlan && !isStale && planStatus && (
+        <div className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border ${
+          planStatus === 'precisa_revisao'
+            ? 'bg-amber-50 border-amber-200'
+            : 'bg-money-50 border-money-200'
+        }`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${planStatus === 'precisa_revisao' ? 'bg-amber-400' : 'bg-money-500'}`} />
+            <div className="min-w-0">
+              <p className={`text-xs font-bold uppercase tracking-wider ${planStatus === 'precisa_revisao' ? 'text-amber-700' : 'text-money-700'}`}>
+                {planStatus === 'precisa_revisao' ? 'Plano precisa de revisão' : 'Plano ativo'}
+              </p>
+              {planStatus === 'precisa_revisao' && (
+                <p className="text-[11px] text-amber-600 mt-0.5">
+                  Sem atividade há mais de 7 dias — atualize o status das ações.
+                </p>
+              )}
+              {checkinDone && (
+                <p className="text-[11px] text-money-600 mt-0.5">Check-in registrado!</p>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => { setShowCheckin(true); setCheckinDone(false); setTimeout(() => noteRef.current?.focus(), 50); }}
+            className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+              planStatus === 'precisa_revisao'
+                ? 'text-amber-700 border-amber-300 hover:bg-amber-100'
+                : 'text-money-700 border-money-300 hover:bg-money-100'
+            }`}
+          >
+            Fazer check-in
+          </button>
+        </div>
+      )}
+
+      {/* Modal de check-in */}
+      {showCheckin && (
+        <div className="card p-5 border-2 border-brand-200 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-ink-900">Check-in semanal</p>
+            <button onClick={() => setShowCheckin(false)} className="text-ink-400 hover:text-ink-600 text-xs">Fechar</button>
+          </div>
+
+          {/* Resumo automático das ações */}
+          {actions.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {[
+                { label: 'Concluídas', count: actions.filter(a => a.status === 'done').length, color: 'text-money-700 bg-money-50' },
+                { label: 'Em andamento', count: actions.filter(a => a.status === 'in_progress').length, color: 'text-amber-700 bg-amber-50' },
+                { label: 'Pendentes', count: actions.filter(a => a.status === 'pending').length, color: 'text-ink-600 bg-ink-50' },
+              ].map(({ label, count, color }) => (
+                <div key={label} className={`rounded-lg px-2 py-2 ${color}`}>
+                  <p className="text-lg font-bold">{count}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider">{label}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-semibold text-ink-600 block mb-1.5">
+              O que mudou essa semana? <span className="font-normal text-ink-400">(opcional)</span>
+            </label>
+            <textarea
+              ref={noteRef}
+              value={checkinNote}
+              onChange={e => setCheckinNote(e.target.value)}
+              placeholder="Ex: fechei um contrato novo, cortei fornecedor caro, receita ainda abaixo do esperado…"
+              rows={3}
+              className="w-full text-sm border border-ink-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:border-brand-400 text-ink-800 placeholder:text-ink-300"
+            />
+          </div>
+
+          <button
+            onClick={handleCheckin}
+            disabled={checkinSaving}
+            className="btn-primary w-full"
+          >
+            {checkinSaving ? 'Salvando…' : 'Confirmar check-in'}
+          </button>
+        </div>
+      )}
 
       {/* Aviso: plano desatualizado */}
       {isStale && (

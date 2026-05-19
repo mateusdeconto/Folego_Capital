@@ -102,3 +102,66 @@ export async function deactivateWeeklyPlan(planId) {
 
   if (error) console.error('[deactivateWeeklyPlan]', error.message);
 }
+
+export async function recordCheckin(planId, note = '') {
+  const { error } = await supabase
+    .from('weekly_plans')
+    .update({
+      last_checkin_at: new Date().toISOString(),
+      checkin_note: note || null,
+    })
+    .eq('id', planId);
+
+  if (error) console.error('[recordCheckin]', error.message);
+  return !error;
+}
+
+export async function loadAllActiveWeeklyPlans(userId) {
+  if (!userId) return [];
+
+  const { data, error } = await supabase
+    .from('weekly_plans')
+    .select('id, business_name, segment, custom_segment, source_diagnosis_created_at, created_at, updated_at, last_checkin_at, weekly_plan_actions(status)')
+    .eq('user_id', userId)
+    .eq('is_active', true);
+
+  if (error) { console.error('[loadAllActiveWeeklyPlans]', error.message); return []; }
+  return data || [];
+}
+
+// Calcula estado do plano: 'ativo' | 'precisa_revisao' | 'desatualizado'
+export function calcPlanStatus(plan, latestDiagnosisCreatedAt) {
+  if (!plan) return null;
+
+  const diagnosisDate = latestDiagnosisCreatedAt ? new Date(latestDiagnosisCreatedAt) : null;
+  const planSourceDate = plan.source_diagnosis_created_at ? new Date(plan.source_diagnosis_created_at) : null;
+
+  if (diagnosisDate && planSourceDate && diagnosisDate > planSourceDate) {
+    return 'desatualizado';
+  }
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const lastActivity = plan.last_checkin_at
+    ? new Date(plan.last_checkin_at)
+    : new Date(plan.created_at);
+
+  if (lastActivity < sevenDaysAgo) {
+    return 'precisa_revisao';
+  }
+
+  return 'ativo';
+}
+
+export function calcActionStats(plan) {
+  const actions = plan?.weekly_plan_actions || [];
+  return {
+    total: actions.length,
+    done: actions.filter(a => a.status === 'done').length,
+    inProgress: actions.filter(a => a.status === 'in_progress').length,
+    pending: actions.filter(a => a.status === 'pending').length,
+  };
+}
+
+export function companyPlanKey(company) {
+  return `${company.businessName || company.business_name}__${company.segment}__${company.customSegment || company.custom_segment || ''}`;
+}

@@ -11,6 +11,10 @@ import {
   syncLegacyCompaniesToSupabase,
 } from './lib/companies.js';
 import { syncDocumentFromMetadata } from './lib/documents.js';
+import {
+  loadAllActiveWeeklyPlans,
+  companyPlanKey,
+} from './lib/weeklyPlans.js';
 
 import Landing from './components/Landing.jsx';
 import Onboarding from './components/Onboarding.jsx';
@@ -110,6 +114,7 @@ export default function App() {
   const [plan, setPlan] = useState('free');
   const [macroData, setMacroData] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [weeklyPlansByCompany, setWeeklyPlansByCompany] = useState({});
 
   const companyDiagnoses = recordsForCompany(allDiagnoses, activeCompany);
 
@@ -150,9 +155,19 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  function indexWeeklyPlans(plans) {
+    const byCompany = {};
+    for (const plan of plans) {
+      const key = `${plan.business_name}__${plan.segment}__${plan.custom_segment || ''}`;
+      byCompany[key] = plan;
+    }
+    setWeeklyPlansByCompany(byCompany);
+  }
+
   async function handleUserLoggedIn(loggedUser, currentStep) {
     loadUserPlan(loggedUser.id).then(setPlan);
     syncDocumentFromMetadata(loggedUser).catch(() => {});
+    loadAllActiveWeeklyPlans(loggedUser.id).then(indexWeeklyPlans);
 
     const records = await loadAllDiagnoses(loggedUser.id);
     const syncedCompanies = await syncLegacyCompaniesToSupabase(loggedUser.id);
@@ -187,9 +202,12 @@ export default function App() {
       removeSession(SESSION_KEY);
       return;
     }
+    if (step === STEPS.PREVIOUS && user) {
+      loadAllActiveWeeklyPlans(user.id).then(indexWeeklyPlans);
+    }
 
     saveSession({ step, businessData, financialData });
-  }, [step, businessData, financialData, diagnosis]);
+  }, [step, businessData, financialData, diagnosis]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleAuthComplete(session) {
     setRecoveryMode(false);
@@ -270,8 +288,24 @@ export default function App() {
     setStep(STEPS.TRACKING);
   }
 
+  function getWeeklyPlanSummary(company) {
+    const key = companyPlanKey(company);
+    return weeklyPlansByCompany[key] || null;
+  }
+
   function handleOpenWeeklyPlan(origin = STEPS.DIAGNOSIS) {
     setWeeklyPlanOrigin(origin);
+    setStep(STEPS.WEEKLY_PLAN);
+  }
+
+  function handleOpenWeeklyPlanFromPrevious(company) {
+    const latestRecord = recordsForCompany(allDiagnoses, company)[0];
+    if (!latestRecord) return;
+
+    syncCompanyState(company);
+    setBusinessData(toBusinessDataFromRecord(latestRecord));
+    setFinancialData(latestRecord.financial_data);
+    setWeeklyPlanOrigin(STEPS.PREVIOUS);
     setStep(STEPS.WEEKLY_PLAN);
   }
 
@@ -403,9 +437,11 @@ export default function App() {
               plan={plan}
               totalAnalysesCount={allDiagnoses.length}
               getSummary={getCompanySummary}
+              getWeeklyPlanSummary={getWeeklyPlanSummary}
               onUseCompany={handleUseCompany}
               onViewLatest={handleViewPrevious}
               onViewHistory={handleOpenHistory}
+              onOpenWeeklyPlan={handleOpenWeeklyPlanFromPrevious}
               onCreateAnother={handleCreateAnotherCompany}
               onLogout={handleLogout}
             />
