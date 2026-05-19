@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { DECISIONS, evaluate, getProfile, calcTrend } from '../lib/canOrNot.js';
+import { useState, useMemo, useEffect } from 'react';
+import { DECISIONS, evaluate, getProfile, calcTrend, saveLastDecision } from '../lib/canOrNot.js';
 import { formatBRL } from '../lib/metrics.js';
 
 // ---------------------------------------------------------------------------
@@ -22,6 +22,37 @@ const DECISION_ICONS = {
   withdraw:  'M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z',
   loan:      'M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z',
   equipment: 'M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z',
+};
+
+// ---------------------------------------------------------------------------
+// Sugestões para weekly plan por decisão/veredito
+// ---------------------------------------------------------------------------
+
+const WEEKLY_PLAN_SUGGESTIONS = {
+  hire: {
+    cannot: 'Antes de contratar, coloque no plano: aumentar receita e estabilizar caixa.',
+    careful: 'Monitore caixa e margem nas próximas semanas antes de fechar contratação.',
+  },
+  marketing: {
+    cannot: 'Coloque no plano: melhorar conversão e margem antes de investir em aquisição.',
+    careful: 'Comece pequeno e meça retorno antes de escalar. Inclua no plano semanal.',
+  },
+  withdraw: {
+    cannot: 'Estabeleça pró-labore fixo no plano. Reveja estrutura de caixa primeiro.',
+    careful: 'Retire valor menor e acompanhe caixa semanalmente no plano.',
+  },
+  loan: {
+    cannot: 'Reestruture custos antes de buscar crédito. Foco: gerar caixa internamente.',
+    careful: 'Se pegar empréstimo, defina destino e meta de retorno — coloque no plano.',
+  },
+  stock: {
+    cannot: 'Negocie prazo com fornecedor. Inclua meta de caixa no plano semanal.',
+    careful: 'Compre volume menor para testar giro. Monitore no plano.',
+  },
+  equipment: {
+    cannot: 'Avalie leasing ou financiamento para não comprometer caixa. Inclua no plano.',
+    careful: 'Calcule impacto da parcela na margem antes de assinar. Coloque no plano.',
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -89,11 +120,21 @@ function buildChatMessage(decisionLabel, result, fields, decisionDef) {
     })
     .join('\n');
 
+  const reasonLines = result.reasons?.length > 0
+    ? `\nPrincipais fatores:\n${result.reasons.map(r => `- ${r}`).join('\n')}`
+    : '';
+
+  const improvLines = result.improvements?.length > 0
+    ? `\nO que melhorar:\n${result.improvements.map(r => `- ${r}`).join('\n')}`
+    : '';
+
   return [
     `Acabei de usar o "Pode ou Não Pode?" para avaliar: **${decisionLabel}**.`,
     fieldLines ? `\nParâmetros informados:\n${fieldLines}` : '',
     `\nResultado: **${verdictLabel}** — ${result.explanation}`,
+    reasonLines,
     `\nSinais considerados:\n${signalLines}`,
+    improvLines,
     result.trendNote ? `\nTendência: ${result.trendNote}` : '',
     '\nQuero aprofundar essa análise. O que você recomenda?',
   ].filter(Boolean).join('');
@@ -205,8 +246,12 @@ function TrendBadge({ trendNote }) {
   );
 }
 
-function VerdictCard({ result, decisionDef, fields, onOpenChat }) {
+function VerdictCard({ result, decisionDef, fields, onOpenChat, onOpenWeeklyPlan }) {
   const cfg = VERDICT_CONFIG[result.verdict] || VERDICT_CONFIG.nodata;
+  const showExtra = result.verdict === 'cannot' || result.verdict === 'careful';
+  const weeklyPlanSuggestion = showExtra && decisionDef
+    ? (WEEKLY_PLAN_SUGGESTIONS[decisionDef.id]?.[result.verdict] || null)
+    : null;
 
   return (
     <div className={`rounded-2xl border ${cfg.border} ${cfg.bg} p-5 animate-fade-in`}>
@@ -245,6 +290,54 @@ function VerdictCard({ result, decisionDef, fields, onOpenChat }) {
         </div>
       )}
 
+      {/* motivos principais */}
+      {showExtra && result.reasons?.length > 0 && (
+        <div className="border-t border-current border-opacity-10 pt-3 mt-3">
+          <p className={`text-[10px] font-bold uppercase tracking-widest ${cfg.text} opacity-60 mb-2`}>
+            O que mais pesou
+          </p>
+          <ul className="space-y-1.5">
+            {result.reasons.map((r, i) => (
+              <li key={i} className="flex items-start gap-2 text-xs text-ink-700 leading-relaxed">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${cfg.dot}`} />
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* o que melhorar */}
+      {showExtra && result.improvements?.length > 0 && (
+        <div className="border-t border-current border-opacity-10 pt-3 mt-3">
+          <p className={`text-[10px] font-bold uppercase tracking-widest ${cfg.text} opacity-60 mb-2`}>
+            O que melhorar
+          </p>
+          <ul className="space-y-1.5">
+            {result.improvements.map((imp, i) => (
+              <li key={i} className="flex items-start gap-2 text-xs text-ink-700 leading-relaxed">
+                <span className="text-money-500 font-bold flex-shrink-0 leading-none mt-0.5">→</span>
+                <span>{imp}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* conexão com plano semanal */}
+      {weeklyPlanSuggestion && onOpenWeeklyPlan && (
+        <div className="border-t border-current border-opacity-10 pt-3 mt-3">
+          <p className="text-xs text-ink-500 leading-relaxed mb-2">{weeklyPlanSuggestion}</p>
+          <button
+            onClick={onOpenWeeklyPlan}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-money-50 border border-money-200 text-sm font-semibold text-money-700 hover:bg-money-100 transition-colors"
+          >
+            <Icon d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" size={16} />
+            Ver plano da semana
+          </button>
+        </div>
+      )}
+
       {/* tendência */}
       <TrendBadge trendNote={result.trendNote} />
 
@@ -259,7 +352,7 @@ function VerdictCard({ result, decisionDef, fields, onOpenChat }) {
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white border border-ink-200 text-sm font-semibold text-ink-700 hover:bg-ink-50 transition-colors"
           >
             <Icon d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" size={16} />
-            Aprofundar com IA
+            Perguntar à IA sobre isso
           </button>
         )}
       </div>
@@ -271,7 +364,7 @@ function VerdictCard({ result, decisionDef, fields, onOpenChat }) {
 // Main
 // ---------------------------------------------------------------------------
 
-export default function CanOrNot({ businessData, financialData, allDiagnoses, onOpenChat, onBack }) {
+export default function CanOrNot({ businessData, financialData, allDiagnoses, onOpenChat, onOpenWeeklyPlan, onBack }) {
   const [selectedId, setSelectedId]   = useState(null);
   const [fieldsRaw, setFieldsRaw]     = useState({});
 
@@ -290,6 +383,21 @@ export default function CanOrNot({ businessData, financialData, allDiagnoses, on
     if (!selectedId) return null;
     return evaluate(selectedId, financialData, fields, businessData, allDiagnoses || []);
   }, [selectedId, financialData, fields, businessData, allDiagnoses]);
+
+  // Persiste última decisão no localStorage sempre que um resultado válido aparecer
+  useEffect(() => {
+    if (!result || result.verdict === 'nodata' || !selectedId || !businessData?.businessName) return;
+    const value = fields.totalValue || fields.monthlyCost || fields.monthlyInstallment || 0;
+    saveLastDecision(businessData, {
+      decisionId:    selectedId,
+      decisionLabel: selectedDecision?.label || '',
+      verdict:       result.verdict,
+      verdictTitle:  result.title,
+      value,
+      date:          new Date().toISOString(),
+      explanation:   result.explanation,
+    });
+  }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const profile = useMemo(() =>
     getProfile(businessData?.segment, businessData?.customSegment),
@@ -394,6 +502,7 @@ export default function CanOrNot({ businessData, financialData, allDiagnoses, on
           decisionDef={selectedDecision}
           fields={fields}
           onOpenChat={onOpenChat}
+          onOpenWeeklyPlan={onOpenWeeklyPlan}
         />
       )}
     </div>

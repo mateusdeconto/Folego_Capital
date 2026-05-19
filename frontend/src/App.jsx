@@ -15,6 +15,7 @@ import {
   loadAllActiveWeeklyPlans,
   companyPlanKey,
 } from './lib/weeklyPlans.js';
+import { loadLastDecision } from './lib/canOrNot.js';
 
 import Landing from './components/Landing.jsx';
 import Onboarding from './components/Onboarding.jsx';
@@ -297,12 +298,21 @@ export default function App() {
     return weeklyPlansByCompany[key] || null;
   }
 
+  function getCanOrNotSummary(company) {
+    return loadLastDecision({
+      businessName: company.businessName,
+      segment:      company.segment,
+    });
+  }
+
   function handleOpenWeeklyPlan(origin = STEPS.DIAGNOSIS) {
+    if (plan === 'free') { setShowUpgradeModal(true); return; }
     setWeeklyPlanOrigin(origin);
     setStep(STEPS.WEEKLY_PLAN);
   }
 
   function handleOpenWeeklyPlanFromPrevious(company) {
+    if (plan === 'free') { setShowUpgradeModal(true); return; }
     const latestRecord = recordsForCompany(allDiagnoses, company)[0];
     if (!latestRecord) return;
 
@@ -314,6 +324,7 @@ export default function App() {
   }
 
   function handleOpenCanOrNot(company, origin = STEPS.PREVIOUS) {
+    if (plan === 'free') { setShowUpgradeModal(true); return; }
     const latestRecord = recordsForCompany(allDiagnoses, company)[0];
     if (!latestRecord) return;
 
@@ -453,6 +464,7 @@ export default function App() {
               totalAnalysesCount={allDiagnoses.length}
               getSummary={getCompanySummary}
               getWeeklyPlanSummary={getWeeklyPlanSummary}
+              getCanOrNotSummary={getCanOrNotSummary}
               onUseCompany={handleUseCompany}
               onViewLatest={handleViewPrevious}
               onViewHistory={handleOpenHistory}
@@ -554,6 +566,7 @@ export default function App() {
                 setChatOrigin(STEPS.CAN_OR_NOT);
                 setStep(STEPS.CHAT);
               }}
+              onOpenWeeklyPlan={() => handleOpenWeeklyPlan(STEPS.CAN_OR_NOT)}
               onBack={() => setStep(canOrNotOrigin)}
             />
           )}

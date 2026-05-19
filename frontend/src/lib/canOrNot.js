@@ -507,7 +507,7 @@ function evalStock({ m, profile, trend, note, fields }) {
 
   const finalVerdict = applyTrend(verdict, trend, signals);
   const title = finalVerdict === 'can' ? 'Pode' : finalVerdict === 'careful' ? 'Pode com cautela' : 'Não pode agora';
-  return buildResult(finalVerdict, title, explanation, signals, note);
+  return buildResult(finalVerdict, title, explanation, signals, note, 'stock', profile);
 }
 
 // ---------------------------------------------------------------------------
@@ -598,7 +598,7 @@ function evalMarketing({ m, profile, trend, note, fields }) {
 
   const finalVerdict = applyTrend(verdict, trend, signals);
   const title = finalVerdict === 'can' ? 'Pode' : finalVerdict === 'careful' ? 'Pode com cautela' : 'Não pode agora';
-  return buildResult(finalVerdict, title, explanation, signals, note);
+  return buildResult(finalVerdict, title, explanation, signals, note, 'marketing', profile);
 }
 
 // ---------------------------------------------------------------------------
@@ -674,7 +674,7 @@ function evalWithdraw({ m, profile, trend, note, fields }) {
 
   const finalVerdict = applyTrend(verdict, trend, signals);
   const title = finalVerdict === 'can' ? 'Pode' : finalVerdict === 'careful' ? 'Pode com cautela' : 'Não pode agora';
-  return buildResult(finalVerdict, title, explanation, signals, note);
+  return buildResult(finalVerdict, title, explanation, signals, note, 'withdraw', profile);
 }
 
 // ---------------------------------------------------------------------------
@@ -758,7 +758,7 @@ function evalLoan({ m, profile, trend, note, fields }) {
 
   const finalVerdict = applyTrend(verdict, trend, signals);
   const title = finalVerdict === 'can' ? 'Pode' : finalVerdict === 'careful' ? 'Pode com cautela' : 'Não pode agora';
-  return buildResult(finalVerdict, title, explanation, signals, note);
+  return buildResult(finalVerdict, title, explanation, signals, note, 'loan', profile);
 }
 
 // ---------------------------------------------------------------------------
@@ -855,5 +855,5 @@ function evalEquipment({ m, profile, trend, note, fields }) {
 
   const finalVerdict = applyTrend(verdict, trend, signals);
   const title = finalVerdict === 'can' ? 'Pode' : finalVerdict === 'careful' ? 'Pode com cautela' : 'Não pode agora';
-  return buildResult(finalVerdict, title, explanation, signals, note);
+  return buildResult(finalVerdict, title, explanation, signals, note, 'equipment', profile);
 }

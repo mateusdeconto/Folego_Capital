@@ -51,7 +51,7 @@ const PLAN_STATUS_CONFIG = {
   },
 };
 
-function WeeklyPlanBadge({ weeklyPlan, latestDiagnosisCreatedAt, onOpen }) {
+function WeeklyPlanBadge({ weeklyPlan, latestDiagnosisCreatedAt, onOpen, locked }) {
   if (!weeklyPlan) {
     if (!onOpen) return null;
     return (
@@ -63,8 +63,9 @@ function WeeklyPlanBadge({ weeklyPlan, latestDiagnosisCreatedAt, onOpen }) {
         </div>
         <button
           onClick={onOpen}
-          className="text-xs font-semibold flex-shrink-0 text-money-600 hover:opacity-70 transition-opacity"
+          className="text-xs font-semibold flex-shrink-0 text-money-600 hover:opacity-70 transition-opacity flex items-center gap-1"
         >
+          {locked && <span>🔒</span>}
           Criar plano →
         </button>
       </div>
@@ -92,9 +93,52 @@ function WeeklyPlanBadge({ weeklyPlan, latestDiagnosisCreatedAt, onOpen }) {
       {onOpen && (
         <button
           onClick={onOpen}
+          className={`text-xs font-semibold flex-shrink-0 ${cfg.text} hover:opacity-70 transition-opacity flex items-center gap-1`}
+        >
+          {locked && <span>🔒</span>}
+          Ver plano →
+        </button>
+      )}
+    </div>
+  );
+}
+
+const VERDICT_BADGE_CONFIG = {
+  can:     { label: 'Pode',             dot: 'bg-money-500', text: 'text-money-700', bg: 'bg-money-50',  border: 'border-money-200'  },
+  careful: { label: 'Pode com cautela', dot: 'bg-amber-400', text: 'text-amber-700', bg: 'bg-amber-50',  border: 'border-amber-200'  },
+  cannot:  { label: 'Não pode agora',   dot: 'bg-loss-500',  text: 'text-loss-700',  bg: 'bg-loss-50',   border: 'border-loss-200'   },
+};
+
+function CanOrNotBadge({ lastDecision, onOpen }) {
+  if (!lastDecision) return null;
+
+  const cfg = VERDICT_BADGE_CONFIG[lastDecision.verdict];
+  if (!cfg) return null;
+
+  const date = lastDecision.date
+    ? new Date(lastDecision.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+    : null;
+
+  return (
+    <div className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border ${cfg.bg} ${cfg.border} mt-2`}>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
+        <span className={`text-xs font-semibold ${cfg.text} truncate`}>
+          {lastDecision.decisionLabel}
+        </span>
+        <span className={`text-[10px] font-bold uppercase tracking-wider ${cfg.text} ml-0.5 flex-shrink-0`}>
+          · {cfg.label}
+        </span>
+        {date && (
+          <span className="text-[10px] text-ink-400 flex-shrink-0">{date}</span>
+        )}
+      </div>
+      {onOpen && (
+        <button
+          onClick={onOpen}
           className={`text-xs font-semibold flex-shrink-0 ${cfg.text} hover:opacity-70 transition-opacity`}
         >
-          Ver plano →
+          Rever →
         </button>
       )}
     </div>
@@ -107,6 +151,7 @@ export default function CompanySelector({
   totalAnalysesCount = 0,
   getSummary,
   getWeeklyPlanSummary,
+  getCanOrNotSummary,
   onUseCompany,
   onViewLatest,
   onViewHistory,
@@ -144,6 +189,7 @@ export default function CompanySelector({
         {companies.map(company => {
           const summary = getSummary(company);
           const weeklyPlan = getWeeklyPlanSummary ? getWeeklyPlanSummary(company) : null;
+          const lastDecision = getCanOrNotSummary ? getCanOrNotSummary(company) : null;
 
           return (
             <div key={`${company.businessName}-${company.segment}-${company.customSegment || ''}`} className="card p-5">
@@ -180,6 +226,12 @@ export default function CompanySelector({
                 weeklyPlan={weeklyPlan}
                 latestDiagnosisCreatedAt={summary.lastCreatedAt}
                 onOpen={onOpenWeeklyPlan && summary.recordsCount > 0 ? () => onOpenWeeklyPlan(company) : null}
+                locked={isFreePlan}
+              />
+
+              <CanOrNotBadge
+                lastDecision={lastDecision}
+                onOpen={onOpenCanOrNot && summary.recordsCount > 0 ? () => onOpenCanOrNot(company) : null}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-4">
@@ -241,10 +293,14 @@ export default function CompanySelector({
                     </span>
                     <div className="text-left">
                       <p className="text-xs font-bold text-gold-800">Pode ou Não Pode?</p>
-                      <p className="text-[10px] text-gold-600">Avalie uma decisão do negócio</p>
+                      <p className="text-[10px] text-gold-600">
+                        {isFreePlan ? 'Recurso Pro — avalie decisões do negócio' : 'Avalie uma decisão do negócio'}
+                      </p>
                     </div>
                   </div>
-                  <span className="text-gold-500 text-xs font-semibold group-hover:translate-x-0.5 transition-transform">→</span>
+                  <span className="text-gold-500 text-xs font-semibold group-hover:translate-x-0.5 transition-transform">
+                    {isFreePlan ? '🔒' : '→'}
+                  </span>
                 </button>
               )}
             </div>
