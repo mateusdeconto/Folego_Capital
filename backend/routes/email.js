@@ -34,7 +34,9 @@ export async function sendEmail({ to, subject, html }) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Brevo error ${res.status}`);
+    const msg = err.message || JSON.stringify(err) || `Brevo error ${res.status}`;
+    console.error('[email] Brevo response:', res.status, msg);
+    throw new Error(msg);
   }
 }
 
@@ -175,7 +177,7 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[email] erro ao enviar:', err.message);
-    res.status(500).json({ error: 'Falha ao enviar e-mail. Tente novamente.' });
+    res.status(500).json({ error: err.message });
   }
 });
 
