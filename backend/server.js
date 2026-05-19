@@ -47,16 +47,35 @@ if (isProd && !distExists) {
 app.set('trust proxy', 1);
 
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: [
+        "'self'",
+        "https://*.supabase.co",
+        "wss://*.supabase.co",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com",
+      ],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
 }));
 
-// Em produção (frontend + backend mesma origem), CORS não é necessário para browsers normais.
-// Em dev local (5173 → 3001), precisamos liberar com ALLOWED_ORIGINS=*.
-// Browsers enviam Origin header em POST mesmo same-origin → checar contra host da requisição.
+// Em produção: definir ALLOWED_ORIGINS=https://seu-dominio.com no Railway.
+// Em dev local (5173 → 3001): ALLOWED_ORIGINS=http://localhost:5173
+// Sem ALLOWED_ORIGINS em prod → apenas same-origin (origin === ownOrigin) é permitido.
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
-  : isProd ? [] : ['*'];
+  : [];
 
 app.use('/api', (req, res, next) => {
   const origin = req.get('Origin');
@@ -105,16 +124,6 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.get('/api/debug-dist', (_req, res) => {
-  try {
-    const assets = existsSync(join(distPath, 'assets'))
-      ? readdirSync(join(distPath, 'assets'))
-      : [];
-    res.json({ distPath, distExists, assets });
-  } catch (e) {
-    res.json({ distPath, distExists, error: e.message });
-  }
-});
 
 // Frontend estático em prod
 if (distExists) {
