@@ -72,16 +72,16 @@ function escapeHtml(text) {
 
 function extractHealthStatus(text) {
   if (!text) return null;
-  if (text.includes('Saudável')) return { label: 'Saudável',         tone: 'money',  desc: 'Margem confortável e caixa positivo' };
-  if (text.includes('Estável'))  return { label: 'Estável',          tone: 'brand',  desc: 'Operação equilibrada' };
-  if (text.includes('Atenção'))  return { label: 'Atenção',          tone: 'warn',   desc: 'Indicadores precisam de cuidado' };
-  if (text.includes('Crítica'))  return { label: 'Crítica',          tone: 'loss',   desc: 'Risco financeiro elevado' };
+  if (text.includes('Saud\u00e1vel')) return { label: 'Saud\u00e1vel',         tone: 'money',  desc: 'Margem confort\u00e1vel e caixa positivo' };
+  if (text.includes('Est\u00e1vel'))  return { label: 'Est\u00e1vel',          tone: 'brand',  desc: 'Opera\u00e7\u00e3o equilibrada' };
+  if (text.includes('Aten\u00e7\u00e3o'))  return { label: 'Aten\u00e7\u00e3o',          tone: 'warn',   desc: 'Indicadores precisam de cuidado' };
+  if (text.includes('Cr\u00edtica'))  return { label: 'Cr\u00edtica',          tone: 'loss',   desc: 'Risco financeiro elevado' };
   return null;
 }
 
 function extractFirstAlert(text) {
   if (!text) return null;
-  const section = text.split(/##\s*[^\n]*Pontos de Atenção/)[1];
+  const section = text.split(new RegExp('##\\s*[^\\n]*Pontos de Aten\\u00e7\\u00e3o'))[1];
   if (!section) return null;
   for (const line of section.split('\n')) {
     const t = line.trim();
@@ -95,7 +95,7 @@ function extractFirstAlert(text) {
 
 function extractFirstRecommendation(text) {
   if (!text) return null;
-  const section = text.split(/##\s*[^\n]*Recomendações/)[1];
+  const section = text.split(new RegExp('##\\s*[^\\n]*Recomenda\\u00e7\\u00f5es'))[1];
   if (!section) return null;
   for (const line of section.split('\n')) {
     const t = line.trim();
@@ -116,7 +116,7 @@ function extractSectionBullets(text, sectionRegex, maxItems = 3) {
   for (const line of section.split('\n')) {
     const trimmed = line.trim();
     if (trimmed.startsWith('##')) break;
-    if (trimmed.startsWith('â€¢ ') || trimmed.startsWith('- ')) {
+    if (trimmed.startsWith('• ') || trimmed.startsWith('- ')) {
       items.push(trimmed.slice(2).replace(/\*\*/g, '').trim());
     }
     if (items.length >= maxItems) break;
@@ -621,11 +621,11 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
   const firstAlert = useMemo(() => extractFirstAlert(diagnosis), [diagnosis]);
   const firstRecommendation = useMemo(() => extractFirstRecommendation(diagnosis), [diagnosis]);
   const positiveBullets = useMemo(
-    () => extractSectionBullets(diagnosis, /##\s*[^\n]*O que estÃ¡ funcionando/, 2),
+    () => extractSectionBullets(diagnosis, new RegExp('##\\s*[^\\n]*O que est\\u00e1 funcionando'), 2),
     [diagnosis],
   );
   const attentionBullets = useMemo(
-    () => extractSectionBullets(diagnosis, /##\s*[^\n]*Pontos de AtenÃ§Ã£o/, 2),
+    () => extractSectionBullets(diagnosis, new RegExp('##\\s*[^\\n]*Pontos de Aten\\u00e7\\u00e3o'), 2),
     [diagnosis],
   );
   const [exporting, setExporting]       = useState(false);
@@ -657,8 +657,8 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
   const heroStats = () => ([
     { label: 'Sobrou no bolso', value: formatBRL(animatedNetProfit), hint: `${metrics.netMargin.toFixed(1)}% de margem` },
     { label: 'Caixa hoje', value: formatBRL(financialData.cashBalance), hint: financialData.cashBalance >= 0 ? 'dinheiro em conta agora' : 'caixa no vermelho' },
-    { label: 'Precisa vender', value: formatBRL(animatedBreakEven), hint: 'para empatar mÃªs' },
-    { label: 'DÃ­vida por mÃªs', value: formatBRL(financialData.debtPayment), hint: metrics.debtRatio > 0 ? `${metrics.debtRatio.toFixed(1)}% da receita` : 'sem pressÃ£o de dÃ­vida' },
+    { label: 'Precisa vender', value: formatBRL(animatedBreakEven), hint: 'para empatar m\u00eas' },
+    { label: 'D\u00edvida por m\u00eas', value: formatBRL(financialData.debtPayment), hint: metrics.debtRatio > 0 ? `${metrics.debtRatio.toFixed(1)}% da receita` : 'sem press\u00e3o de d\u00edvida' },
   ]);
 
   // Count-up animated values (DG-01) — disabled if user prefers reduced motion
@@ -751,7 +751,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
       {/* Header */}
       <motion.div className="mb-1" variants={fadeUp}>
         <p className="text-sm font-bold text-ink-400 uppercase tracking-wider mb-2">
-          Diagnóstico financeiro
+          {'Diagn\u00f3stico financeiro'}
         </p>
         <h1 className="text-4xl font-bold text-ink-900 tracking-tighter">
           {businessData.businessName}
@@ -772,7 +772,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         >
           <span className={`w-2.5 h-2.5 rounded-full ${healthTone.dot} ${healthDotPulse}`} />
           <div className="flex-1">
-            <p className={`text-sm font-bold ${healthTone.text}`}>Saúde financeira: {healthStatus.label}</p>
+            <p className={`text-sm font-bold ${healthTone.text}`}>{'Sa\u00fade financeira: '}{healthStatus.label}</p>
             <p className="text-xs text-ink-500 mt-0.5">{healthStatus.desc}</p>
           </div>
         </motion.div>
@@ -809,7 +809,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
           >
             <div className="text-left">
               <p className="text-sm font-bold">Ver o que fazer esta semana</p>
-              <p className="mt-0.5 text-xs text-brand-200">3 prioridades claras com base no seu diagnÃ³stico</p>
+              <p className="mt-0.5 text-xs text-brand-200">{'3 prioridades claras com base no seu diagn\u00f3stico'}</p>
             </div>
             <svg className="ml-3 h-5 w-5 flex-shrink-0 text-brand-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -833,7 +833,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
               <p className="text-xs font-bold uppercase tracking-wider text-loss-700">Principal alerta</p>
               <p className="mt-1 text-base font-bold text-loss-800">{firstAlert}</p>
               <p className="mt-1 text-sm leading-relaxed text-loss-700">
-                Se isso continuar assim, caixa, lucro ou capacidade de pagar contas pode apertar rÃ¡pido.
+                {'Se isso continuar assim, caixa, lucro ou capacidade de pagar contas pode apertar r\u00e1pido.'}
               </p>
             </div>
           </div>
@@ -842,7 +842,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
 
       <motion.div className="grid gap-3 md:grid-cols-3" variants={fadeUp}>
         <div className="card p-4">
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-money-600">O que estÃ¡ bem</p>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-money-600">{'O que est\u00e1 bem'}</p>
           {positiveBullets.length > 0 ? (
             <ul className="space-y-2">
               {positiveBullets.map(item => (
@@ -850,7 +850,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
               ))}
             </ul>
           ) : (
-            <p className="text-sm leading-relaxed text-ink-500">Sem destaque forte aqui ainda. Momento pede mais correÃ§Ã£o do que expansÃ£o.</p>
+            <p className="text-sm leading-relaxed text-ink-500">{'Sem destaque forte aqui ainda. Momento pede mais corre\u00e7\u00e3o do que expans\u00e3o.'}</p>
           )}
         </div>
         <div className="card p-4">
@@ -862,13 +862,13 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
               ))}
             </ul>
           ) : (
-            <p className="text-sm leading-relaxed text-ink-500">Sem alerta extraÃ­do do relatÃ³rio. Use pontos abaixo para revisar caixa, margem e ponto de equilÃ­brio.</p>
+            <p className="text-sm leading-relaxed text-ink-500">{'Sem alerta extra\u00eddo do relat\u00f3rio. Use pontos abaixo para revisar caixa, margem e ponto de equil\u00edbrio.'}</p>
           )}
         </div>
         <div className="card p-4">
           <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-brand-600">O que fazer agora</p>
           <p className="text-sm leading-relaxed text-ink-700">
-            {firstRecommendation || 'Abra plano da semana para ver 3 prioridades claras baseadas no diagnÃ³stico.'}
+            {firstRecommendation || 'Abra plano da semana para ver 3 prioridades claras baseadas no diagn\u00f3stico.'}
           </p>
           {onOpenWeeklyPlan && (
             <button
