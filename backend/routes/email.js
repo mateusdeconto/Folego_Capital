@@ -1,5 +1,4 @@
 import express from 'express';
-import { Resend } from 'resend';
 import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../middleware/auth.js';
 import { escapeHtml, applyBold } from '../lib/htmlUtils.js';
@@ -19,8 +18,24 @@ function fmt(v) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
 }
 
-export function getResend() {
-  return new Resend(process.env.RESEND_API_KEY);
+export async function sendEmail({ to, subject, html }) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': process.env.BREVO_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: 'Fôlego Capital', email: 'folegocapital@gmail.com' },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Brevo error ${res.status}`);
+  }
 }
 
 function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
@@ -138,28 +153,23 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Métricas financeiras ausentes ou inválidas.' });
   }
 
-  if (!process.env.RESEND_API_KEY) {
-    console.error('[email] RESEND_API_KEY não configurada');
+  if (!process.env.BREVO_API_KEY) {
+    console.error('[email] BREVO_API_KEY não configurada');
     return res.status(503).json({ error: 'Serviço de e-mail não configurado.' });
   }
 
   try {
-    const resend = getResend();
-
     const month = businessData.referenceMonth
       ? new Date(businessData.referenceMonth + '-02').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
       : new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
     console.log('[email] enviando para:', toEmail);
 
-    const { error } = await resend.emails.send({
-      from: 'Fôlego Capital <onboarding@resend.dev>',
+    await sendEmail({
       to: toEmail,
       subject: `Diagnóstico financeiro — ${businessData.businessName.replace(/[\r\n]/g, ' ')} · ${month}`,
       html: buildEmailHtml({ businessData, financialData, diagnosis, metrics }),
     });
-
-    if (error) throw new Error(error.message);
 
     console.log('[email] enviado com sucesso para:', toEmail);
     res.json({ ok: true });

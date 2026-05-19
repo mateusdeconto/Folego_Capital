@@ -165,9 +165,9 @@ app.use((err, req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Fôlego Capital rodando em http://localhost:${PORT} [${isProd ? 'prod' : 'dev'}]`);
-  if (process.env.RESEND_API_KEY) {
+  if (process.env.BREVO_API_KEY) {
     startMonthlyCron();
   } else {
-    console.warn('[cron] RESEND_API_KEY não configurada — cron mensal desativado');
+    console.warn('[cron] BREVO_API_KEY não configurada — cron mensal desativado');
   }
 });

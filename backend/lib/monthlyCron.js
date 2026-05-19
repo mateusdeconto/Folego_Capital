@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { createClient } from '@supabase/supabase-js';
-import { getResend } from '../routes/email.js';
+import { sendEmail } from '../routes/email.js';
 
 function buildReminderHtml() {
   const month = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -117,7 +117,6 @@ async function sendMonthlyReminders() {
   const activeUsers = users.filter(u => u.email_confirmed_at && u.email);
   console.log(`[cron] ${activeUsers.length} usuários ativos encontrados`);
 
-  const resend = getResend();
   const month = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const html = buildReminderHtml();
   let sent = 0;
@@ -125,13 +124,11 @@ async function sendMonthlyReminders() {
 
   for (const user of activeUsers) {
     try {
-      const { error } = await resend.emails.send({
-        from: 'Fôlego Capital <onboarding@resend.dev>',
+      await sendEmail({
         to: user.email,
         subject: `Hora de registrar ${month} — Fôlego Capital`,
         html,
       });
-      if (error) throw new Error(error.message);
       sent++;
       await new Promise(r => setTimeout(r, 300));
     } catch (err) {
