@@ -82,6 +82,8 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
   const [regPassword, setRegPassword] = useState('');
   const [regDocument, setRegDocument] = useState('');
   const [showRegPwd, setShowRegPwd] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptMarketing, setAcceptMarketing] = useState(false);
 
   // Login fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -116,6 +118,11 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
       return;
     }
 
+    if (!acceptTerms) {
+      setError('Você precisa aceitar os Termos de Uso para criar uma conta.');
+      return;
+    }
+
     setLoading(true);
     try {
       const normalizedDoc = normalizeDocument(regDocument);
@@ -130,7 +137,12 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
         email: regEmail,
         password: regPassword,
         options: {
-          data: { document: normalizedDoc, document_type: docType },
+          data: {
+            document: normalizedDoc,
+            document_type: docType,
+            email_marketing_opt_in: acceptMarketing,
+            terms_accepted_at: new Date().toISOString(),
+          },
           emailRedirectTo: window.location.origin,
         },
       });
@@ -407,9 +419,45 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
                   />
                   <p className="text-xs text-ink-400 mt-1.5">Garante uma conta gratuita por pessoa.</p>
                 </div>
+                {/* Consentimentos LGPD */}
+                <div className="space-y-3 pt-1">
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={acceptTerms}
+                      onChange={e => { setAcceptTerms(e.target.checked); clear(); }}
+                      className="mt-0.5 w-4 h-4 rounded border-ink-300 text-money-500 focus:ring-money-300 cursor-pointer flex-shrink-0"
+                    />
+                    <span className="text-xs text-ink-600 leading-relaxed">
+                      Concordo com os{' '}
+                      <a href="/termos" target="_blank" rel="noopener noreferrer" className="text-money-600 underline hover:text-money-700">
+                        Termos de Uso
+                      </a>{' '}
+                      e com o tratamento dos meus dados conforme a LGPD.{' '}
+                      <span className="text-loss-500 font-semibold">*</span>
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={acceptMarketing}
+                      onChange={e => { setAcceptMarketing(e.target.checked); clear(); }}
+                      className="mt-0.5 w-4 h-4 rounded border-ink-300 text-money-500 focus:ring-money-300 cursor-pointer flex-shrink-0"
+                    />
+                    <span className="text-xs text-ink-600 leading-relaxed">
+                      Quero receber lembretes mensais por e-mail para não esquecer de registrar os números do meu negócio.
+                    </span>
+                  </label>
+                </div>
+
                 <ErrorBox message={error} />
                 <SuccessBox message={success} />
-                <SubmitButton loading={loading} label="Criar conta grátis →" loadingLabel="Criando conta…" />
+                <SubmitButton
+                  loading={loading}
+                  label="Criar conta grátis →"
+                  loadingLabel="Criando conta…"
+                />
               </form>
             </>
           )}

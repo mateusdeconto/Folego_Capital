@@ -1,9 +1,13 @@
 import cron from 'node-cron';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '../routes/email.js';
+import { makeUnsubscribeUrl } from '../routes/unsubscribe.js';
 
-function buildReminderHtml() {
+const APP_URL = process.env.APP_URL || 'https://fincheck-production-94bb.up.railway.app';
+
+function buildReminderHtml(userId) {
   const month = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const unsubUrl = makeUnsubscribeUrl(userId);
 
   return `
 <!DOCTYPE html>
@@ -50,7 +54,7 @@ function buildReminderHtml() {
                   <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
                     <tr>
                       <td style="background:#2d6a4f;border-radius:10px;">
-                        <a href="https://fincheck-production-94bb.up.railway.app"
+                        <a href="${APP_URL}"
                            style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">
                           Fazer análise de ${month} →
                         </a>
@@ -81,8 +85,9 @@ function buildReminderHtml() {
         <tr>
           <td align="center" style="padding:20px 0 8px;">
             <p style="margin:0;font-size:12px;color:#aaaaaa;line-height:1.6;">
-              Você recebe este lembrete porque tem uma conta no Fôlego Capital.<br/>
-              <a href="https://fincheck-production-94bb.up.railway.app" style="color:#2d6a4f;">Acessar minha conta</a>
+              Você recebe este lembrete porque aceitou comunicações do Fôlego Capital.<br/>
+              <a href="${APP_URL}" style="color:#2d6a4f;">Acessar minha conta</a>
+              ${unsubUrl ? `&nbsp;·&nbsp;<a href="${unsubUrl}" style="color:#aaaaaa;">Cancelar lembretes</a>` : ''}
             </p>
           </td>
         </tr>
@@ -99,6 +104,33 @@ function buildReminderHtml() {
 </html>`;
 }
 
+async function getAllOptedInUsers(supabase) {
+  const users = [];
+  let page = 1;
+
+  while (true) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 100 });
+    if (error) {
+      console.error('[cron] erro ao buscar usuários (página', page, '):', error.message);
+      break;
+    }
+    if (!data?.users?.length) break;
+
+    for (const u of data.users) {
+      if (!u.email || !u.email_confirmed_at) continue;
+      // email_marketing_opt_in: undefined = não definido ainda (usuário antigo) → envia
+      // email_marketing_opt_in: false = optou por não receber → não envia
+      if (u.user_metadata?.email_marketing_opt_in === false) continue;
+      users.push(u);
+    }
+
+    if (data.users.length < 100) break;
+    page++;
+  }
+
+  return users;
+}
+
 async function sendMonthlyReminders() {
   const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -107,18 +139,10 @@ async function sendMonthlyReminders() {
 
   console.log('[cron] Iniciando envio de lembretes mensais...');
 
-  const { data: { users }, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-
-  if (error) {
-    console.error('[cron] Erro ao buscar usuários:', error.message);
-    return;
-  }
-
-  const activeUsers = users.filter(u => u.email_confirmed_at && u.email);
-  console.log(`[cron] ${activeUsers.length} usuários ativos encontrados`);
+  const activeUsers = await getAllOptedInUsers(supabase);
+  console.log(`[cron] ${activeUsers.length} usuários vão receber o lembrete`);
 
   const month = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  const html = buildReminderHtml();
   let sent = 0;
   let failed = 0;
 
@@ -127,7 +151,7 @@ async function sendMonthlyReminders() {
       await sendEmail({
         to: user.email,
         subject: `Hora de registrar ${month} — Fôlego Capital`,
-        html,
+        html: buildReminderHtml(user.id),
       });
       sent++;
       await new Promise(r => setTimeout(r, 300));
@@ -141,7 +165,6 @@ async function sendMonthlyReminders() {
 }
 
 export function startMonthlyCron() {
-  // Todo dia 1 do mês às 09:00 (horário do servidor / UTC)
   cron.schedule('0 9 1 * *', () => {
     sendMonthlyReminders().catch(err =>
       console.error('[cron] Erro não tratado no cron mensal:', err.message)

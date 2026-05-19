@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { SSEParser } from '../lib/sseParser.js';
+import { trackEvent } from '../lib/analytics.js';
 
 const SUGGESTED_QUESTIONS = [
   'Por que minha margem está baixa?',
@@ -40,6 +41,14 @@ export default function Chat({ businessData, financialData, diagnosis, allDiagno
   async function sendMessage(messageText) {
     const text = messageText || input.trim();
     if (!text || isStreaming) return;
+
+    const userMessageCount = messages.filter(m => m.role === 'user').length;
+    trackEvent('chat_message_sent', {
+      is_suggested: SUGGESTED_QUESTIONS.includes(text),
+      is_initial: userMessageCount === 0 && !!messageText,
+      message_number: userMessageCount + 1,
+      from_comparison: isComparisonChat,
+    });
 
     setInput('');
     const userMessage = { role: 'user', content: text };

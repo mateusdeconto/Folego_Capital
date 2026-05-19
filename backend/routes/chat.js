@@ -5,21 +5,19 @@ import { openSSE } from '../lib/sse.js';
 import { calcMetrics } from '../lib/metrics.js';
 import { requireAuth } from '../middleware/auth.js';
 import { CFO_PERSONA, CHAT_RESPONSE_FORMAT } from '../lib/persona.js';
+import { formatBRL } from '../lib/utils.js';
 
 const router = Router();
 
-// 30 mensagens por IP a cada 10 minutos. Chat é mais leve, mas ainda paga.
+// 30 mensagens por usuário a cada 10 minutos (keyGenerator usa user.id depois do requireAuth).
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 30,
+  keyGenerator: (req) => req.user?.id ?? req.ip,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Muitas mensagens em sequência. Aguarde alguns minutos.' },
 });
-
-function formatBRL(v) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
-}
 
 function periodLabel(record) {
   const ref = record.financial_data?.referenceMonth;

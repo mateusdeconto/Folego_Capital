@@ -2,6 +2,9 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../middleware/auth.js';
 import { escapeHtml, applyBold } from '../lib/htmlUtils.js';
+import { makeUnsubscribeUrl } from './unsubscribe.js';
+
+const APP_URL = process.env.APP_URL || 'https://fincheck-production-94bb.up.railway.app';
 
 const router = express.Router();
 
@@ -40,7 +43,8 @@ export async function sendEmail({ to, subject, html }) {
   }
 }
 
-function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
+function buildEmailHtml({ businessData, financialData, diagnosis, metrics, userId }) {
+  const unsubUrl = userId ? makeUnsubscribeUrl(userId) : null;
   const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   const month = businessData.referenceMonth
     ? new Date(businessData.referenceMonth + '-02').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
@@ -128,7 +132,8 @@ function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
 
         <tr><td style="padding:28px 32px;border-top:1px solid #f3f4f6;margin-top:24px;">
           <p style="font-size:12px;color:#9ca3af;margin:0 0 4px;">Este relatório foi gerado automaticamente pelo Fôlego Capital.</p>
-          <p style="font-size:12px;color:#9ca3af;margin:0;">Acesse: <a href="https://fincheck-production-94bb.up.railway.app" style="color:#2d6a4f;">fincheck-production-94bb.up.railway.app</a></p>
+          <p style="font-size:12px;color:#9ca3af;margin:0;">Acesse: <a href="${APP_URL}" style="color:#2d6a4f;">${APP_URL.replace('https://', '')}</a></p>
+          ${unsubUrl ? `<p style="font-size:11px;color:#c4c4c4;margin:8px 0 0;"><a href="${unsubUrl}" style="color:#c4c4c4;">Cancelar lembretes por e-mail</a></p>` : ''}
         </td></tr>
 
       </table>
@@ -170,7 +175,7 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
     await sendEmail({
       to: toEmail,
       subject: `Diagnóstico financeiro — ${businessData.businessName.replace(/[\r\n]/g, ' ')} · ${month}`,
-      html: buildEmailHtml({ businessData, financialData, diagnosis, metrics }),
+      html: buildEmailHtml({ businessData, financialData, diagnosis, metrics, userId: req.user.id }),
     });
 
     console.log('[email] enviado com sucesso para:', toEmail);

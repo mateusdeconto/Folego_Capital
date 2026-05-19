@@ -1,0 +1,12 @@
+-- Email preferences are stored in auth.users.raw_user_meta_data via Supabase Auth.
+-- Fields written at signup via supabase.auth.signUp({ options: { data: {...} } }):
+--   email_marketing_opt_in: boolean  (false = opted out of monthly reminders)
+--   terms_accepted_at: ISO timestamp (when user accepted terms)
+--
+-- The monthly cron (monthlyCron.js) reads email_marketing_opt_in via admin.listUsers().
+-- The unsubscribe endpoint (/api/unsubscribe) writes it via admin.updateUserById().
+--
+-- No separate table needed — Supabase auth metadata handles this.
+-- Required env vars:
+--   APP_URL         = https://yourapp.railway.app (or custom domain)
+--   UNSUBSCRIBE_SECRET = any long random string (openssl rand -hex 32)

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { trackEvent } from '../lib/analytics.js';
 import { DECISIONS, evaluate, getProfile, calcTrend, saveLastDecision } from '../lib/canOrNot.js';
 import { formatBRL } from '../lib/metrics.js';
 
@@ -397,6 +398,12 @@ export default function CanOrNot({ businessData, financialData, allDiagnoses, on
       date:          new Date().toISOString(),
       explanation:   result.explanation,
     });
+    trackEvent('can_or_not_simulation_completed', {
+      decision_type: selectedId,
+      verdict: result.verdict,
+      has_value: value > 0,
+      company: businessData.businessName,
+    });
   }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const profile = useMemo(() =>
@@ -410,6 +417,7 @@ export default function CanOrNot({ businessData, financialData, allDiagnoses, on
   function handleSelectDecision(id) {
     setSelectedId(id);
     setFieldsRaw({});
+    trackEvent('can_or_not_decision_selected', { decision_type: id });
   }
 
   function handleFieldChange(fieldId, raw) {
@@ -501,8 +509,20 @@ export default function CanOrNot({ businessData, financialData, allDiagnoses, on
           result={result}
           decisionDef={selectedDecision}
           fields={fields}
-          onOpenChat={onOpenChat}
-          onOpenWeeklyPlan={onOpenWeeklyPlan}
+          onOpenChat={(msg) => {
+            trackEvent('can_or_not_chat_opened', {
+              decision_type: selectedId,
+              verdict: result.verdict,
+            });
+            onOpenChat(msg);
+          }}
+          onOpenWeeklyPlan={() => {
+            trackEvent('can_or_not_weekly_plan_cta_clicked', {
+              decision_type: selectedId,
+              verdict: result.verdict,
+            });
+            onOpenWeeklyPlan();
+          }}
         />
       )}
     </div>

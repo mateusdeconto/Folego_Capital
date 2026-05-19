@@ -9,6 +9,7 @@ import diagnoseRouter from './routes/diagnose.js';
 import chatRouter from './routes/chat.js';
 import emailRouter from './routes/email.js';
 import macroRouter from './routes/macro.js';
+import unsubscribeRouter from './routes/unsubscribe.js';
 import { startMonthlyCron } from './lib/monthlyCron.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -51,16 +52,16 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// Em produção (frontend + backend mesma origem), CORS não é necessário.
-// Em dev local (5173 → 3001), precisamos liberar. Se ALLOWED_ORIGINS não for
-// definida, abre para qualquer origem — rate limit é a proteção real.
+// Em produção (frontend + backend mesma origem), CORS não é necessário para browsers normais.
+// Em dev local (5173 → 3001), precisamos liberar com ALLOWED_ORIGINS=*.
+// Sem ALLOWED_ORIGINS em prod → bloqueia cross-origin (protege credenciais).
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
-  : ['*'];
+  : isProd ? [] : ['*']; // prod sem var: bloqueia; dev sem var: libera
 
 app.use('/api', cors({
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true);
+    if (!origin) return cb(null, true); // same-origin ou non-browser
     if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return cb(null, true);
     cb(new Error(`CORS bloqueado: ${origin}`));
   },
@@ -79,6 +80,7 @@ app.use('/api/diagnose', diagnoseRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/send-report', emailRouter);
 app.use('/api/macro', macroRouter);
+app.use('/api/unsubscribe', unsubscribeRouter);
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',

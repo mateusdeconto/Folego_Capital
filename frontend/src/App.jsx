@@ -16,6 +16,7 @@ import {
   companyPlanKey,
 } from './lib/weeklyPlans.js';
 import { loadLastDecision } from './lib/canOrNot.js';
+import { setAnalyticsUser, trackEvent } from './lib/analytics.js';
 
 import Landing from './components/Landing.jsx';
 import Onboarding from './components/Onboarding.jsx';
@@ -170,6 +171,7 @@ export default function App() {
   }
 
   async function handleUserLoggedIn(loggedUser, currentStep) {
+    setAnalyticsUser(loggedUser.id);
     loadUserPlan(loggedUser.id).then(setPlan);
     syncDocumentFromMetadata(loggedUser).catch(() => {});
     loadAllActiveWeeklyPlans(loggedUser.id).then(indexWeeklyPlans);
@@ -207,12 +209,27 @@ export default function App() {
       removeSession(SESSION_KEY);
       return;
     }
+    // Guard: PREVIOUS sem empresas → vai para ONBOARDING (estado inconsistente)
+    if (step === STEPS.PREVIOUS && savedCompanies.length === 0) {
+      setStep(STEPS.ONBOARDING);
+      return;
+    }
     if (step === STEPS.PREVIOUS && user) {
       loadAllActiveWeeklyPlans(user.id).then(indexWeeklyPlans);
     }
 
     saveSession({ step, businessData, financialData });
-  }, [step, businessData, financialData, diagnosis]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [step, businessData, financialData, diagnosis, savedCompanies]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Navigation tracking — fires on every step change for authenticated users.
+  // Skips LOADING (transient spinner, not a user-intentional page).
+  useEffect(() => {
+    if (step === STEPS.LOADING) return;
+    trackEvent('page_viewed', {
+      page: step,
+      company: businessData?.businessName || null,
+    });
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleAuthComplete(session) {
     setRecoveryMode(false);
@@ -247,6 +264,10 @@ export default function App() {
     setInitialValues(null);
     setDiagnosis('');
     setFinancialData(INITIAL_FINANCIAL);
+    trackEvent('company_selected', {
+      company_name: company.businessName,
+      segment: company.segment,
+    });
     setStep(STEPS.ONBOARDING);
   }
 
@@ -405,6 +426,7 @@ export default function App() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
+    setAnalyticsUser(null);
     removeKey('folego_capital_history');
     handleRestart();
   }

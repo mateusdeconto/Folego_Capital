@@ -15,7 +15,7 @@ export function calcMetrics(f = {}) {
   const grossProfit = revenue - cogs;
   const grossMargin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
   const ebitda      = grossProfit - fixedExpenses;
-  const netProfit   = ebitda - debtPayment - investments;
+  const netProfit   = ebitda - debtPayment; // investments = capex, não reduz lucro (reduz caixa)
   const netMargin   = revenue > 0 ? (netProfit / revenue) * 100 : 0;
   const debtRatio   = revenue > 0 ? (debtPayment / revenue) * 100 : 0;
   const breakEven   = grossMargin > 0 ? fixedExpenses / (grossMargin / 100) : 0;

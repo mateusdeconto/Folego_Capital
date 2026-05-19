@@ -6,21 +6,19 @@ import { calcMetrics } from '../lib/metrics.js';
 import { requireAuth } from '../middleware/auth.js';
 import { getMacroData } from '../lib/macroData.js';
 import { CFO_PERSONA } from '../lib/persona.js';
+import { formatBRL, sanitizeText } from '../lib/utils.js';
 
 const router = Router();
 
-// 5 diagnósticos por IP a cada 10 minutos. Anthropic é caro — sem isso a conta sangra.
+// 5 diagnósticos por usuário a cada 10 minutos (keyGenerator usa user.id depois do requireAuth).
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 5,
+  keyGenerator: (req) => req.user?.id ?? req.ip,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Muitos diagnósticos em sequência. Aguarde alguns minutos.' },
 });
-
-function formatBRL(value) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
-}
 
 function buildItemsList(items) {
   if (!items || items.length === 0) return '  (sem detalhamento)';
@@ -208,7 +206,7 @@ ${buildItemsList(fixedExpensesItems)}
 Dívidas / Parcelas Mensais: ${formatBRL(m.debtPayment)}
 ${buildItemsList(debtPaymentItems)}
 
-- Investimentos na Empresa: ${formatBRL(m.investments)}
+- Investimentos na Empresa (capex / reinvestimento — não reduz lucro, reduz caixa): ${formatBRL(m.investments)}
 - Contas a Receber: ${formatBRL(m.accountsReceivable)}
 - Mistura conta pessoal/PJ: ${mixedAccounts ? 'SIM — risco crítico de gestão' : 'Não (contas separadas)'}
 
@@ -216,7 +214,7 @@ ${benchmarkBlock}
 ${macroBlock}
 
 CÁLCULOS AUTOMATIZADOS (use esses valores nos textos):
-- Lucro Líquido (o que vai pro bolso do dono): ${formatBRL(m.netProfit)}
+- Lucro Líquido (receita − custos − despesas fixas − dívidas): ${formatBRL(m.netProfit)}
 - Margem Líquida: ${m.netMargin.toFixed(1)}%
 - Índice de Endividamento: ${m.debtRatio.toFixed(1)}%
 - Ponto de Equilíbrio: ${formatBRL(m.breakEven)} (precisa faturar ao menos isso para não ter prejuízo)
@@ -251,12 +249,37 @@ REGRAS ABSOLUTAS:
 - Comece DIRETO com ## 🏢 Resumo Executivo, sem cabeçalho extra antes`;
 }
 
+function sanitizeBody(raw) {
+  const body = raw || {};
+  return {
+    ...body,
+    businessName: sanitizeText(body.businessName, 100),
+    segment: sanitizeText(body.segment, 50),
+    customSegment: sanitizeText(body.customSegment, 80),
+    fixedExpensesItems: Array.isArray(body.fixedExpensesItems)
+      ? body.fixedExpensesItems.slice(0, 30).map(i => ({
+          desc: sanitizeText(i?.desc, 100),
+          value: Number(i?.value) || 0,
+        }))
+      : [],
+    debtPaymentItems: Array.isArray(body.debtPaymentItems)
+      ? body.debtPaymentItems.slice(0, 30).map(i => ({
+          desc: sanitizeText(i?.desc, 100),
+          value: Number(i?.value) || 0,
+        }))
+      : [],
+  };
+}
+
 router.post('/', requireAuth, limiter, async (req, res) => {
-  const { businessName, segment, revenue } = req.body || {};
+  const body = sanitizeBody(req.body);
+  const { businessName, segment, revenue } = body;
 
   if (!businessName || !segment || revenue === undefined) {
     return res.status(400).json({ error: 'Dados insuficientes para gerar o diagnóstico.' });
   }
+
+  req.body = body; // usa versão sanitizada no restante do handler
 
   // Busca macro em paralelo — max 5s por fetch, nunca bloqueia
   const macroData = await getMacroData();

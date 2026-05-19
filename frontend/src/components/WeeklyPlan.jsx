@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
+import { trackEvent } from '../lib/analytics.js';
 import { calcMetrics, generateWeeklyPlan } from '../lib/metrics.js';
 import { formatReferenceMonth } from '../lib/export.js';
 import {
@@ -131,7 +132,7 @@ export default function WeeklyPlan({
     ? formatReferenceMonth(businessData.referenceMonth)
     : null;
 
-  const loadOrGenerate = useCallback(async (forceNew = false) => {
+  const loadOrGenerate = async (forceNew = false) => {
     if (!user) {
       // Sem usuário: apenas mostra plano em memória, sem persistir
       const mapped = generatedPlan.actions.map(a => ({
@@ -167,6 +168,10 @@ export default function WeeklyPlan({
       } else if (savedPlan) {
         await deactivateWeeklyPlan(savedPlan.id);
         setSavedPlan(null);
+        trackEvent('weekly_plan_regenerated', {
+          company: businessData?.businessName || null,
+          prev_plan_id: savedPlan.id,
+        });
       }
 
       // Gera e persiste novo plano
@@ -221,31 +226,45 @@ export default function WeeklyPlan({
     } catch {
       setLoadState('error');
     }
-  }, [user, businessData, generatedPlan, latestDiagnosis, savedPlan]);
+  };
+
+  // Ref sempre aponta para a versão mais recente de loadOrGenerate — evita stale closure
+  const loadOrGenerateRef = useRef(loadOrGenerate);
+  useEffect(() => { loadOrGenerateRef.current = loadOrGenerate; });
 
   useEffect(() => {
-    loadOrGenerate(false);
+    loadOrGenerateRef.current(false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleToggleStatus(action) {
+    const nextStatus = STATUS_CYCLE[action.status] || 'pending';
+
     if (!action.id || String(action.id).startsWith('local-') || String(action.id).startsWith('temp-')) {
-      // Sem persistência — apenas atualiza local
-      const nextStatus = STATUS_CYCLE[action.status] || 'pending';
       setActions(prev => prev.map(a => a === action ? { ...a, status: nextStatus } : a));
       return;
     }
 
-    const nextStatus = STATUS_CYCLE[action.status] || 'pending';
     setUpdatingId(action.id);
     const ok = await updateActionStatus(action.id, nextStatus);
     if (ok) {
       setActions(prev => prev.map(a => a.id === action.id ? { ...a, status: nextStatus } : a));
+      trackEvent('weekly_plan_action_status_changed', {
+        action_id: action.id,
+        prev_status: action.status,
+        next_status: nextStatus,
+        company: businessData?.businessName || null,
+      });
     }
     setUpdatingId(null);
   }
 
   function handleOpenChatForAction(action) {
     const msg = `Preciso de ajuda com esta ação do meu plano semanal:\n\n**${action.title}**\n\nMotivo: ${action.reason}\nImpacto esperado: ${action.expected_impact}\n\nPode me orientar como executar isso na prática?`;
+    trackEvent('chat_opened_from_weekly_plan', {
+      action_id: action.id,
+      action_priority: action.priority,
+      company: businessData?.businessName || null,
+    });
     if (onOpenChatWithContext) {
       onOpenChatWithContext(msg);
     } else if (onOpenChat) {
@@ -263,6 +282,11 @@ export default function WeeklyPlan({
         last_checkin_at: new Date().toISOString(),
         checkin_note: checkinNote.trim() || null,
       }));
+      trackEvent('weekly_plan_checkin_completed', {
+        plan_id: savedPlan.id,
+        has_note: checkinNote.trim().length > 0,
+        company: businessData?.businessName || null,
+      });
       setCheckinDone(true);
       setShowCheckin(false);
       setCheckinNote('');
