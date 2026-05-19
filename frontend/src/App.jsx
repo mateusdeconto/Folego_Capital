@@ -10,6 +10,7 @@ import {
   saveCompanyProfile,
   syncLegacyCompaniesToSupabase,
 } from './lib/companies.js';
+import { syncDocumentFromMetadata } from './lib/documents.js';
 
 import Landing from './components/Landing.jsx';
 import Onboarding from './components/Onboarding.jsx';
@@ -17,6 +18,7 @@ import Auth from './components/Auth.jsx';
 import CompanySelector from './components/CompanySelector.jsx';
 import History from './components/History.jsx';
 import Comparison from './components/Comparison.jsx';
+import UpgradeModal from './components/UpgradeModal.jsx';
 
 const Questionnaire = lazy(() => import('./components/Questionnaire.jsx'));
 const Loading = lazy(() => import('./components/Loading.jsx'));
@@ -85,6 +87,7 @@ export default function App() {
   const initial = loadSession();
 
   const [authChecked, setAuthChecked] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [step, setStep] = useState(initial?.step || STEPS.LANDING);
@@ -101,26 +104,41 @@ export default function App() {
   const [trackingOrigin, setTrackingOrigin] = useState(STEPS.DIAGNOSIS);
   const [plan, setPlan] = useState('free');
   const [macroData, setMacroData] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const companyDiagnoses = recordsForCompany(allDiagnoses, activeCompany);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) {
-        setUser(data.session.user);
-        setAccessToken(data.session.access_token);
-        await handleUserLoggedIn(data.session.user, initial?.step);
+      try {
+        if (data.session) {
+          setUser(data.session.user);
+          setAccessToken(data.session.access_token);
+          await handleUserLoggedIn(data.session.user, initial?.step);
+        }
+      } catch (err) {
+        console.error('[auth] session restore failed:', err);
+      } finally {
+        setAuthChecked(true);
       }
-      setAuthChecked(true);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'PASSWORD_RECOVERY') {
+        setRecoveryMode(true);
+        setUser(session?.user || null);
+        setAccessToken(session?.access_token || null);
+        setStep(STEPS.AUTH);
+        return;
+      }
       if (session) {
         setUser(session.user);
         setAccessToken(session.access_token);
+        setRecoveryMode(false);
       } else {
         setUser(null);
         setAccessToken(null);
+        setRecoveryMode(false);
       }
     });
 
@@ -129,6 +147,7 @@ export default function App() {
 
   async function handleUserLoggedIn(loggedUser, currentStep) {
     loadUserPlan(loggedUser.id).then(setPlan);
+    syncDocumentFromMetadata(loggedUser).catch(() => {});
 
     const records = await loadAllDiagnoses(loggedUser.id);
     const syncedCompanies = await syncLegacyCompaniesToSupabase(loggedUser.id);
@@ -168,6 +187,7 @@ export default function App() {
   }, [step, businessData, financialData, diagnosis]);
 
   async function handleAuthComplete(session) {
+    setRecoveryMode(false);
     setUser(session.user);
     setAccessToken(session.access_token);
     await handleUserLoggedIn(session.user, null);
@@ -203,6 +223,10 @@ export default function App() {
   }
 
   function handleCreateAnotherCompany() {
+    if (plan === 'free' && savedCompanies.length >= 1) {
+      setShowUpgradeModal(true);
+      return;
+    }
     setActiveCompany(null);
     setOnboardingPrefill(null);
     setBusinessData({ businessName: '', segment: '' });
@@ -356,13 +380,18 @@ export default function App() {
 
         <Suspense fallback={<FullScreenSpinner />}>
           {step === STEPS.AUTH && (
-            <Auth onComplete={handleAuthComplete} />
+            <Auth
+              onComplete={handleAuthComplete}
+              recoveryMode={recoveryMode}
+              onRecoveryComplete={handleAuthComplete}
+            />
           )}
 
           {step === STEPS.PREVIOUS && savedCompanies.length > 0 && (
             <CompanySelector
               companies={savedCompanies}
               plan={plan}
+              totalAnalysesCount={allDiagnoses.length}
               getSummary={getCompanySummary}
               onUseCompany={handleUseCompany}
               onViewLatest={handleViewPrevious}
@@ -463,6 +492,10 @@ export default function App() {
           )}
         </Suspense>
       </div>
+
+      {showUpgradeModal && (
+        <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
+      )}
     </div>
   );
 }

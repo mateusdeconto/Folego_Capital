@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import UpgradeModal from './UpgradeModal.jsx';
+
 function Icon({ d, size = 18, className = '' }) {
   return (
     <svg
@@ -26,6 +29,7 @@ function formatLastSeen(date) {
 export default function CompanySelector({
   companies,
   plan,
+  totalAnalysesCount = 0,
   getSummary,
   onUseCompany,
   onViewLatest,
@@ -33,6 +37,12 @@ export default function CompanySelector({
   onCreateAnother,
   onLogout,
 }) {
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  const isFreePlan = plan !== 'paid';
+  const canAnalyze = !isFreePlan || totalAnalysesCount < 1;
+  const canAddCompany = !isFreePlan || companies.length < 1;
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-8">
@@ -89,9 +99,12 @@ export default function CompanySelector({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <button
-                  onClick={() => onUseCompany(company)}
-                  className="btn-primary !py-2.5"
+                  onClick={() => canAnalyze ? onUseCompany(company) : setShowUpgrade(true)}
+                  className={`btn-primary !py-2.5${!canAnalyze ? ' relative' : ''}`}
                 >
+                  {!canAnalyze && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs">🔒</span>
+                  )}
                   Nova DRE
                 </button>
 
@@ -133,12 +146,14 @@ export default function CompanySelector({
       </div>
 
       <button
-        onClick={onCreateAnother}
+        onClick={() => canAddCompany ? onCreateAnother() : setShowUpgrade(true)}
         className="w-full mt-5 py-3 border border-dashed border-ink-300 text-ink-700 hover:bg-white rounded-2xl font-semibold transition-colors flex items-center justify-center gap-2"
       >
-        <Icon d="M12 4.5v15m7.5-7.5h-15" size={16} />
-        Cadastrar nova empresa
+        <Icon d={canAddCompany ? 'M12 4.5v15m7.5-7.5h-15' : 'M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z'} size={16} />
+        {canAddCompany ? 'Cadastrar nova empresa' : 'Múltiplas empresas — Plano Pro'}
       </button>
+
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
     </div>
   );
 }

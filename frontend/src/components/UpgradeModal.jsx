@@ -1,4 +1,5 @@
 const FEATURES = [
+  { icon: '🏢', title: 'Múltiplas empresas', desc: 'Gerencie quantas empresas quiser em uma única conta' },
   { icon: '🤖', title: 'Consultor IA', desc: 'Tire dúvidas e simule cenários com IA treinada nos seus dados reais' },
   { icon: '📊', title: 'Histórico completo', desc: 'Acesse todos os diagnósticos anteriores e compare meses lado a lado' },
   { icon: '📅', title: 'Acompanhamento mensal', desc: 'Monitore a evolução do negócio mês a mês em um só lugar' },
