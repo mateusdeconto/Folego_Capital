@@ -136,8 +136,14 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
   const { businessData, financialData, diagnosis, metrics } = req.body;
   const toEmail = req.user.email;
 
-  if (!toEmail || !businessData || !financialData || !diagnosis) {
-    return res.status(400).json({ error: 'Dados incompletos.' });
+  const missing = [];
+  if (!toEmail) missing.push('email');
+  if (!businessData) missing.push('businessData');
+  if (!financialData) missing.push('financialData');
+  if (!diagnosis) missing.push('diagnosis');
+  if (missing.length) {
+    console.error('[email] campos ausentes:', missing.join(', '), '| toEmail:', toEmail, '| body keys:', Object.keys(req.body || {}));
+    return res.status(400).json({ error: `Dados incompletos: ${missing.join(', ')}` });
   }
 
   if (!metrics || typeof metrics.netProfit !== 'number' || typeof metrics.netMargin !== 'number' || typeof metrics.breakEven !== 'number') {
