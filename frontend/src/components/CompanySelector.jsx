@@ -111,6 +111,7 @@ export default function CompanySelector({
   onViewLatest,
   onViewHistory,
   onOpenWeeklyPlan,
+  onOpenCanOrNot,
   onCreateAnother,
   onLogout,
 }) {
@@ -224,6 +225,28 @@ export default function CompanySelector({
                   </button>
                 )}
               </div>
+
+              {summary.latestRecord && onOpenCanOrNot && (
+                <button
+                  onClick={() => onOpenCanOrNot(company)}
+                  className="w-full mt-2.5 flex items-center justify-between px-4 py-2.5 rounded-xl border border-gold-200 bg-gold-50 hover:bg-gold-100 transition-colors group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded-lg bg-gold-100 group-hover:bg-gold-200 flex items-center justify-center transition-colors flex-shrink-0">
+                      <Icon
+                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                        size={14}
+                        className="text-gold-600"
+                      />
+                    </span>
+                    <div className="text-left">
+                      <p className="text-xs font-bold text-gold-800">Pode ou Não Pode?</p>
+                      <p className="text-[10px] text-gold-600">Avalie uma decisão do negócio</p>
+                    </div>
+                  </div>
+                  <span className="text-gold-500 text-xs font-semibold group-hover:translate-x-0.5 transition-transform">→</span>
+                </button>
+              )}
             </div>
           );
         })}

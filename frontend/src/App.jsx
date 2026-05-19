@@ -30,6 +30,7 @@ const Diagnosis = lazy(() => import('./components/Diagnosis.jsx'));
 const Chat = lazy(() => import('./components/Chat.jsx'));
 const MonthlyTracking = lazy(() => import('./components/MonthlyTracking.jsx'));
 const WeeklyPlan = lazy(() => import('./components/WeeklyPlan.jsx'));
+const CanOrNot = lazy(() => import('./components/CanOrNot.jsx'));
 
 const STEPS = {
   LANDING: 'landing',
@@ -44,6 +45,7 @@ const STEPS = {
   CHAT: 'chat',
   TRACKING: 'tracking',
   WEEKLY_PLAN: 'weekly_plan',
+  CAN_OR_NOT: 'can_or_not',
 };
 
 const INITIAL_FINANCIAL = {
@@ -79,6 +81,7 @@ const WIDTH_BY_STEP = {
   previous: 'w-full max-w-2xl',
   comparison: 'w-full max-w-2xl',
   weekly_plan: 'w-full max-w-lg',
+  can_or_not: 'w-full max-w-lg',
   default: 'w-full max-w-lg',
 };
 
@@ -115,6 +118,7 @@ export default function App() {
   const [macroData, setMacroData] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [weeklyPlansByCompany, setWeeklyPlansByCompany] = useState({});
+  const [canOrNotOrigin, setCanOrNotOrigin] = useState(STEPS.PREVIOUS);
 
   const companyDiagnoses = recordsForCompany(allDiagnoses, activeCompany);
 
@@ -309,6 +313,17 @@ export default function App() {
     setStep(STEPS.WEEKLY_PLAN);
   }
 
+  function handleOpenCanOrNot(company, origin = STEPS.PREVIOUS) {
+    const latestRecord = recordsForCompany(allDiagnoses, company)[0];
+    if (!latestRecord) return;
+
+    syncCompanyState(company);
+    setBusinessData(toBusinessDataFromRecord(latestRecord));
+    setFinancialData(latestRecord.financial_data);
+    setCanOrNotOrigin(origin);
+    setStep(STEPS.CAN_OR_NOT);
+  }
+
   async function handleOnboardingComplete(data) {
     if (user) {
       const updatedCompanies = await saveCompanyProfile(user.id, data);
@@ -442,6 +457,7 @@ export default function App() {
               onViewLatest={handleViewPrevious}
               onViewHistory={handleOpenHistory}
               onOpenWeeklyPlan={handleOpenWeeklyPlanFromPrevious}
+              onOpenCanOrNot={handleOpenCanOrNot}
               onCreateAnother={handleCreateAnotherCompany}
               onLogout={handleLogout}
             />
@@ -525,6 +541,20 @@ export default function App() {
               onOpenChat={() => { setChatContext(null); setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
               onOpenChatWithContext={(msg) => { setChatContext({ initialMessage: msg }); setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
               onBack={() => setStep(weeklyPlanOrigin)}
+            />
+          )}
+
+          {step === STEPS.CAN_OR_NOT && (
+            <CanOrNot
+              businessData={businessData}
+              financialData={financialData}
+              allDiagnoses={companyDiagnoses}
+              onOpenChat={(msg) => {
+                setChatContext({ initialMessage: msg });
+                setChatOrigin(STEPS.CAN_OR_NOT);
+                setStep(STEPS.CHAT);
+              }}
+              onBack={() => setStep(canOrNotOrigin)}
             />
           )}
 
