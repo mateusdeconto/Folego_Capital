@@ -52,7 +52,24 @@ const PLAN_STATUS_CONFIG = {
 };
 
 function WeeklyPlanBadge({ weeklyPlan, latestDiagnosisCreatedAt, onOpen }) {
-  if (!weeklyPlan) return null;
+  if (!weeklyPlan) {
+    if (!onOpen) return null;
+    return (
+      <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-ink-200 bg-ink-50 mt-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full flex-shrink-0 bg-ink-300" />
+          <span className="text-xs font-semibold text-ink-500">Plano semanal</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-ink-400 ml-1">Sem plano</span>
+        </div>
+        <button
+          onClick={onOpen}
+          className="text-xs font-semibold flex-shrink-0 text-money-600 hover:opacity-70 transition-opacity"
+        >
+          Criar plano →
+        </button>
+      </div>
+    );
+  }
 
   const status = calcPlanStatus(weeklyPlan, latestDiagnosisCreatedAt);
   const cfg = PLAN_STATUS_CONFIG[status];
