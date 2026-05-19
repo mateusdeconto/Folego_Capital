@@ -140,9 +140,8 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
   if (!toEmail) missing.push('email');
   if (!businessData) missing.push('businessData');
   if (!financialData) missing.push('financialData');
-  if (!diagnosis) missing.push('diagnosis');
   if (missing.length) {
-    console.error('[email] campos ausentes:', missing.join(', '), '| toEmail:', toEmail, '| body keys:', Object.keys(req.body || {}));
+    console.error('[email] campos ausentes:', missing.join(', '));
     return res.status(400).json({ error: `Dados incompletos: ${missing.join(', ')}` });
   }
 

@@ -686,7 +686,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         body: JSON.stringify({
           businessData,
           financialData,
-          diagnosis,
+          diagnosis: diagnosis || allDiagnoses[0]?.diagnosis_text || '',
           metrics,
         }),
       });
