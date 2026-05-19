@@ -1,5 +1,5 @@
 import express from 'express';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../middleware/auth.js';
 import { escapeHtml, applyBold } from '../lib/htmlUtils.js';
@@ -19,19 +19,8 @@ function fmt(v) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
 }
 
-export function createTransporter() {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-  });
+export function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
 }
 
 function buildEmailHtml({ businessData, financialData, diagnosis, metrics }) {
@@ -149,13 +138,13 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Métricas financeiras ausentes ou inválidas.' });
   }
 
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.error('[email] GMAIL_USER ou GMAIL_APP_PASSWORD não configurados');
+  if (!process.env.RESEND_API_KEY) {
+    console.error('[email] RESEND_API_KEY não configurada');
     return res.status(503).json({ error: 'Serviço de e-mail não configurado.' });
   }
 
   try {
-    const transporter = createTransporter();
+    const resend = getResend();
 
     const month = businessData.referenceMonth
       ? new Date(businessData.referenceMonth + '-02').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
@@ -163,12 +152,14 @@ router.post('/', requireAuth, emailLimiter, async (req, res) => {
 
     console.log('[email] enviando para:', toEmail);
 
-    await transporter.sendMail({
-      from: `"Fôlego Capital" <${process.env.GMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from: 'Fôlego Capital <onboarding@resend.dev>',
       to: toEmail,
       subject: `Diagnóstico financeiro — ${businessData.businessName.replace(/[\r\n]/g, ' ')} · ${month}`,
       html: buildEmailHtml({ businessData, financialData, diagnosis, metrics }),
     });
+
+    if (error) throw new Error(error.message);
 
     console.log('[email] enviado com sucesso para:', toEmail);
     res.json({ ok: true });

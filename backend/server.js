@@ -165,9 +165,9 @@ app.use((err, req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Fôlego Capital rodando em http://localhost:${PORT} [${isProd ? 'prod' : 'dev'}]`);
-  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+  if (process.env.RESEND_API_KEY) {
     startMonthlyCron();
   } else {
-    console.warn('[cron] GMAIL_USER ou GMAIL_APP_PASSWORD não configurados — cron mensal desativado');
+    console.warn('[cron] RESEND_API_KEY não configurada — cron mensal desativado');
   }
 });
