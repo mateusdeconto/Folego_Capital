@@ -129,7 +129,10 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
       const { data, error: err } = await supabase.auth.signUp({
         email: regEmail,
         password: regPassword,
-        options: { data: { document: normalizedDoc, document_type: docType } },
+        options: {
+          data: { document: normalizedDoc, document_type: docType },
+          emailRedirectTo: window.location.origin,
+        },
       });
       if (err) throw err;
 
