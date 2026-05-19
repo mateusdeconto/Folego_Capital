@@ -3,7 +3,6 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync, readdirSync } from 'fs';
 import express from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import diagnoseRouter from './routes/diagnose.js';
 import chatRouter from './routes/chat.js';
@@ -54,19 +53,35 @@ app.use(helmet({
 
 // Em produção (frontend + backend mesma origem), CORS não é necessário para browsers normais.
 // Em dev local (5173 → 3001), precisamos liberar com ALLOWED_ORIGINS=*.
-// Sem ALLOWED_ORIGINS em prod → bloqueia cross-origin (protege credenciais).
+// Browsers enviam Origin header em POST mesmo same-origin → checar contra host da requisição.
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
-  : isProd ? [] : ['*']; // prod sem var: bloqueia; dev sem var: libera
+  : isProd ? [] : ['*'];
 
-app.use('/api', cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // same-origin ou non-browser
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error(`CORS bloqueado: ${origin}`));
-  },
-  credentials: false,
-}));
+app.use('/api', (req, res, next) => {
+  const origin = req.get('Origin');
+  if (!origin) return next(); // sem Origin → same-origin implícito ou non-browser
+
+  // Permite se: lista inclui '*', lista inclui origin, ou origin == host próprio (Railway same-origin)
+  const proto = req.protocol || 'https';
+  const ownOrigin = `${proto}://${req.get('host')}`;
+  const allowed = allowedOrigins.includes('*') || allowedOrigins.includes(origin) || origin === ownOrigin;
+
+  if (allowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+      res.setHeader('Access-Control-Max-Age', '86400');
+      return res.status(204).end();
+    }
+    return next();
+  }
+
+  console.warn('[cors] bloqueado:', origin, '≠', ownOrigin);
+  return res.status(403).json({ error: 'CORS: origem não permitida.' });
+});
 
 app.use(express.json({ limit: '50kb' }));
 
