@@ -9,7 +9,7 @@ const SUGGESTED_QUESTIONS = [
   'Como reduzir meus custos fixos?',
 ];
 
-export default function Chat({ businessData, financialData, diagnosis, allDiagnoses = [], comparisonPair = null, accessToken, onBack }) {
+export default function Chat({ businessData, financialData, diagnosis, allDiagnoses = [], comparisonPair = null, accessToken, initialMessage = null, onBack }) {
   const isComparisonChat = !!comparisonPair;
   const [messages, setMessages] = useState([
     {
@@ -24,10 +24,18 @@ export default function Chat({ businessData, financialData, diagnosis, allDiagno
   const [streamingContent, setStreamingContent] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const initialMessageSentRef = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent]);
+
+  useEffect(() => {
+    if (initialMessage && !initialMessageSentRef.current) {
+      initialMessageSentRef.current = true;
+      sendMessage(initialMessage);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function sendMessage(messageText) {
     const text = messageText || input.trim();

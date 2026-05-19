@@ -104,6 +104,7 @@ export default function App() {
   const [onboardingPrefill, setOnboardingPrefill] = useState(initial?.businessData?.businessName ? initial.businessData : null);
   const [comparisonPair, setComparisonPair] = useState(null);
   const [chatOrigin, setChatOrigin] = useState(STEPS.DIAGNOSIS);
+  const [chatContext, setChatContext] = useState(null);
   const [trackingOrigin, setTrackingOrigin] = useState(STEPS.DIAGNOSIS);
   const [weeklyPlanOrigin, setWeeklyPlanOrigin] = useState(STEPS.DIAGNOSIS);
   const [plan, setPlan] = useState('free');
@@ -483,7 +484,10 @@ export default function App() {
             <WeeklyPlan
               businessData={businessData}
               financialData={financialData}
-              onOpenChat={() => { setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
+              user={user}
+              companyDiagnoses={companyDiagnoses}
+              onOpenChat={() => { setChatContext(null); setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
+              onOpenChatWithContext={(msg) => { setChatContext({ initialMessage: msg }); setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
               onBack={() => setStep(weeklyPlanOrigin)}
             />
           )}
@@ -506,7 +510,8 @@ export default function App() {
               allDiagnoses={companyDiagnoses}
               comparisonPair={comparisonPair}
               accessToken={accessToken}
-              onBack={() => setStep(chatOrigin)}
+              initialMessage={chatContext?.initialMessage || null}
+              onBack={() => { setChatContext(null); setStep(chatOrigin); }}
             />
           )}
         </Suspense>
