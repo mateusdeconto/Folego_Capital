@@ -230,8 +230,92 @@ function applyTrend(verdict, trend, signals) {
   return verdict;
 }
 
-function buildResult(verdict, title, explanation, signals, trendNote) {
-  return { verdict, title, explanation, signals, trendNote };
+// ---------------------------------------------------------------------------
+// Motivos e melhorias — derivados dos signals
+// ---------------------------------------------------------------------------
+
+function buildReasons(verdict, signals) {
+  if (verdict === 'can') return [];
+
+  const effectiveStatus = s => s.projStatus || s.status;
+  const effectiveValue  = s => (s.projected && s.projected !== s.value) ? s.projected : s.value;
+
+  return [...signals]
+    .filter(s => effectiveStatus(s) === 'bad' || effectiveStatus(s) === 'warn')
+    .sort((a, b) => {
+      const order = { bad: 0, warn: 1 };
+      return (order[effectiveStatus(a)] ?? 2) - (order[effectiveStatus(b)] ?? 2);
+    })
+    .slice(0, 3)
+    .map(s => {
+      const val = effectiveValue(s);
+      return s.projected && s.projected !== s.value
+        ? `${s.label} ficaria em ${val}`
+        : `${s.label}: ${val}`;
+    });
+}
+
+function buildImprovements(decisionId, verdict, signals, profile) {
+  if (verdict === 'can') return [];
+
+  const effectiveStatus = s => s.projStatus || s.status;
+  const hasIssue = (labelFrag) =>
+    signals.some(s =>
+      s.label.toLowerCase().includes(labelFrag) &&
+      (effectiveStatus(s) === 'bad' || effectiveStatus(s) === 'warn')
+    );
+
+  const improvements = [];
+  const hasLoss      = signals.some(s => s.label === 'Resultado líquido' && s.status === 'bad');
+  const hasLowMargin = hasIssue('margem');
+  const hasLowCash   = hasIssue('caixa');
+  const hasHighDebt  = hasIssue('dívida') || hasIssue('divida');
+
+  if (hasLoss)                    improvements.push('Reduzir custos ou aumentar receita para sair do prejuízo');
+  if (hasLowMargin && !hasLoss)   improvements.push(`Melhorar margem líquida — meta: acima de ${profile.goodMargin}%`);
+  if (hasLowCash)                 improvements.push(`Reforçar caixa até ${profile.goodDays} dias de cobertura operacional`);
+  if (hasHighDebt)                improvements.push(`Reduzir dívidas para abaixo de ${Math.round(profile.maxDebt * 0.7)}% do faturamento`);
+
+  if (improvements.length === 0) {
+    const fallbacks = {
+      hire:      'Aumentar receita antes de expandir equipe — novo custo precisa de retorno claro',
+      marketing: 'Primeiro melhore conversão ou margem — marketing com caixa apertado amplifica risco',
+      withdraw:  'Estabeleça pró-labore fixo dentro do lucro em vez de retiradas esporádicas',
+      loan:      'Defina destino claro para o crédito — só faça empréstimo com retorno previsto',
+      stock:     'Negocie prazo com fornecedor para preservar caixa operacional',
+      equipment: 'Avalie financiamento em vez de compra à vista para não comprometer capital de giro',
+    };
+    if (fallbacks[decisionId]) improvements.push(fallbacks[decisionId]);
+  }
+
+  return improvements.slice(0, 3);
+}
+
+function buildResult(verdict, title, explanation, signals, trendNote, decisionId, profile) {
+  const reasons      = buildReasons(verdict, signals);
+  const improvements = buildImprovements(decisionId, verdict, signals, profile || SECTOR_PROFILES.default);
+  return { verdict, title, explanation, signals, trendNote, reasons, improvements };
+}
+
+// ---------------------------------------------------------------------------
+// Persistência da última decisão (localStorage por empresa)
+// ---------------------------------------------------------------------------
+
+export function lastDecisionKey(businessData) {
+  const name = (businessData?.businessName || '').toLowerCase().trim().replace(/\s+/g, '_');
+  const seg  = (businessData?.segment || '').toLowerCase().trim();
+  return `folego_last_can_${name}__${seg}`;
+}
+
+export function saveLastDecision(businessData, data) {
+  try { localStorage.setItem(lastDecisionKey(businessData), JSON.stringify(data)); } catch {}
+}
+
+export function loadLastDecision(businessData) {
+  try {
+    const raw = localStorage.getItem(lastDecisionKey(businessData));
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
 }
 
 export function evaluate(decisionId, financialData, fields = {}, businessData = {}, allDiagnoses = []) {
@@ -359,7 +443,7 @@ function evalHire({ m, profile, trend, note, fields }) {
     ? explanation + ' Mas a receita está em queda — cautela extra.'
     : explanation;
 
-  return buildResult(finalVerdict, title, fullExpl, signals, note);
+  return buildResult(finalVerdict, title, fullExpl, signals, note, 'hire', profile);
 }
 
 // ---------------------------------------------------------------------------

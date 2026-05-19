@@ -107,6 +107,23 @@ function extractFirstRecommendation(text) {
   return null;
 }
 
+function extractSectionBullets(text, sectionRegex, maxItems = 3) {
+  if (!text) return [];
+  const section = text.split(sectionRegex)[1];
+  if (!section) return [];
+
+  const items = [];
+  for (const line of section.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('##')) break;
+    if (trimmed.startsWith('â€¢ ') || trimmed.startsWith('- ')) {
+      items.push(trimmed.slice(2).replace(/\*\*/g, '').trim());
+    }
+    if (items.length >= maxItems) break;
+  }
+  return items;
+}
+
 function buildWhatsAppMessage(businessData, financialData, diagnosis, metrics, healthStatus) {
   const today  = new Date().toLocaleDateString('pt-BR');
   const status = healthStatus ? healthStatus.label : '—';
@@ -601,6 +618,16 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
   const healthStatus  = useMemo(() => extractHealthStatus(diagnosis), [diagnosis]);
   const metrics       = useMemo(() => calcMetrics(financialData),     [financialData]);
   const projection    = useMemo(() => calcProjection(financialData, metrics), [financialData, metrics]);
+  const firstAlert = useMemo(() => extractFirstAlert(diagnosis), [diagnosis]);
+  const firstRecommendation = useMemo(() => extractFirstRecommendation(diagnosis), [diagnosis]);
+  const positiveBullets = useMemo(
+    () => extractSectionBullets(diagnosis, /##\s*[^\n]*O que estÃ¡ funcionando/, 2),
+    [diagnosis],
+  );
+  const attentionBullets = useMemo(
+    () => extractSectionBullets(diagnosis, /##\s*[^\n]*Pontos de AtenÃ§Ã£o/, 2),
+    [diagnosis],
+  );
   const [exporting, setExporting]       = useState(false);
   const [pdfExporting, setPdfExporting] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
@@ -627,6 +654,12 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
   const netProfitPositive = metrics.netProfit >= 0;
   const healthTone = healthStatus ? TONE_CLASSES[healthStatus.tone] : TONE_CLASSES.brand;
   const projTone = TONE_CLASSES[projection.status];
+  const heroStats = () => ([
+    { label: 'Sobrou no bolso', value: formatBRL(animatedNetProfit), hint: `${metrics.netMargin.toFixed(1)}% de margem` },
+    { label: 'Caixa hoje', value: formatBRL(financialData.cashBalance), hint: financialData.cashBalance >= 0 ? 'dinheiro em conta agora' : 'caixa no vermelho' },
+    { label: 'Precisa vender', value: formatBRL(animatedBreakEven), hint: 'para empatar mÃªs' },
+    { label: 'DÃ­vida por mÃªs', value: formatBRL(financialData.debtPayment), hint: metrics.debtRatio > 0 ? `${metrics.debtRatio.toFixed(1)}% da receita` : 'sem pressÃ£o de dÃ­vida' },
+  ]);
 
   // Count-up animated values (DG-01) — disabled if user prefers reduced motion
   const animatedNetProfit   = useCountUp(metrics.netProfit, 1200, shouldReduceMotion);
@@ -768,6 +801,89 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
       )}
 
       {/* Card hero — Lucro líquido */}
+      {onOpenWeeklyPlan && (
+        <motion.div variants={fadeUp}>
+          <button
+            onClick={onOpenWeeklyPlan}
+            className="w-full flex items-center justify-between rounded-xl bg-brand-600 p-4 text-white transition-colors hover:bg-brand-700"
+          >
+            <div className="text-left">
+              <p className="text-sm font-bold">Ver o que fazer esta semana</p>
+              <p className="mt-0.5 text-xs text-brand-200">3 prioridades claras com base no seu diagnÃ³stico</p>
+            </div>
+            <svg className="ml-3 h-5 w-5 flex-shrink-0 text-brand-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </motion.div>
+      )}
+
+      {firstAlert && (
+        <motion.div
+          className="rounded-xl border border-loss-200 bg-loss-50 p-5 border-l-4 border-l-loss-500"
+          variants={shakeIn}
+        >
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-loss-500/10">
+              <svg className="h-4 w-4 text-loss-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008zM10.34 3.94L1.82 18a2.25 2.25 0 001.93 3.38h16.5a2.25 2.25 0 001.93-3.38L13.66 3.94a2.25 2.25 0 00-3.32 0z" />
+              </svg>
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-loss-700">Principal alerta</p>
+              <p className="mt-1 text-base font-bold text-loss-800">{firstAlert}</p>
+              <p className="mt-1 text-sm leading-relaxed text-loss-700">
+                Se isso continuar assim, caixa, lucro ou capacidade de pagar contas pode apertar rÃ¡pido.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      <motion.div className="grid gap-3 md:grid-cols-3" variants={fadeUp}>
+        <div className="card p-4">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-money-600">O que estÃ¡ bem</p>
+          {positiveBullets.length > 0 ? (
+            <ul className="space-y-2">
+              {positiveBullets.map(item => (
+                <li key={item} className="text-sm leading-relaxed text-ink-700">{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm leading-relaxed text-ink-500">Sem destaque forte aqui ainda. Momento pede mais correÃ§Ã£o do que expansÃ£o.</p>
+          )}
+        </div>
+        <div className="card p-4">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-amber-600">O que preocupa</p>
+          {attentionBullets.length > 0 ? (
+            <ul className="space-y-2">
+              {attentionBullets.map(item => (
+                <li key={item} className="text-sm leading-relaxed text-ink-700">{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm leading-relaxed text-ink-500">Sem alerta extraÃ­do do relatÃ³rio. Use pontos abaixo para revisar caixa, margem e ponto de equilÃ­brio.</p>
+          )}
+        </div>
+        <div className="card p-4">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-brand-600">O que fazer agora</p>
+          <p className="text-sm leading-relaxed text-ink-700">
+            {firstRecommendation || 'Abra plano da semana para ver 3 prioridades claras baseadas no diagnÃ³stico.'}
+          </p>
+          {onOpenWeeklyPlan && (
+            <button
+              onClick={onOpenWeeklyPlan}
+              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800"
+            >
+              Ver plano da semana
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </motion.div>
+
       <motion.div className="card-dark p-6" variants={fadeUp}>
         <div className="flex items-start justify-between mb-4">
           <div>
