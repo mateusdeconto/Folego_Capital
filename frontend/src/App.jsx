@@ -25,6 +25,7 @@ const Loading = lazy(() => import('./components/Loading.jsx'));
 const Diagnosis = lazy(() => import('./components/Diagnosis.jsx'));
 const Chat = lazy(() => import('./components/Chat.jsx'));
 const MonthlyTracking = lazy(() => import('./components/MonthlyTracking.jsx'));
+const WeeklyPlan = lazy(() => import('./components/WeeklyPlan.jsx'));
 
 const STEPS = {
   LANDING: 'landing',
@@ -38,6 +39,7 @@ const STEPS = {
   COMPARISON: 'comparison',
   CHAT: 'chat',
   TRACKING: 'tracking',
+  WEEKLY_PLAN: 'weekly_plan',
 };
 
 const INITIAL_FINANCIAL = {
@@ -72,6 +74,7 @@ const WIDTH_BY_STEP = {
   history: 'w-full max-w-2xl',
   previous: 'w-full max-w-2xl',
   comparison: 'w-full max-w-2xl',
+  weekly_plan: 'w-full max-w-lg',
   default: 'w-full max-w-lg',
 };
 
@@ -102,6 +105,7 @@ export default function App() {
   const [comparisonPair, setComparisonPair] = useState(null);
   const [chatOrigin, setChatOrigin] = useState(STEPS.DIAGNOSIS);
   const [trackingOrigin, setTrackingOrigin] = useState(STEPS.DIAGNOSIS);
+  const [weeklyPlanOrigin, setWeeklyPlanOrigin] = useState(STEPS.DIAGNOSIS);
   const [plan, setPlan] = useState('free');
   const [macroData, setMacroData] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -263,6 +267,11 @@ export default function App() {
     setFinancialData(latestRecord.financial_data);
     setTrackingOrigin(origin);
     setStep(STEPS.TRACKING);
+  }
+
+  function handleOpenWeeklyPlan(origin = STEPS.DIAGNOSIS) {
+    setWeeklyPlanOrigin(origin);
+    setStep(STEPS.WEEKLY_PLAN);
   }
 
   async function handleOnboardingComplete(data) {
@@ -464,8 +473,18 @@ export default function App() {
               onOpenChat={() => { setChatOrigin(STEPS.DIAGNOSIS); setStep(STEPS.CHAT); }}
               onOpenTracking={() => { setTrackingOrigin(STEPS.DIAGNOSIS); setStep(STEPS.TRACKING); }}
               onOpenHistory={companyDiagnoses.length > 0 ? () => setStep(STEPS.PREVIOUS) : null}
+              onOpenWeeklyPlan={() => handleOpenWeeklyPlan(STEPS.DIAGNOSIS)}
               onCorrectData={handleCorrectData}
               onRestart={handleRestart}
+            />
+          )}
+
+          {step === STEPS.WEEKLY_PLAN && (
+            <WeeklyPlan
+              businessData={businessData}
+              financialData={financialData}
+              onOpenChat={() => { setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
+              onBack={() => setStep(weeklyPlanOrigin)}
             />
           )}
 

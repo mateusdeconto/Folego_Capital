@@ -227,7 +227,7 @@ CLASSIFICAÇÃO DA SAÚDE FINANCEIRA (use apenas uma):
 - 🟢 Estável: Margem Líquida entre 5-10% E endividamento < 30%
 - ✅ Saudável: Margem Líquida > 10% E endividamento < 20% E caixa positivo
 
-GERE O DIAGNÓSTICO em português, em exatamente 4 seções com os títulos EXATOS abaixo:
+GERE O DIAGNÓSTICO em português, em exatamente 3 seções com os títulos EXATOS abaixo:
 
 ## 🏢 Resumo Executivo
 [3 parágrafos curtos. Explique como está o negócio em linguagem de dono. Mencione obrigatoriamente: classificação de saúde financeira (ex: "Saúde Financeira: 🟡 Atenção"), o lucro líquido real (o que vai pro bolso), o ponto de equilíbrio, e como a empresa se compara à média setorial em pelo menos uma métrica. Tom direto e humano.]
@@ -241,11 +241,6 @@ Se não houver problemas graves, diga isso e elogie.]
 [Até 2 pontos positivos no formato:
 • **Ponto forte**: por que esse número é bom e o que significa na prática.
 Se quase nada estiver bom, seja honesto mas encorajador.]
-
-## 🎯 Recomendações para essa semana
-[3 ações concretas no formato:
-**1. Nome da ação**: como fazer na prática — resultado esperado em linguagem simples.
-Priorize pelo impacto mais rápido no caixa.]
 
 REGRAS ABSOLUTAS:
 - NUNCA use jargão técnico sem explicar entre parênteses. Ex: "margem bruta (quanto sobra depois de pagar o que você vendeu)"
@@ -283,7 +278,7 @@ router.post('/', requireAuth, limiter, async (req, res) => {
     try {
       const stream = await getAnthropic().messages.stream({
         model: MODEL,
-        max_tokens: 2000,
+        max_tokens: 1500,
         system: CFO_PERSONA,
         messages: [{ role: 'user', content: prompt }],
       }, { signal: ac.signal });

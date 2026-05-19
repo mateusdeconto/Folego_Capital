@@ -596,7 +596,7 @@ function GlossaryCard() {
   );
 }
 
-export default function Diagnosis({ businessData, financialData, diagnosis, allDiagnoses = [], plan = 'free', user, accessToken, macroData = null, onOpenChat, onOpenTracking, onOpenHistory, onCorrectData, onRestart }) {
+export default function Diagnosis({ businessData, financialData, diagnosis, allDiagnoses = [], plan = 'free', user, accessToken, macroData = null, onOpenChat, onOpenTracking, onOpenHistory, onOpenWeeklyPlan, onCorrectData, onRestart }) {
   const renderedHtml  = useMemo(() => renderMarkdown(diagnosis),      [diagnosis]);
   const healthStatus  = useMemo(() => extractHealthStatus(diagnosis), [diagnosis]);
   const metrics       = useMemo(() => calcMetrics(financialData),     [financialData]);
@@ -808,6 +808,27 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         <div className="diagnosis-content" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
       </motion.div>
 
+      {/* Weekly Plan CTA — banner inline logo após o diagnóstico */}
+      {onOpenWeeklyPlan && (
+        <motion.div variants={fadeUp}>
+          <button
+            onClick={onOpenWeeklyPlan}
+            className="w-full flex items-center justify-between p-4 rounded-xl bg-brand-600 hover:bg-brand-700 active:bg-brand-800 transition-colors text-white group"
+          >
+            <div className="text-left">
+              <p className="text-sm font-bold">Ver plano da semana</p>
+              <p className="text-xs text-brand-200 mt-0.5">3 ações práticas baseadas nesse diagnóstico</p>
+            </div>
+            <svg
+              className="w-5 h-5 text-brand-200 group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-3"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </motion.div>
+      )}
+
       {/* Benchmark */}
       <motion.div variants={fadeUp}>
         <BenchmarkChart metrics={metrics} segment={businessData.segment} />
@@ -940,8 +961,18 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
       </motion.div>
 
 
-      {/* Ações — pro features com lock para free */}
+      {/* Ações — plano semanal primeiro, depois pro features com lock para free */}
       <motion.div className="space-y-2.5" variants={fadeUp}>
+        {onOpenWeeklyPlan && (
+          <button onClick={onOpenWeeklyPlan} className="btn-primary w-full">
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Ver plano da semana
+            </span>
+          </button>
+        )}
         {allDiagnoses.length > 0 && (
           <button
             onClick={isPaid ? onOpenHistory : () => setShowUpgrade(true)}
@@ -959,15 +990,15 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         )}
         <button
           onClick={isPaid ? onOpenTracking : () => setShowUpgrade(true)}
-          className={`btn-primary w-full ${!isPaid ? 'opacity-80' : ''}`}
+          className={`btn-secondary w-full ${!isPaid ? 'opacity-80' : ''}`}
         >
           <span className="flex items-center justify-center gap-2">
-            {!isPaid && <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>}
+            {!isPaid && <svg className="w-3.5 h-3.5 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>}
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
             </svg>
             Acompanhamento mensal
-            {!isPaid && <span className="ml-auto text-[10px] font-bold bg-white/20 text-white px-1.5 py-0.5 rounded">PRO</span>}
+            {!isPaid && <span className="ml-auto text-[10px] font-bold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">PRO</span>}
           </span>
         </button>
         <button
