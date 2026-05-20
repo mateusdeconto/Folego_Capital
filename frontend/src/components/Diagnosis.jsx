@@ -31,16 +31,23 @@ function renderMarkdown(text) {
   const lines = text.split('\n');
   let html = '';
   let inList = false;
+  let currentSection = '';
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.startsWith('## ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<h2>${escapeHtml(stripLeadingEmoji(trimmed.slice(3)))}</h2>`;
+      currentSection = stripLeadingEmoji(trimmed.slice(3));
+      const sectionClass = isAttentionSection(currentSection) ? ' class="attention-heading"' : '';
+      html += `<h2${sectionClass}>${escapeHtml(currentSection)}</h2>`;
       continue;
     }
     if (trimmed.startsWith('• ') || trimmed.startsWith('- ')) {
-      if (!inList) { html += '<ul>'; inList = true; }
+      if (!inList) {
+        const listClass = isAttentionSection(currentSection) ? ' class="attention-list"' : '';
+        html += `<ul${listClass}>`;
+        inList = true;
+      }
       html += `<li>${applyInlineMarkdown(trimmed.slice(2))}</li>`;
       continue;
     }
@@ -53,6 +60,10 @@ function renderMarkdown(text) {
   }
   if (inList) html += '</ul>';
   return html;
+}
+
+function isAttentionSection(text) {
+  return /Pontos de Aten(?:ç|c)ão/i.test(text);
 }
 
 // Remove emojis decorativos do início de headings (🏢 ⚠️ ✅ 🎯)

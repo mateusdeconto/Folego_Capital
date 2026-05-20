@@ -330,6 +330,34 @@
   background: #0FAD6A;
   border-radius: 50%;
 }
+.diagnosis-content .attention-heading {
+  @apply text-loss-700 border-loss-100;
+}
+.diagnosis-content .attention-heading::before {
+  content: '!';
+  @apply inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-loss-600 border border-amber-300 text-[12px] font-black;
+}
+.diagnosis-content .attention-list {
+  @apply space-y-2;
+}
+.diagnosis-content .attention-list li {
+  @apply pl-8 pr-3 py-2 rounded-lg bg-amber-50/70 border border-amber-100;
+}
+.diagnosis-content .attention-list li::before {
+  content: '!';
+  left: 9px;
+  top: 12px;
+  width: 16px;
+  height: 16px;
+  background: #FEF3C7;
+  color: #DC2626;
+  border: 1px solid #F59E0B;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 14px;
+  text-align: center;
+}
 .diagnosis-content strong {
   @apply font-semibold text-ink-800;
 }

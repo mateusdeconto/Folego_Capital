@@ -27,15 +27,22 @@ function renderMarkdown(text) {
   const lines = text.split('\n');
   let html = '';
   let inList = false;
+  let currentSection = '';
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.startsWith('## ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<h2>${escapeHtml(stripLeadingEmoji(trimmed.slice(3)))}</h2>`;
+      currentSection = stripLeadingEmoji(trimmed.slice(3));
+      const sectionClass = isAttentionSection(currentSection) ? ' class="attention-heading"' : '';
+      html += `<h2${sectionClass}>${escapeHtml(currentSection)}</h2>`;
       continue;
     }
     if (trimmed.startsWith('• ') || trimmed.startsWith('- ')) {
-      if (!inList) { html += '<ul>'; inList = true; }
+      if (!inList) {
+        const listClass = isAttentionSection(currentSection) ? ' class="attention-list"' : '';
+        html += `<ul${listClass}>`;
+        inList = true;
+      }
       html += `<li>${applyInlineMarkdown(trimmed.slice(2))}</li>`;
       continue;
     }
@@ -45,6 +52,10 @@ function renderMarkdown(text) {
   }
   if (inList) html += '</ul>';
   return html;
+}
+
+function isAttentionSection(text) {
+  return /Pontos de Aten(?:ç|c)ão/i.test(text);
 }
 
 function extractHealthStatus(text) {
@@ -389,6 +400,10 @@ export async function downloadPDF(businessData, diagnosisText, financialData) {
       .fc-pdf ul { margin: 0 0 12px; padding: 0; list-style: none; }
       .fc-pdf li { font-size: 13px; line-height: 1.65; color: #363c4d; padding: 3px 0 3px 14px; position: relative; }
       .fc-pdf li::before { content: ''; position: absolute; left: 0; top: 11px; width: 4px; height: 4px; background: #2c5deb; border-radius: 50%; }
+      .fc-pdf .attention-heading { color: #b91c1c; border-bottom-color: #fee2e2; }
+      .fc-pdf .attention-heading::before { content: '!'; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 7px; border-radius: 9999px; background: #fef3c7; color: #dc2626; border: 1px solid #f59e0b; font-size: 11px; font-weight: 900; line-height: 14px; }
+      .fc-pdf .attention-list li { margin-bottom: 6px; padding: 7px 10px 7px 28px; border-radius: 7px; background: #fffbeb; border: 1px solid #fde68a; }
+      .fc-pdf .attention-list li::before { content: '!'; left: 8px; top: 9px; width: 14px; height: 14px; background: #fef3c7; color: #dc2626; border: 1px solid #f59e0b; border-radius: 9999px; font-size: 10px; font-weight: 900; line-height: 12px; text-align: center; }
       .fc-pdf strong { font-weight: 700; color: #13172a; }
       .fc-pdf .footer { margin-top: 36px; padding-top: 14px; border-top: 1px solid #dde0e6; font-size: 11px; color: #7a8294; text-align: center; }
     </style>
