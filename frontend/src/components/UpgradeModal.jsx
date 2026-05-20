@@ -1,6 +1,6 @@
 const PLANS = [
   {
-    id: 'paid',
+    id: 'pro',
     name: 'Pro',
     price: 'R$ 49/mês',
     tag: null,
@@ -16,7 +16,7 @@ const PLANS = [
     ],
   },
   {
-    id: 'pro',
+    id: 'max',
     name: 'Max',
     price: 'R$ 129/mês',
     tag: 'Mais popular',
@@ -41,7 +41,7 @@ function CheckIcon() {
 }
 
 export default function UpgradeModal({ onClose, currentPlan = 'free' }) {
-  const visiblePlans = currentPlan === 'paid' ? PLANS.filter(p => p.id === 'pro') : PLANS;
+  const visiblePlans = currentPlan === 'pro' ? PLANS.filter(p => p.id === 'max') : PLANS;
 
   return (
     <div
@@ -56,7 +56,7 @@ export default function UpgradeModal({ onClose, currentPlan = 'free' }) {
         <div className="bg-ink-900 px-6 py-5 text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-ink-400 mb-1">Fôlego Capital</p>
           <h2 className="text-xl font-bold text-white tracking-tight">
-            {currentPlan === 'paid' ? 'Evolua para o Max' : 'Desbloqueie mais poder'}
+            {currentPlan === 'pro' ? 'Evolua para o Max' : 'Desbloqueie mais poder'}
           </h2>
           <p className="text-sm text-ink-300 mt-1">Escolha o plano ideal para o seu negócio</p>
         </div>
@@ -67,7 +67,7 @@ export default function UpgradeModal({ onClose, currentPlan = 'free' }) {
             <div
               key={p.id}
               className={`rounded-xl border-2 p-4 relative ${
-                p.id === 'pro'
+                p.id === 'max'
                   ? 'border-brand-400 bg-brand-50'
                   : 'border-ink-200 bg-white'
               }`}
@@ -78,7 +78,7 @@ export default function UpgradeModal({ onClose, currentPlan = 'free' }) {
                 </span>
               )}
               <p className="font-bold text-ink-900 text-base">{p.name}</p>
-              <p className={`text-lg font-bold mt-0.5 mb-3 ${p.id === 'pro' ? 'text-brand-700' : 'text-ink-700'}`}>
+              <p className={`text-lg font-bold mt-0.5 mb-3 ${p.id === 'max' ? 'text-brand-700' : 'text-ink-700'}`}>
                 {p.price}
               </p>
               <ul className="space-y-1.5">

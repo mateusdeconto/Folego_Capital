@@ -429,7 +429,7 @@ const SECTOR_EXTRA = {
 };
 
 function BenchmarkPremium({ macroData, segment, sectorLabel, plan, onUpgrade }) {
-  const isPaid = plan === 'paid' || plan === 'pro';
+  const isPaid = plan === 'pro' || plan === 'max';
   const extra  = SECTOR_EXTRA[segment] || SECTOR_EXTRA.outro;
   const title  = `Benchmark — ${sectorLabel}`;
 
@@ -646,7 +646,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
   const [showUpgrade, setShowUpgrade]   = useState(false);
   const [showCorrect, setShowCorrect]   = useState(false);
   const [localMacro, setLocalMacro]     = useState(macroData);
-  const isPaid = plan === 'paid' || plan === 'pro';
+  const isPaid = plan === 'pro' || plan === 'max';
 
   const sectorLabel = (businessData.segment === 'outro' && businessData.customSegment)
     ? businessData.customSegment

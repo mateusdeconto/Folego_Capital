@@ -486,7 +486,7 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
   const heroRef = useRef(null);
 
   function handleHistoricoClick() {
-    if (plan === 'paid' && onHistory) {
+    if (plan === 'pro' && onHistory) {
       onHistory();
     } else {
       setShowUpgrade(true);

@@ -12,7 +12,7 @@ export const PLAN_LIMITS = {
     hasTracking: false,
     hasCanOrNot: false,
   },
-  paid: {
+  pro: {
     maxCompanies: 1,
     maxDiagnoses: 3,
     weeklyPlansPerMonth: 4,
@@ -23,7 +23,7 @@ export const PLAN_LIMITS = {
     hasTracking: true,
     hasCanOrNot: false,
   },
-  pro: {
+  max: {
     maxCompanies: 5,
     maxDiagnoses: Infinity,
     weeklyPlansPerMonth: 8,
