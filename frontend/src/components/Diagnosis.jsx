@@ -429,7 +429,7 @@ const SECTOR_EXTRA = {
 };
 
 function BenchmarkPremium({ macroData, segment, sectorLabel, plan, onUpgrade }) {
-  const isPaid = plan === 'paid';
+  const isPaid = plan === 'paid' || plan === 'pro';
   const extra  = SECTOR_EXTRA[segment] || SECTOR_EXTRA.outro;
   const title  = `Benchmark — ${sectorLabel}`;
 
@@ -553,7 +553,7 @@ function BenchmarkPremium({ macroData, segment, sectorLabel, plan, onUpgrade }) 
           </svg>
           <p className="text-sm font-bold text-ink-800 mb-1">{title}</p>
           <p className="text-[11px] text-ink-500 mb-3 text-center px-6 leading-relaxed">
-            Dados setoriais SEBRAE + Selic, IPCA e câmbio ao vivo — disponível no Pro
+            Dados setoriais SEBRAE + Selic, IPCA e câmbio ao vivo — disponível no Pro e Max
           </p>
           <button
             onClick={onUpgrade}
@@ -646,7 +646,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
   const [showUpgrade, setShowUpgrade]   = useState(false);
   const [showCorrect, setShowCorrect]   = useState(false);
   const [localMacro, setLocalMacro]     = useState(macroData);
-  const isPaid = plan === 'paid';
+  const isPaid = plan === 'paid' || plan === 'pro';
 
   const sectorLabel = (businessData.segment === 'outro' && businessData.customSegment)
     ? businessData.customSegment
@@ -654,7 +654,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
 
   // Busca macro quando não veio pelo SSE (ex: diagnóstico carregado do histórico)
   useEffect(() => {
-    if (localMacro || plan !== 'paid') return;
+    if (localMacro || plan === 'free') return;
     fetch('/api/macro')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setLocalMacro(data); })
@@ -1053,12 +1053,21 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
               {pdfExporting ? 'Gerando…' : 'Baixar PDF'}
             </span>
           </button>
-          <button onClick={handleExcel} disabled={exporting} className="btn-excel disabled:opacity-50">
+          <button
+            onClick={isPaid ? handleExcel : () => setShowUpgrade(true)}
+            disabled={isPaid && exporting}
+            className={`btn-excel disabled:opacity-50 ${!isPaid ? 'opacity-80' : ''}`}
+          >
             <span className="flex items-center justify-center gap-2">
+              {!isPaid && (
+                <svg className="w-3.5 h-3.5 text-ink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+              )}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625" />
               </svg>
-              {exporting ? 'Gerando…' : 'DRE em Excel'}
+              {isPaid && exporting ? 'Gerando…' : 'DRE em Excel'}
             </span>
           </button>
         </div>

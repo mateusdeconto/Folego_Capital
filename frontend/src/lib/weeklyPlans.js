@@ -165,3 +165,16 @@ export function calcActionStats(plan) {
 export function companyPlanKey(company) {
   return `${company.businessName || company.business_name}__${company.segment}__${company.customSegment || company.custom_segment || ''}`;
 }
+
+export async function countWeeklyPlansThisMonth(userId) {
+  if (!userId) return 0;
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const { count, error } = await supabase
+    .from('weekly_plans')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', startOfMonth);
+  if (error) return 0;
+  return count || 0;
+}

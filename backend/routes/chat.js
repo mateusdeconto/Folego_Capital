@@ -1,11 +1,17 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import { createClient } from '@supabase/supabase-js';
 import { getAnthropic, MODEL, isOverloadError } from '../lib/anthropic.js';
 import { openSSE } from '../lib/sse.js';
 import { calcMetrics } from '../lib/metrics.js';
 import { requireAuth } from '../middleware/auth.js';
 import { CFO_PERSONA, CHAT_RESPONSE_FORMAT } from '../lib/persona.js';
 import { formatBRL } from '../lib/utils.js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY,
+);
 
 const router = Router();
 
@@ -99,6 +105,17 @@ router.post('/', requireAuth, limiter, async (req, res) => {
 
   if (!message || !financialData) {
     return res.status(400).json({ error: 'Mensagem e dados financeiros são obrigatórios.' });
+  }
+
+  const { data: planData } = await supabase
+    .from('user_plans')
+    .select('plan')
+    .eq('user_id', req.user.id)
+    .single();
+  const userPlan = planData?.plan || 'free';
+
+  if (userPlan === 'free') {
+    return res.status(403).json({ error: 'O chat com IA está disponível nos planos Pro e Max.' });
   }
 
   const sse = openSSE(res);

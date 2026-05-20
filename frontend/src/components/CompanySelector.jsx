@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import UpgradeModal from './UpgradeModal.jsx';
 import { calcPlanStatus, calcActionStats } from '../lib/weeklyPlans.js';
+import { getPlanLimits } from '../lib/plans.js';
 
 function Icon({ d, size = 18, className = '' }) {
   return (
@@ -162,9 +163,10 @@ export default function CompanySelector({
 }) {
   const [showUpgrade, setShowUpgrade] = useState(false);
 
-  const isFreePlan = plan !== 'paid';
-  const canAnalyze = !isFreePlan || totalAnalysesCount < 1;
-  const canAddCompany = !isFreePlan || companies.length < 1;
+  const limits = getPlanLimits(plan);
+  const isFreePlan = plan === 'free';
+  const canAnalyze = limits.maxDiagnoses === Infinity || totalAnalysesCount < limits.maxDiagnoses;
+  const canAddCompany = companies.length < limits.maxCompanies;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -261,7 +263,7 @@ export default function CompanySelector({
                   </button>
                 )}
 
-                {summary.recordsCount > 0 && plan === 'paid' ? (
+                {summary.recordsCount > 0 && limits.hasHistory ? (
                   <button
                     onClick={() => onViewHistory(company)}
                     className="btn-secondary !py-2.5"
@@ -294,12 +296,12 @@ export default function CompanySelector({
                     <div className="text-left">
                       <p className="text-xs font-bold text-gold-800">Pode ou Não Pode?</p>
                       <p className="text-[10px] text-gold-600">
-                        {isFreePlan ? 'Recurso Pro — avalie decisões do negócio' : 'Avalie uma decisão do negócio'}
+                        {plan !== 'pro' ? 'Recurso Max — avalie decisões do negócio' : 'Avalie uma decisão do negócio'}
                       </p>
                     </div>
                   </div>
                   <span className="text-gold-500 text-xs font-semibold group-hover:translate-x-0.5 transition-transform">
-                    {isFreePlan ? '🔒' : '→'}
+                    {plan !== 'pro' ? '🔒' : '→'}
                   </span>
                 </button>
               )}
@@ -313,7 +315,7 @@ export default function CompanySelector({
         className="w-full mt-5 py-3 border border-dashed border-ink-300 text-ink-700 hover:bg-white rounded-2xl font-semibold transition-colors flex items-center justify-center gap-2"
       >
         <Icon d={canAddCompany ? 'M12 4.5v15m7.5-7.5h-15' : 'M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z'} size={16} />
-        {canAddCompany ? 'Cadastrar nova empresa' : 'Múltiplas empresas — Plano Pro'}
+        {canAddCompany ? 'Cadastrar nova empresa' : plan === 'paid' ? 'Múltiplas empresas — Plano Max' : 'Cadastrar empresa — disponível no Pro'}
       </button>
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}

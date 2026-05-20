@@ -63,7 +63,7 @@ const ROW_DEFS = [
 ];
 
 export default function Comparison({ records = [], onBack, onOpenChat, plan = 'free' }) {
-  const isPaid = plan === 'paid';
+  const isPaid = plan === 'paid' || plan === 'pro';
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   // Ordena do mais antigo (index 0 = base) ao mais recente

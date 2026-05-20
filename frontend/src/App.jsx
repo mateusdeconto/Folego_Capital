@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { readSession, writeSession, removeSession, removeKey } from './lib/storage.js';
 import { supabase } from './lib/supabase.js';
 import { saveDiagnosis, loadAllDiagnoses } from './lib/diagnoses.js';
-import { loadUserPlan } from './lib/plans.js';
+import { loadUserPlan, getPlanLimits } from './lib/plans.js';
 import {
   loadSavedCompanies,
   mergeCompanies,
@@ -14,6 +14,7 @@ import { syncDocumentFromMetadata } from './lib/documents.js';
 import {
   loadAllActiveWeeklyPlans,
   companyPlanKey,
+  countWeeklyPlansThisMonth,
 } from './lib/weeklyPlans.js';
 import { loadLastDecision } from './lib/canOrNot.js';
 import { setAnalyticsUser, trackEvent } from './lib/analytics.js';
@@ -272,7 +273,8 @@ export default function App() {
   }
 
   function handleCreateAnotherCompany() {
-    if (plan === 'free' && savedCompanies.length >= 1) {
+    const limits = getPlanLimits(plan);
+    if (savedCompanies.length >= limits.maxCompanies) {
       setShowUpgradeModal(true);
       return;
     }
@@ -326,14 +328,24 @@ export default function App() {
     });
   }
 
-  function handleOpenWeeklyPlan(origin = STEPS.DIAGNOSIS) {
-    if (plan === 'free') { setShowUpgradeModal(true); return; }
+  async function handleOpenWeeklyPlan(origin = STEPS.DIAGNOSIS) {
+    const limits = getPlanLimits(plan);
+    if (limits.weeklyPlansPerMonth === 0) { setShowUpgradeModal(true); return; }
+    if (user) {
+      const monthCount = await countWeeklyPlansThisMonth(user.id);
+      if (monthCount >= limits.weeklyPlansPerMonth) { setShowUpgradeModal(true); return; }
+    }
     setWeeklyPlanOrigin(origin);
     setStep(STEPS.WEEKLY_PLAN);
   }
 
-  function handleOpenWeeklyPlanFromPrevious(company) {
-    if (plan === 'free') { setShowUpgradeModal(true); return; }
+  async function handleOpenWeeklyPlanFromPrevious(company) {
+    const limits = getPlanLimits(plan);
+    if (limits.weeklyPlansPerMonth === 0) { setShowUpgradeModal(true); return; }
+    if (user) {
+      const monthCount = await countWeeklyPlansThisMonth(user.id);
+      if (monthCount >= limits.weeklyPlansPerMonth) { setShowUpgradeModal(true); return; }
+    }
     const latestRecord = recordsForCompany(allDiagnoses, company)[0];
     if (!latestRecord) return;
 
@@ -345,7 +357,7 @@ export default function App() {
   }
 
   function handleOpenCanOrNot(company, origin = STEPS.PREVIOUS) {
-    if (plan === 'free') { setShowUpgradeModal(true); return; }
+    if (!getPlanLimits(plan).hasCanOrNot) { setShowUpgradeModal(true); return; }
     const latestRecord = recordsForCompany(allDiagnoses, company)[0];
     if (!latestRecord) return;
 
@@ -368,6 +380,11 @@ export default function App() {
   }
 
   function handleQuestionnaireComplete(data) {
+    const limits = getPlanLimits(plan);
+    if (limits.maxDiagnoses !== Infinity && allDiagnoses.length >= limits.maxDiagnoses) {
+      setShowUpgradeModal(true);
+      return;
+    }
     setFinancialData({ ...data, referenceMonth: businessData.referenceMonth });
     setStep(STEPS.LOADING);
   }
@@ -451,7 +468,7 @@ export default function App() {
           onEnter={() => setStep(user ? (savedCompanies.length > 0 ? STEPS.PREVIOUS : STEPS.ONBOARDING) : STEPS.AUTH)}
           user={user}
           plan={plan}
-          onHistory={allDiagnoses.length > 0 && plan === 'paid' ? () => setStep(STEPS.PREVIOUS) : null}
+          onHistory={allDiagnoses.length > 0 && plan !== 'free' ? () => setStep(STEPS.PREVIOUS) : null}
         />
       )}
 
@@ -571,6 +588,7 @@ export default function App() {
               businessData={businessData}
               financialData={financialData}
               user={user}
+              plan={plan}
               companyDiagnoses={companyDiagnoses}
               onOpenChat={() => { setChatContext(null); setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
               onOpenChatWithContext={(msg) => { setChatContext({ initialMessage: msg }); setChatOrigin(STEPS.WEEKLY_PLAN); setStep(STEPS.CHAT); }}
@@ -619,7 +637,7 @@ export default function App() {
       </div>
 
       {showUpgradeModal && (
-        <UpgradeModal onClose={() => setShowUpgradeModal(false)} />
+        <UpgradeModal onClose={() => setShowUpgradeModal(false)} currentPlan={plan} />
       )}
     </div>
   );
