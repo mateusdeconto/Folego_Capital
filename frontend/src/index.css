@@ -137,8 +137,8 @@
   }
 
   .currency-input {
-    @apply w-full text-3xl font-bold text-ink-900 bg-transparent border-none outline-none
-           placeholder:text-ink-200 text-center font-mono tracking-tight;
+    @apply w-full text-3xl font-bold text-white bg-transparent border-none outline-none
+           placeholder:text-white/25 text-center font-mono tracking-tight;
   }
 
   .item-row {

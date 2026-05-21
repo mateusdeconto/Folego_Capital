@@ -347,7 +347,7 @@ function LiveDRE({ values, businessData }) {
 
   return (
     <div className="lg:sticky lg:top-4 space-y-3">
-      <div className="rounded-2xl p-5 border border-white/10" style={{ background: '#253d63' }}>
+      <div className="rounded-2xl p-5 border border-gold-500/40" style={{ background: '#1e3356' }}>
         <div className="flex items-center justify-between mb-1">
           <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider">Sua DRE em construção</p>
           <span className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
@@ -618,7 +618,7 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
                               ${selected ? (isRisk ? 'text-loss-700' : 'text-money-700') : 'text-white/80'}`}>
                               {opt.label}
                             </p>
-                            <p className="text-xs text-white/50 mt-0.5">{opt.detail}</p>
+                            <p className={`text-xs mt-0.5 ${selected ? (isRisk ? 'text-loss-600' : 'text-money-600') : 'text-white/50'}`}>{opt.detail}</p>
                           </div>
                         </div>
                       </button>
@@ -673,7 +673,7 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
                     </svg>
                   </span>
                 </button>
-                <button onClick={handleBack} className="btn-back">
+                <button onClick={handleBack} className="w-full py-2.5 px-5 border border-white/30 text-white/70 font-medium rounded-xl text-sm bg-transparent hover:bg-white/10 hover:text-white hover:border-white/50 active:scale-[0.98] transition-all duration-150">
                   Voltar
                 </button>
               </div>

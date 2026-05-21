@@ -19,7 +19,10 @@
       "mcp__Claude_in_Chrome__read_console_messages",
       "mcp__Claude_in_Chrome__read_page",
       "mcp__Claude_in_Chrome__computer",
-      "mcp__Claude_in_Chrome__javascript_tool"
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__ruflo__system_health",
+      "mcp__ruflo__session_save"
     ]
   }
 }

@@ -413,6 +413,58 @@ const FEATURES = [
   },
 ];
 
+const LANDING_PLANS = [
+  {
+    id: 'free',
+    name: 'Grátis',
+    prices: { trimestral: 'R$ 0', anual: 'R$ 0' },
+    suffix: { trimestral: 'para sempre', anual: 'para sempre' },
+    savings: null,
+    tag: null,
+    features: [
+      '1 empresa',
+      '1 diagnóstico total',
+      'Relatório básico',
+      'Exportação PDF',
+    ],
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    prices: { trimestral: 'R$ 49', anual: 'R$ 39' },
+    suffix: { trimestral: '/mês', anual: '/mês' },
+    savings: 'Economize R$ 120/ano',
+    tag: null,
+    features: [
+      '1 empresa',
+      '3 diagnósticos mensais',
+      'Relatório + benchmarks SEBRAE',
+      'DRE Excel e PDF',
+      'Plano semanal (4x/mês)',
+      'Histórico de análises',
+      'Chat IA (limitado)',
+    ],
+  },
+  {
+    id: 'max',
+    name: 'Max',
+    prices: { trimestral: 'R$ 129', anual: 'R$ 119' },
+    suffix: { trimestral: '/mês', anual: '/mês' },
+    savings: 'Economize R$ 120/ano',
+    tag: 'Melhor valor',
+    features: [
+      'Até 5 empresas',
+      'Diagnósticos ilimitados',
+      'Tudo do plano Pro',
+      'Plano semanal (8x/mês)',
+      'Chat IA com mais créditos',
+      'Pode ou Não Pode',
+      'Histórico ilimitado',
+      'Todas as atualizações futuras',
+    ],
+  },
+];
+
 const FAQS = [
   {
     q: 'Os meus números ficam salvos?',
@@ -483,6 +535,7 @@ function FaqItem({ q, a, i }) {
 /* ── Componente principal ─────────────────────────────────── */
 export default function Landing({ onEnter, user, plan, onHistory }) {
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [pricingPeriod, setPricingPeriod] = useState('trimestral');
   const heroRef = useRef(null);
 
   function handleHistoricoClick() {
@@ -899,7 +952,184 @@ export default function Landing({ onEnter, user, plan, onHistory }) {
         </div>
       </section>
 
-      {/* ── FAQ (LP-08) ──────────────────────────────────── */}
+      {/* ── PRICING (LP-08) ─────────────────────────────── */}
+      <section id="planos" className="py-24 sm:py-32" style={{ background: '#162540' }}>
+        <div className="landing-container">
+          {/* Glow decorativo */}
+          <div
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2 w-[700px] h-[300px] opacity-20"
+            style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.30) 0%, transparent 70%)' }}
+          />
+
+          <InView className="mb-14 text-center relative z-10">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="w-8 h-px bg-gold-500/60" />
+              <svg className="w-3.5 h-3.5 text-gold-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">Planos</span>
+              <svg className="w-3.5 h-3.5 text-gold-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              <span className="w-8 h-px bg-gold-500/60" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tighter mb-3">
+              De Fôlego a{' '}
+              <span className="text-gold-400">sua empresa</span>
+            </h2>
+            <p className="text-white/50 text-base leading-relaxed">
+              Comece grátis. Evolua quando quiser.
+            </p>
+          </InView>
+
+          {/* Toggle período */}
+          <div className="relative z-10 flex justify-center mb-10">
+            <div
+              className="flex rounded-xl p-1"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
+            >
+              <button
+                onClick={() => setPricingPeriod('trimestral')}
+                className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+                style={
+                  pricingPeriod === 'trimestral'
+                    ? { background: 'linear-gradient(90deg, #F59E0B, #FBBF24)', color: '#080604' }
+                    : { color: 'rgba(255,255,255,0.50)' }
+                }
+              >
+                Trimestral
+              </button>
+              <button
+                onClick={() => setPricingPeriod('anual')}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+                style={
+                  pricingPeriod === 'anual'
+                    ? { background: 'linear-gradient(90deg, #F59E0B, #FBBF24)', color: '#080604' }
+                    : { color: 'rgba(255,255,255,0.50)' }
+                }
+              >
+                Anual
+                {pricingPeriod !== 'anual' && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-money-500/20 text-money-400">
+                    -20%
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <motion.div
+            className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={staggerContainer(0.08)}
+          >
+            {LANDING_PLANS.map(p => {
+              const isMax = p.id === 'max';
+              return (
+                <motion.div
+                  key={p.id}
+                  variants={fadeUpSpring}
+                  className="relative rounded-2xl flex flex-col"
+                  style={
+                    isMax
+                      ? {
+                          background: 'linear-gradient(160deg, rgba(245,158,11,0.10) 0%, rgba(245,158,11,0.04) 100%)',
+                          border: '1.5px solid rgba(245,158,11,0.55)',
+                          boxShadow: '0 0 40px rgba(245,158,11,0.13)',
+                        }
+                      : {
+                          background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(255,255,255,0.10)',
+                        }
+                  }
+                  whileHover={isMax ? { y: -4, boxShadow: '0 0 56px rgba(245,158,11,0.22)' } : { y: -2 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {p.tag && (
+                    <div
+                      className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-ink-900 whitespace-nowrap"
+                      style={{ background: 'linear-gradient(90deg, #F59E0B, #FBBF24)' }}
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      {p.tag}
+                    </div>
+                  )}
+
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="mb-5">
+                      <p className={`text-xs font-bold uppercase tracking-widest mb-2 ${isMax ? 'text-gold-400' : 'text-white/40'}`}>
+                        {p.name}
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className={`text-3xl font-bold tracking-tight ${isMax ? 'text-gold-300' : 'text-white'}`}>
+                          {p.prices[pricingPeriod]}
+                        </span>
+                        <span className="text-sm text-white/35 font-medium">{p.suffix[pricingPeriod]}</span>
+                      </div>
+                      {pricingPeriod === 'anual' && p.savings && (
+                        <p className="text-[11px] font-semibold text-money-400 mt-1">{p.savings}</p>
+                      )}
+                    </div>
+
+                    <ul className="space-y-2.5 flex-1 mb-6">
+                      {p.features.map(f => (
+                        <li key={f} className="flex items-start gap-2.5">
+                          <svg
+                            className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isMax ? 'text-gold-400' : 'text-money-400'}`}
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                          <span className={`text-sm leading-relaxed ${isMax ? 'text-white/80' : 'text-white/50'}`}>
+                            {f}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {isMax ? (
+                      <div
+                        className="w-full py-3 rounded-xl text-center text-sm font-bold text-ink-900 cursor-default select-none"
+                        style={{ background: 'linear-gradient(90deg, #F59E0B, #FBBF24)' }}
+                      >
+                        💳 Pagamento em breve
+                      </div>
+                    ) : p.id === 'free' ? (
+                      <motion.button
+                        onClick={() => {}}
+                        className="w-full py-3 rounded-xl text-sm font-semibold text-white/60"
+                        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
+                        whileHover={{ backgroundColor: 'rgba(255,255,255,0.10)' }}
+                      >
+                        Começar grátis
+                      </motion.button>
+                    ) : (
+                      <div
+                        className="w-full py-3 rounded-xl text-center text-sm font-semibold text-white/40 cursor-default select-none"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                      >
+                        💳 Em breve
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          <InView className="mt-8 text-center">
+            <p className="text-xs text-white/25">
+              Pagamentos online chegando em breve. Acesse já com o plano gratuito.
+            </p>
+          </InView>
+        </div>
+      </section>
+
+      {/* ── FAQ (LP-09) ──────────────────────────────────── */}
       <section className="border-t border-white/8 py-24 sm:py-32" style={{ background: '#1e3050' }}>
         <div className="landing-container-narrow">
           <InView className="mb-10 text-center">
