@@ -1,22 +1,32 @@
+import posthog from 'posthog-js';
 import { supabase } from './supabase.js';
 
 // Module-level user context — set once on login, cleared on logout.
-// All trackEvent calls below inherit this without prop drilling.
 let _userId = null;
 
 export function setAnalyticsUser(userId) {
   _userId = userId ?? null;
+
+  if (userId) {
+    posthog.identify(userId);
+  } else {
+    posthog.reset();
+  }
 }
 
 /**
- * Fire-and-forget event insertion.
- * Never throws — if tracking fails, the app continues normally.
+ * Fire-and-forget event — salva no Supabase E no PostHog.
+ * Never throws — tracking nunca quebra UX.
  *
  * @param {string} eventName  - snake_case event identifier
- * @param {object} properties - arbitrary context (decision type, verdict, origin, etc.)
+ * @param {object} properties - arbitrary context
  */
 export async function trackEvent(eventName, properties = {}) {
-  if (!_userId) return; // only track authenticated users in MVP
+  // PostHog: captura mesmo sem userId (visitantes anônimos)
+  posthog.capture(eventName, properties);
+
+  // Supabase: só usuários autenticados
+  if (!_userId) return;
 
   try {
     await supabase.from('analytics_events').insert({
