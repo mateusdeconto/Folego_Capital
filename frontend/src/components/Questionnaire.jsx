@@ -210,6 +210,37 @@ function numToInput(value) {
   return formatCurrencyInput(String(Math.round(Math.abs(value) * 100)));
 }
 
+// Retorna sugestão de valor baseada nos benchmarks do setor
+function getSectorHint(field, values, segment) {
+  const rev = parseFormattedValue(values.revenue);
+  if (rev <= 0) return null;
+  const bench = SECTOR_BENCHMARKS[segment] || SECTOR_BENCHMARKS.outro;
+
+  if (field === 'cogs' && bench.cmvPct) {
+    const low  = Math.round(rev * bench.cmvPct[0] / 100);
+    const high = Math.round(rev * bench.cmvPct[1] / 100);
+    const mid  = Math.round((low + high) / 2);
+    return {
+      label: `Média do setor: ${formatBRL(low)} – ${formatBRL(high)}`,
+      value: mid,
+      formatted: numToInput(mid),
+    };
+  }
+
+  if (field === 'fixedExpenses' && bench.laborPct && bench.rentPct) {
+    const laborMid = Math.round(rev * (bench.laborPct[0] + bench.laborPct[1]) / 2 / 100);
+    const rentMid  = Math.round(rev * (bench.rentPct[0]  + bench.rentPct[1])  / 2 / 100);
+    return {
+      items: [
+        { desc: 'Salários + encargos', value: numToInput(laborMid) },
+        { desc: 'Aluguel',             value: numToInput(rentMid)  },
+      ],
+    };
+  }
+
+  return null;
+}
+
 function emptyValues() {
   return {
     revenue: '', cogs: '',
@@ -586,6 +617,46 @@ export default function Questionnaire({ onComplete, onBack, initialValues = null
               )}
 
               {/* Input */}
+              {(() => {
+                const singleHint = !isItemized && !isChoice && question.field !== 'cashBalance'
+                  ? getSectorHint(question.field, values, businessData.segment)
+                  : null;
+                const fixedHint = isItemized && question.field === 'fixedExpenses'
+                  ? getSectorHint('fixedExpenses', values, businessData.segment)
+                  : null;
+                return (singleHint || fixedHint) ? (
+                  <div className="mb-4 flex items-center gap-2 flex-wrap">
+                    {singleHint && (
+                      <button
+                        type="button"
+                        onClick={() => setValues(prev => ({ ...prev, [question.field]: singleHint.formatted }))}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold max-w-full
+                          bg-gold-500/15 border border-gold-500/30 text-gold-300 hover:bg-gold-500/25
+                          hover:border-gold-400/50 transition-all duration-150 active:scale-95"
+                      >
+                        <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                        </svg>
+                        <span className="truncate">{singleHint.label} — usar média</span>
+                      </button>
+                    )}
+                    {fixedHint && (Array.isArray(values.fixedExpenses) && values.fixedExpenses.length === 0) && (
+                      <button
+                        type="button"
+                        onClick={() => setValues(prev => ({ ...prev, fixedExpenses: fixedHint.items }))}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold max-w-full
+                          bg-gold-500/15 border border-gold-500/30 text-gold-300 hover:bg-gold-500/25
+                          hover:border-gold-400/50 transition-all duration-150 active:scale-95"
+                      >
+                        <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                        </svg>
+                        <span className="truncate">Sugerir gastos típicos do setor</span>
+                      </button>
+                    )}
+                  </div>
+                ) : null;
+              })()}
               {isChoice ? (
                 <div className="space-y-2.5 mb-2">
                   {question.options.map(opt => {

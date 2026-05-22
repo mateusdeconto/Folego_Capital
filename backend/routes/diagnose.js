@@ -20,6 +20,55 @@ const limiter = rateLimit({
   message: { error: 'Muitos diagnósticos em sequência. Aguarde alguns minutos.' },
 });
 
+// ---------------------------------------------------------------------------
+// Helpers para JSON estruturado — emitido como evento SSE ao final do stream.
+// ---------------------------------------------------------------------------
+
+/**
+ * Divide o markdown em seções nomeadas.
+ * Depende dos títulos exatos gerados pelo prompt: Resumo Executivo,
+ * Pontos de Atenção, O que está funcionando.
+ */
+function parseSections(text) {
+  const sectionDefs = [
+    { key: 'executive_summary', marker: 'Resumo Executivo' },
+    { key: 'attention_points',  marker: 'Pontos de Atenção' },
+    { key: 'working_well',      marker: 'O que está funcionando' },
+  ];
+
+  const result = {};
+
+  for (let i = 0; i < sectionDefs.length; i++) {
+    const { key, marker } = sectionDefs[i];
+    const startRe = new RegExp(`##[^#\\n]*${marker}[^\\n]*\\n`);
+    const startMatch = startRe.exec(text);
+    if (!startMatch) continue;
+
+    const contentStart = startMatch.index + startMatch[0].length;
+    const nextMarker = sectionDefs[i + 1]?.marker;
+    const endRe = nextMarker ? new RegExp(`##[^#\\n]*${nextMarker}`) : null;
+    const endMatch = endRe ? endRe.exec(text.slice(contentStart)) : null;
+    const contentEnd = endMatch ? contentStart + endMatch.index : text.length;
+
+    result[key] = text.slice(contentStart, contentEnd).trim();
+  }
+
+  return result;
+}
+
+/**
+ * Extrai a classificação de saúde como chave normalizada.
+ * Espelha a lógica de extractHealthStatus em frontend/src/lib/export.js.
+ */
+function extractHealthKey(text) {
+  if (!text) return null;
+  if (text.includes('Saudável')) return 'healthy';
+  if (text.includes('Estável'))  return 'stable';
+  if (text.includes('Atenção'))  return 'attention';
+  if (text.includes('Crítica'))  return 'critical';
+  return null;
+}
+
 function buildItemsList(items) {
   if (!items || items.length === 0) return '  (sem detalhamento)';
   return items.map(i => `  • ${i.desc}: ${formatBRL(i.value)}`).join('\n');
@@ -153,6 +202,30 @@ const SECTOR_BENCHMARKS = {
 // Exporta para outros módulos que possam precisar (ex: frontend via SSR futuro)
 export { SECTOR_BENCHMARKS };
 
+// Texto estático de todos os benchmarks — calculado uma vez no boot, cacheável pela Anthropic.
+const BENCHMARKS_SYSTEM_TEXT = Object.entries(SECTOR_BENCHMARKS).map(([key, b]) =>
+  `**${b.name}** (segmento: ${key})\n` +
+  `- Margem Bruta típica: ${b.grossMargin[0]}–${b.grossMargin[1]}%\n` +
+  `- Margem Líquida típica: ${b.netMargin[0]}–${b.netMargin[1]}%\n` +
+  `- CMV/Receita típico: ${b.cmvPct[0]}–${b.cmvPct[1]}%\n` +
+  `- Despesas Fixas típicas: ${b.fixedCostPct[0]}–${b.fixedCostPct[1]}% da receita\n` +
+  `- Custo de pessoal: ${b.laborPct[0]}–${b.laborPct[1]}% da receita\n` +
+  `- Aluguel típico: ${b.rentPct[0]}–${b.rentPct[1]}% da receita\n` +
+  `- Ponto de equilíbrio típico: ${b.breakEvenPct[0]}–${b.breakEvenPct[1]}% da capacidade\n` +
+  `- Taxa de sobrevivência (2 anos): ${b.survivalRate2y}%\n` +
+  `- Dica setorial: ${b.tip}`
+).join('\n\n');
+
+// System prompt cacheável: CFO_PERSONA + todos os benchmarks (>1024 tokens — atinge mínimo da Anthropic).
+// Anthropic armazena por até 5 min; cada cache hit custa 10% do preço normal de input tokens.
+const DIAGNOSE_SYSTEM = [
+  {
+    type: 'text',
+    text: `${CFO_PERSONA}\n\nBENCHMARKS SETORIAIS — SEBRAE (PMEs brasileiras, atualizados ~1x/ano):\n\n${BENCHMARKS_SYSTEM_TEXT}`,
+    cache_control: { type: 'ephemeral' },
+  },
+];
+
 function buildMacroBlock(macro) {
   if (!macro) return '';
   const selicMensal = (parseFloat(macro.selic.value) / 12).toFixed(2);
@@ -172,20 +245,17 @@ function buildDiagnosisPrompt(input, macroData) {
   const { businessName, segment, fixedExpensesItems, debtPaymentItems, mixedAccounts } = input;
 
   const bench = SECTOR_BENCHMARKS[segment] || SECTOR_BENCHMARKS.outro;
-  const actualCmvPct      = m.revenue > 0 ? ((m.cogs / m.revenue) * 100) : 0;
-  const actualFixedPct    = m.revenue > 0 ? ((m.fixedExpenses / m.revenue) * 100) : 0;
-  const year = new Date().getFullYear();
+  const actualCmvPct   = m.revenue > 0 ? ((m.cogs / m.revenue) * 100) : 0;
+  const actualFixedPct = m.revenue > 0 ? ((m.fixedExpenses / m.revenue) * 100) : 0;
 
+  // Só os valores reais da empresa — os benchmarks completos do setor já estão no system prompt cacheado.
   const benchmarkBlock = `
-BENCHMARK SETORIAL — ${bench.name} (fonte: SEBRAE ${year}, médias de PMEs brasileiras):
-- Margem Bruta típica: ${bench.grossMargin[0]}–${bench.grossMargin[1]}%  →  Empresa: ${m.grossMargin.toFixed(1)}% ${m.grossMargin >= bench.grossMargin[0] ? '✓ dentro da média' : '⚠ abaixo da média'}
-- Margem Líquida típica: ${bench.netMargin[0]}–${bench.netMargin[1]}%  →  Empresa: ${m.netMargin.toFixed(1)}% ${m.netMargin >= bench.netMargin[0] ? '✓ dentro da média' : '⚠ abaixo da média'}
-- CMV/Receita típico: ${bench.cmvPct[0]}–${bench.cmvPct[1]}%  →  Empresa: ${actualCmvPct.toFixed(1)}% ${actualCmvPct <= bench.cmvPct[1] ? '✓ dentro da média' : '⚠ acima da média'}
-- Despesas Fixas típicas: ${bench.fixedCostPct[0]}–${bench.fixedCostPct[1]}% da receita  →  Empresa: ${actualFixedPct.toFixed(1)}% ${actualFixedPct <= bench.fixedCostPct[1] ? '✓ dentro da média' : '⚠ acima da média'}
-- Custo de pessoal típico: ${bench.laborPct[0]}–${bench.laborPct[1]}% da receita
-- Taxa de sobrevivência das empresas do setor (2 anos): ${bench.survivalRate2y}%
-- Ponto de equilíbrio típico do setor: ${bench.breakEvenPct[0]}–${bench.breakEvenPct[1]}% da capacidade
-Use esses benchmarks para contextualizar o desempenho da empresa vs. mercado em cada seção.`;
+COMPARAÇÃO VS BENCHMARK — segmento "${segment}" (use os benchmarks do contexto do sistema):
+- Margem Bruta real: ${m.grossMargin.toFixed(1)}% ${m.grossMargin >= bench.grossMargin[0] ? '✓ dentro da média' : '⚠ abaixo da média'}
+- Margem Líquida real: ${m.netMargin.toFixed(1)}% ${m.netMargin >= bench.netMargin[0] ? '✓ dentro da média' : '⚠ abaixo da média'}
+- CMV/Receita real: ${actualCmvPct.toFixed(1)}% ${actualCmvPct <= bench.cmvPct[1] ? '✓ dentro da média' : '⚠ acima da média'}
+- Despesas Fixas/Receita real: ${actualFixedPct.toFixed(1)}% ${actualFixedPct <= bench.fixedCostPct[1] ? '✓ dentro da média' : '⚠ acima da média'}
+Use os benchmarks completos do segmento (no contexto do sistema) para contextualizar o desempenho da empresa em cada seção.`;
 
   const macroBlock = buildMacroBlock(macroData);
 
@@ -302,20 +372,47 @@ router.post('/', requireAuth, limiter, async (req, res) => {
       const stream = await getAnthropic().messages.stream({
         model: MODEL,
         max_tokens: 1500,
-        system: CFO_PERSONA,
+        system: DIAGNOSE_SYSTEM,
         messages: [{ role: 'user', content: prompt }],
       }, { signal: ac.signal });
 
+      let fullText = '';
       try {
         for await (const chunk of stream) {
           if (ac.signal.aborted) return;
           if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
-            sse.sendText(chunk.delta.text);
+            const text = chunk.delta.text;
+            fullText += text;
+            sse.sendText(text);
           }
         }
       } catch (streamErr) {
         if (ac.signal.aborted) return;
         throw streamErr;
+      }
+
+      // Emite JSON estruturado antes do [DONE] — frontend pode usar para
+      // parsing, gráficos e exportação sem depender de regex sobre markdown.
+      if (fullText) {
+        const m = calcMetrics(req.body);
+        sse.sendMeta({
+          json_result: {
+            healthStatus: extractHealthKey(fullText),
+            sections: parseSections(fullText),
+            metrics: {
+              revenue:            m.revenue,
+              grossProfit:        m.grossProfit,
+              grossMargin:        m.grossMargin,
+              ebitda:             m.ebitda,
+              netProfit:          m.netProfit,
+              netMargin:          m.netMargin,
+              debtRatio:          m.debtRatio,
+              breakEven:          m.breakEven,
+              cashBalance:        m.cashBalance,
+              accountsReceivable: m.accountsReceivable,
+            },
+          },
+        });
       }
 
       sse.end();

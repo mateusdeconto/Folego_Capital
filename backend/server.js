@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -14,6 +15,12 @@ import { startMonthlyCron } from './lib/monthlyCron.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: join(__dirname, '..', '.env') });
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || '',
+  environment: process.env.NODE_ENV || 'development',
+  tracesSampleRate: 0.2,
+});
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -180,6 +187,7 @@ if (distExists) {
 
 // Error handler — última linha de defesa
 app.use((err, req, res, _next) => {
+  Sentry.captureException(err, { extra: { method: req.method, path: req.path } });
   console.error('[unhandled]', req.method, req.path, '→', err.message);
   if (res.headersSent) return;
   // Pra requests de assets, retorna texto puro (evita o problema de MIME hoje)

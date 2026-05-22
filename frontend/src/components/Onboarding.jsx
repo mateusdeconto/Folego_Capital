@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 
 export const SECTOR_BENCHMARKS = {
-  restaurante: { grossMargin: [55, 70], netMargin: [3, 9], cmvPct: [30, 40], tip: 'Controle de CMV (custo dos insumos) é o que define lucro no setor. Ideal: CMV abaixo de 35%.' },
-  varejo: { grossMargin: [25, 42], netMargin: [2, 8], cmvPct: [55, 72], tip: 'Giro de estoque e negociação com fornecedores definem a rentabilidade.' },
-  servicos: { grossMargin: [38, 55], netMargin: [8, 15], cmvPct: [28, 48], tip: 'Precificação e retenção de clientes são os maiores drivers de lucro.' },
-  saude: { grossMargin: [45, 60], netMargin: [6, 12], cmvPct: [25, 40], tip: 'Fidelização de pacientes e gestão da agenda definem o resultado.' },
-  beleza: { grossMargin: [40, 58], netMargin: [7, 14], cmvPct: [18, 35], tip: 'Recorrência e ticket médio são os indicadores mais importantes.' },
-  tecnologia: { grossMargin: [50, 70], netMargin: [5, 15], cmvPct: [15, 35], tip: 'CAC e churn são os maiores riscos para a margem em tech.' },
-  construcao: { grossMargin: [20, 32], netMargin: [5, 12], cmvPct: [62, 78], tip: 'Planejamento de obra e controle de materiais evitam estouro de custos.' },
-  educacao: { grossMargin: [45, 58], netMargin: [4, 10], cmvPct: [20, 38], tip: 'Retenção de alunos e custo de captação são os indicadores críticos.' },
-  industria: { grossMargin: [25, 42], netMargin: [5, 10], cmvPct: [52, 70], tip: 'Eficiência produtiva e negociação de insumos determinam a margem.' },
-  outro: { grossMargin: [30, 45], netMargin: [5, 10], cmvPct: [40, 62], tip: 'Compare seus números com metas específicas do seu mercado.' },
+  restaurante: { grossMargin: [55, 70], netMargin: [3, 9], cmvPct: [30, 40], fixedCostPct: [30, 42], laborPct: [28, 38], rentPct: [8, 12], tip: 'Controle de CMV (custo dos insumos) é o que define lucro no setor. Ideal: CMV abaixo de 35%.' },
+  varejo:      { grossMargin: [25, 42], netMargin: [2, 8],  cmvPct: [55, 72], fixedCostPct: [18, 28], laborPct: [10, 18], rentPct: [6, 10], tip: 'Giro de estoque e negociação com fornecedores definem a rentabilidade.' },
+  servicos:    { grossMargin: [38, 55], netMargin: [8, 15], cmvPct: [28, 48], fixedCostPct: [22, 35], laborPct: [30, 45], rentPct: [3, 8],  tip: 'Precificação e retenção de clientes são os maiores drivers de lucro.' },
+  saude:       { grossMargin: [45, 60], netMargin: [6, 12], cmvPct: [25, 40], fixedCostPct: [28, 40], laborPct: [32, 48], rentPct: [5, 10], tip: 'Fidelização de pacientes e gestão da agenda definem o resultado.' },
+  beleza:      { grossMargin: [40, 58], netMargin: [7, 14], cmvPct: [18, 35], fixedCostPct: [28, 40], laborPct: [35, 50], rentPct: [6, 10], tip: 'Recorrência e ticket médio são os indicadores mais importantes.' },
+  tecnologia:  { grossMargin: [50, 70], netMargin: [5, 15], cmvPct: [15, 35], fixedCostPct: [30, 48], laborPct: [40, 60], rentPct: [2, 5],  tip: 'CAC e churn são os maiores riscos para a margem em tech.' },
+  construcao:  { grossMargin: [20, 32], netMargin: [5, 12], cmvPct: [62, 78], fixedCostPct: [10, 22], laborPct: [28, 42], rentPct: [1, 4],  tip: 'Planejamento de obra e controle de materiais evitam estouro de custos.' },
+  educacao:    { grossMargin: [45, 58], netMargin: [4, 10], cmvPct: [20, 38], fixedCostPct: [32, 48], laborPct: [35, 50], rentPct: [5, 12], tip: 'Retenção de alunos e custo de captação são os indicadores críticos.' },
+  industria:   { grossMargin: [25, 42], netMargin: [5, 10], cmvPct: [52, 70], fixedCostPct: [15, 28], laborPct: [20, 35], rentPct: [3, 8],  tip: 'Eficiência produtiva e negociação de insumos determinam a margem.' },
+  outro:       { grossMargin: [30, 45], netMargin: [5, 10], cmvPct: [40, 62], fixedCostPct: [20, 35], laborPct: [25, 40], rentPct: [3, 8],  tip: 'Compare seus números com metas específicas do seu mercado.' },
 };
 
 function Icon({ d, size = 18, strokeWidth = 1.6, ...rest }) {

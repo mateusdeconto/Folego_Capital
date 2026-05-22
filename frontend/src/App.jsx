@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { readSession, writeSession, removeSession, removeKey } from './lib/storage.js';
 import { supabase } from './lib/supabase.js';
@@ -19,7 +20,7 @@ import {
 import { loadLastDecision } from './lib/canOrNot.js';
 import { setAnalyticsUser, trackEvent } from './lib/analytics.js';
 
-import Landing from './components/Landing.jsx';
+const Landing = lazy(() => import('./components/Landing.jsx'));
 import Onboarding from './components/Onboarding.jsx';
 import Auth from './components/Auth.jsx';
 import CompanySelector from './components/CompanySelector.jsx';
@@ -119,6 +120,7 @@ export default function App() {
   const [weeklyPlanOrigin, setWeeklyPlanOrigin] = useState(STEPS.DIAGNOSIS);
   const [plan, setPlan] = useState('free');
   const [macroData, setMacroData] = useState(null);
+  const [diagnosisResult, setDiagnosisResult] = useState(null); // JSON estruturado do backend
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [weeklyPlansByCompany, setWeeklyPlansByCompany] = useState({});
   const [canOrNotOrigin, setCanOrNotOrigin] = useState(STEPS.PREVIOUS);
@@ -173,9 +175,18 @@ export default function App() {
 
   async function handleUserLoggedIn(loggedUser, currentStep) {
     setAnalyticsUser(loggedUser.id);
-    loadUserPlan(loggedUser.id).then(setPlan);
-    syncDocumentFromMetadata(loggedUser).catch(() => {});
-    loadAllActiveWeeklyPlans(loggedUser.id).then(indexWeeklyPlans);
+    loadUserPlan(loggedUser.id).then(setPlan).catch(err => {
+      console.error('[user] loadUserPlan failed:', err);
+      Sentry.captureException(err, { tags: { fn: 'loadUserPlan' } });
+    });
+    syncDocumentFromMetadata(loggedUser).catch(err => {
+      console.error('[user] syncDocumentFromMetadata failed:', err);
+      Sentry.captureException(err, { tags: { fn: 'syncDocumentFromMetadata' } });
+    });
+    loadAllActiveWeeklyPlans(loggedUser.id).then(indexWeeklyPlans).catch(err => {
+      console.error('[user] loadAllActiveWeeklyPlans failed:', err);
+      Sentry.captureException(err, { tags: { fn: 'loadAllActiveWeeklyPlans' } });
+    });
 
     const records = await loadAllDiagnoses(loggedUser.id);
     const syncedCompanies = await syncLegacyCompaniesToSupabase(loggedUser.id);
@@ -264,6 +275,7 @@ export default function App() {
     });
     setInitialValues(null);
     setDiagnosis('');
+    setDiagnosisResult(null);
     setFinancialData(INITIAL_FINANCIAL);
     trackEvent('company_selected', {
       company_name: company.businessName,
@@ -283,6 +295,7 @@ export default function App() {
     setBusinessData({ businessName: '', segment: '' });
     setInitialValues(null);
     setDiagnosis('');
+    setDiagnosisResult(null);
     setFinancialData(INITIAL_FINANCIAL);
     setStep(STEPS.ONBOARDING);
   }
@@ -392,12 +405,14 @@ export default function App() {
   function handleCorrectData(correctedFinancialData) {
     setFinancialData(correctedFinancialData);
     setDiagnosis('');
+    setDiagnosisResult(null);
     setStep(STEPS.LOADING);
   }
 
-  async function handleDiagnosisComplete(text, macro) {
+  async function handleDiagnosisComplete(text, macro, jsonResult) {
     setDiagnosis(text);
-    if (macro) setMacroData(macro);
+    if (macro)       setMacroData(macro);
+    if (jsonResult)  setDiagnosisResult(jsonResult);
     setStep(STEPS.DIAGNOSIS);
 
     if (user) {
@@ -415,6 +430,7 @@ export default function App() {
     setBusinessData({ businessName: '', segment: '' });
     setFinancialData(INITIAL_FINANCIAL);
     setDiagnosis('');
+    setDiagnosisResult(null);
     setInitialValues(null);
     setActiveCompany(null);
     setOnboardingPrefill(null);
@@ -464,12 +480,14 @@ export default function App() {
       style={[STEPS.QUESTIONNAIRE, STEPS.LOADING].includes(step) ? { background: '#1e3050' } : {}}
     >
       {step === STEPS.LANDING && (
-        <Landing
-          onEnter={() => setStep(user ? (savedCompanies.length > 0 ? STEPS.PREVIOUS : STEPS.ONBOARDING) : STEPS.AUTH)}
-          user={user}
-          plan={plan}
-          onHistory={allDiagnoses.length > 0 && plan !== 'free' ? () => setStep(STEPS.PREVIOUS) : null}
-        />
+        <Suspense fallback={<FullScreenSpinner />}>
+          <Landing
+            onEnter={() => setStep(user ? (savedCompanies.length > 0 ? STEPS.PREVIOUS : STEPS.ONBOARDING) : STEPS.AUTH)}
+            user={user}
+            plan={plan}
+            onHistory={allDiagnoses.length > 0 && plan !== 'free' ? () => setStep(STEPS.PREVIOUS) : null}
+          />
+        </Suspense>
       )}
 
       <div className={step === STEPS.LANDING ? 'hidden' : (WIDTH_BY_STEP[step] || WIDTH_BY_STEP.default)}>
@@ -569,6 +587,7 @@ export default function App() {
               businessData={businessData}
               financialData={financialData}
               diagnosis={diagnosis}
+              diagnosisResult={diagnosisResult}
               allDiagnoses={companyDiagnoses}
               plan={plan}
               user={user}

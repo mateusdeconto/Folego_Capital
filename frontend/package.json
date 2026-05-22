@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@sentry/react": "^10.53.1",
     "@supabase/supabase-js": "^2.49.4",
     "framer-motion": "^12.38.0",
     "html2pdf.js": "^0.10.2",

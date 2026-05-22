@@ -1,12 +1,5 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase.js';
-import {
-  formatDocument,
-  validateDocument,
-  normalizeDocument,
-  checkDocumentExists,
-  saveUserDocument,
-} from '../lib/documents.js';
 
 function Logo() {
   return (
@@ -80,7 +73,6 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
   // Register fields
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regDocument, setRegDocument] = useState('');
   const [showRegPwd, setShowRegPwd] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptMarketing, setAcceptMarketing] = useState(false);
@@ -104,19 +96,9 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
 
   function clear() { setError(''); setSuccess(''); }
 
-  function handleDocumentChange(e) {
-    setRegDocument(formatDocument(e.target.value));
-    clear();
-  }
-
   async function handleRegister(e) {
     e.preventDefault();
     clear();
-
-    if (!validateDocument(regDocument)) {
-      setError('CPF ou CNPJ inválido. Verifique o número digitado.');
-      return;
-    }
 
     if (!acceptTerms) {
       setError('Você precisa aceitar os Termos de Uso para criar uma conta.');
@@ -125,21 +107,11 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
 
     setLoading(true);
     try {
-      const normalizedDoc = normalizeDocument(regDocument);
-      const docType = normalizedDoc.length === 11 ? 'cpf' : 'cnpj';
-
-      const exists = await checkDocumentExists(normalizedDoc);
-      if (exists) {
-        throw new Error('CPF/CNPJ já vinculado a outra conta. Faça login ou recupere seu acesso.');
-      }
-
       const { data, error: err } = await supabase.auth.signUp({
         email: regEmail,
         password: regPassword,
         options: {
           data: {
-            document: normalizedDoc,
-            document_type: docType,
             email_marketing_opt_in: acceptMarketing,
             terms_accepted_at: new Date().toISOString(),
           },
@@ -149,11 +121,6 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
       if (err) throw err;
 
       if (data.session) {
-        const docError = await saveUserDocument(data.session.user.id, normalizedDoc);
-        if (docError?.code === '23505') {
-          await supabase.auth.signOut();
-          throw new Error('CPF/CNPJ já vinculado a outra conta. Faça login ou recupere seu acesso.');
-        }
         onComplete(data.session);
       } else {
         setSuccess('Conta criada! Verifique seu e-mail para confirmar e depois entre.');
@@ -404,21 +371,7 @@ export default function Auth({ onComplete, recoveryMode = false, onRecoveryCompl
                     </button>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-ink-700 mb-1.5">
-                    CPF ou CNPJ
-                    <span className="text-ink-400 font-normal ml-1 text-xs">(do responsável)</span>
-                  </label>
-                  <input
-                    type="text" required
-                    value={regDocument}
-                    onChange={handleDocumentChange}
-                    placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                    inputMode="numeric"
-                    className={inputCls()}
-                  />
-                  <p className="text-xs text-ink-400 mt-1.5">Garante uma conta gratuita por pessoa.</p>
-                </div>
+
                 {/* Consentimentos LGPD */}
                 <div className="space-y-3 pt-1">
                   <label className="flex items-start gap-2.5 cursor-pointer group">

@@ -764,7 +764,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         <p className="text-sm font-bold text-ink-400 uppercase tracking-wider mb-2">
           {'Diagn\u00f3stico financeiro'}
         </p>
-        <h1 className="text-4xl font-bold text-ink-900 tracking-tighter">
+        <h1 className="text-2xl sm:text-4xl font-bold text-ink-900 tracking-tighter">
           {businessData.businessName}
         </h1>
         <p className="text-ink-500 text-sm mt-0.5 capitalize">
@@ -907,7 +907,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
             {netProfitPositive ? 'Positivo' : 'Negativo'}
           </span>
         </div>
-        <p className={`text-4xl font-bold tracking-tighter font-mono ${netProfitPositive ? 'text-money-500' : 'text-loss-500'}`}>
+        <p className={`text-3xl sm:text-4xl font-bold tracking-tighter font-mono ${netProfitPositive ? 'text-money-500' : 'text-loss-500'}`}>
           {formatBRL(animatedNetProfit)}
         </p>
         <p className="text-sm mt-1 text-ink-300 font-medium">
@@ -977,7 +977,7 @@ export default function Diagnosis({ businessData, financialData, diagnosis, allD
         <motion.div className="card p-5 border-2 border-brand-200 bg-gradient-to-br from-brand-50 to-white" variants={fadeUp}>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-600 mb-1">Ponto de Equilíbrio</p>
           <p className="text-[11px] text-ink-400 mb-3">Faturamento mínimo para não perder dinheiro</p>
-          <p className="text-4xl font-bold text-ink-900 font-mono tracking-tighter">{formatBRL(animatedBreakEven)}</p>
+          <p className="text-3xl sm:text-4xl font-bold text-ink-900 font-mono tracking-tighter">{formatBRL(animatedBreakEven)}</p>
           <p className="text-xs text-ink-500 mt-2 leading-relaxed">
             Você precisa faturar pelo menos <strong>{formatBRL(metrics.breakEven)}/mês</strong> para cobrir todos os custos.
           </p>
